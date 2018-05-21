@@ -1,17 +1,17 @@
-# 2.1.1
+# 2.2
 
 Collection View is now a typescript widget and requires the Typescript Support extension (built-in).
 
-Collection View widget can now be imported into Typescript Objects using
+Collection View widget can now be imported into Typescript and Javascript Objects using
 ```ts
 //#import widget BMCollectionView from CollectionView
 ```
 
 Resolved a binding order issue that could affect values that were bound back and forth between mashup parameters and widgets.
 
-Resolved an issue that would cause the `BMCollectionViewCellSelected` class to be left on cells that were no longer selected.
+Resolved an issue that would cause the `BMCollectionViewCellSelected` CSS class to be left on cells that were no longer selected.
 
-A new `BMCollectionViewCellEditing` class is now temporarily added to cells that are in the editing state.
+A new `BMCollectionViewCellEditing` CSS class is now temporarily added to cells that are in the editing state.
 
 The various controllers are now delivered in the same package as Collection View.
 
