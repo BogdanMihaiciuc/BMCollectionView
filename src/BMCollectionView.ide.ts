@@ -2515,7 +2515,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		
             });
             
-            configurationWindow.delegate = {
+            configurationWindow.delegate = BMExtend(configurationWindow, {
                 DOMNodeForDismissedWindow() {
                     return button;
                 },
@@ -2524,7 +2524,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
                     self.configurationWindow = undefined;
                     $(window).off('resize.BMCollectionView');
                 }
-            }
+            });
 
 			self.configurationWindow = configurationWindow;
 			
