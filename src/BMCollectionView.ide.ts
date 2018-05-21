@@ -1,0 +1,2842 @@
+///<reference path="../../BMCoreUI/ui/BMCoreUI/BMCoreUI.d.ts"/>
+///<reference types="velocity-animate"/>
+
+import { TWNamedComposerWidget } from './support/widgetRuntimeSupport'
+
+// Used to catch bugs related to the previously predefined self variable
+declare var self: null;
+
+// Fill-in for missing direct link definition
+declare function BMDirectLinkPostWithUUID(...args: any[]): void;
+
+// #region BMWidgetConfigurationWindow
+
+/**
+ * The widget configuration window is a full screen window that may be used with certain widgets to make it easier to
+ * display and configure their properties, especially when they have a large number of properties that can be logically grouped up into sections.
+ */
+class BMWidgetConfigurationWindow extends BMWindow {
+	
+	/**
+	 * The widget whose configuration is managed by this configuration window.
+	 */
+    private _widget!: TWComposerWidget;
+    
+	/**
+	 * The widget whose configuration is managed by this configuration window.
+	 */
+	get widget() { return this._widget; };
+	set widget(widget) {
+		this._widget = widget;
+	};
+	
+	
+	/**
+	 * The sections array containg the major property categories.
+	 */
+	private _sections: {name: string, label: string}[] = [];
+	
+	/**
+	 * The collection view that will manage the main sections.
+	 */
+	_groupCollectionView: BMCollectionView;
+	
+	/**
+	 * The callbacks to execute when this window closes.
+	 */
+	private _windowDidCloseCallbacks: (() => void)[];
+	
+	/**
+	 * A dictionary containing the registered observers for each property.
+	 */
+    private _propertyObservers: Dictionary<((any) => void)[]>;
+    
+    /**
+     * The jQuery element representing this window's content.
+     */
+    private _content: $;
+	
+	/**
+	 * Must be invoked after creation to initialize this widget configuration window.
+	 * @param URL <String>						The URL to the configuration contents.
+	 * {
+	 *	@param widget <TWWidget>				The widget managed by this configuration window.
+	 *	@param sections <[String]>				The array of navigation sections.
+	 *	@param frame <BMRect>					The window's frame.
+	 *  @param completionHandler <void ^()>		A handler that will be invoked when the contents have been loaded.
+	 * }
+	 * @return <BMWidgetConfigurationWindow>	This configuration window.
+	 */
+	initWithURL(URL: string, args: {widget: TWComposerWidget, sections: {name: string, label: string}[], frame: BMRect, completionHandler: () => void}): this {
+		// Run the super constructor
+		BMWindow.prototype.initWithFrame.call(this, args.frame, {toolbar: NO});
+		
+		// Prepare the property observer object
+		this._propertyObservers = {};
+		
+		this.delegate = this;
+		
+		this._widget = args.widget;
+		this._sections = args.sections;
+		
+		this._windowDidCloseCallbacks = [];
+		
+		var self = this;
+		
+		var sidebarClass = (('backdropFilter' in document.body.style) || ('webkitBackdropFilter' in document.body.style)) ? '' : ' BMWidgetConfigurationWindowNavigationSidebarCompatibility';
+		
+		this.content.innerHTML = '<div class="BMWidgetConfigurationWindowContent"></div><div class="BMWidgetConfigurationWindowNavigationSidebar' + sidebarClass + '"></div>';
+		
+		var windowContent = $(this.content.querySelectorAll('.BMWidgetConfigurationWindowContent'));
+		
+		self._createCollectionView();
+		
+		// Execute a GET to obtain the window contents
+		var request = new XMLHttpRequest();
+		request.open('GET', URL, YES);
+		request.onload = function () {
+			if (request.status === 200) {
+				self._content = $(request.responseText);
+				// Add the window contents to the window
+				windowContent.append(self._content);
+				
+				// Find all entity pickers and create their magic pickers
+				var entityPickers = windowContent.find('[data-entity="YES"]');
+				entityPickers.each(function () {
+					var pickerElement = $(this);
+					
+					// Get the corresponding widget property name
+					var propertyName = pickerElement.data('property');
+					
+					// Find all other entity pickers that also handle this property
+					var otherPickerElements = windowContent.find('[data-property="' + propertyName + '"]')
+					
+					// Construct the magic picker
+					try {
+                        // There is no definition for twMagicPicker
+						(pickerElement as any).twMagicPicker({
+			                editMode: true,
+							entityType: pickerElement.data('entityType'),
+							entityName: self._widget.getProperty(propertyName),
+			                singleEntityChanged: function (entity){
+				                self._widget.setProperty(propertyName, entity.entityName);
+								self._notifyObserversForProperty(propertyName);
+				                
+				                // TODO Handle other entity pickers for the same property
+			                },
+				            singleEntityRemoved: function () {
+					            self._widget.setProperty(propertyName, undefined);
+								self._notifyObserversForProperty(propertyName);
+				                
+				                // TODO Handle other entity pickers for the same property
+				            }
+			            });
+			        }
+			        catch (e) {
+				        
+			        }
+			        
+			        self.registerWindowDidCloseCallback(function () {
+                        // There is no definition for twMagicPicker
+				        (pickerElement as any).twMagicPicker('destroy');
+			        });
+				});
+				
+				// Find all primitive editors and set up their event handlers
+				var primitiveEditors: $ = windowContent.find('[data-primitive="YES"]');
+				primitiveEditors.each(function () {
+					var primitiveEditor = $(this);
+					
+					// Get the corresponding widget property name
+					var propertyName: string = primitiveEditor.data('property');
+					
+					// Obtain a reference to all other inputs that also handle this property
+					var otherPrimitiveEditors: $ = windowContent.find('[data-property="' + propertyName + '"]').not(primitiveEditor);
+					
+					// A value filter is created for properties that need to be converted to a different type than provided by their input element
+					var primitiveType: string = primitiveEditor.data('primitiveType');
+					if (primitiveType == 'Int') {
+						var valueByConvertingValue = function (value: any): any {
+							return parseInt(value, 10);
+						};
+					}
+					else {
+						// If type conversion isn't required, the value filter will simply return the supplied value
+						var valueByConvertingValue = function (value: any): any {
+							return value;
+						};
+					}
+					
+					// Populate the input with the property's current value from the widget
+					primitiveEditor.val(self._widget.getProperty(propertyName));
+					
+					// Set up the input event handler to update the property
+					primitiveEditor.on('input', function () {
+						self._widget.setProperty(propertyName, valueByConvertingValue(primitiveEditor.val()));
+						self._notifyObserversForProperty(propertyName);
+						
+						// Update the other primitive editors to the new value
+						otherPrimitiveEditors.val(primitiveEditor.val());
+					});
+					
+					// Check if this property is a single binding
+					if (primitiveEditor.data('single-binding') == "YES") {
+						// If it is, set up the completion drop-down
+						var sourceProperty = primitiveEditor.data('source-property');
+						var sourcePropertyFields: string[] = [];
+						
+						// Load the fields
+						BMWidgetConfigurationWindowGetBindingFieldsForProperty(sourceProperty, {widget: self._widget, intoArray: sourcePropertyFields});
+						
+						var observer = () => {
+							sourcePropertyFields.length = 0;
+							BMWidgetConfigurationWindowGetBindingFieldsForProperty(sourceProperty, {widget: self._widget, intoArray: sourcePropertyFields});
+						}
+						
+						// Register an observer that reloads the fields when the source property is updated
+						self.registerObserver(observer, {forProperty: sourceProperty});
+						
+						// Set up the dropdown
+						primitiveEditor.on('focus', function () {
+							// Create the dropdown popover
+							var frame: BMRect = BMRectMakeWithNodeFrame(this);
+							
+							var dropdown: $ = $('<div class="BMCollectionViewConfigurationDropdown"></div>');
+							
+							sourcePropertyFields.forEach(function (key: string) {
+								var entry = $('<div class="BMCollectionViewConfigurationDropdownEntry">' + key + '</div>');
+								
+								entry.mousedown(function (event) {
+									primitiveEditor.val(key);
+									self._widget.setProperty(propertyName, valueByConvertingValue(key));
+									self._notifyObserversForProperty(propertyName);
+									
+									event.stopPropagation();
+									event.preventDefault();
+								});
+								
+								entry.mouseup(function (event) {
+									primitiveEditor.blur();
+								});
+								
+								dropdown.append(entry);
+							});
+							
+							let top = frame.bottom;
+							let translation = '32px';
+
+							if (top + 480 > window.innerHeight) {
+								top = frame.top - Math.min(480, 32 * sourcePropertyFields.length);
+								translation = '-32px';
+							}
+
+							dropdown.css({left: frame.left + 'px', top: top + 'px', opacity: 0});
+							
+							$(document.body).append(dropdown);
+							
+							BMHook(dropdown, {translateY: translation});
+							dropdown.velocity({translateY: 0, opacity: 1}, {duration: 200, easing: 'easeOutQuart'});
+							
+							(primitiveEditor as any).keyDropdown = dropdown;
+							
+						}).on('blur', function () {
+							if (!(primitiveEditor as any).keyDropdown) return;
+							
+							var dropdown = (primitiveEditor as any).keyDropdown;
+							(primitiveEditor as any).keyDropdown = undefined;
+							
+							dropdown.velocity({translateY: '32px', opacity: 0}, {duration: 200, easing: 'easeInQuart', complete: function () {dropdown.remove()}});
+						});
+					}
+				});
+				
+				// Find all toggle editors and set up their event handlers
+				var toggles: JQuery<HTMLInputElement> = windowContent.find('[data-toggle="YES"]') as JQuery<HTMLInputElement>;
+				toggles.each(function () {
+					var toggle: JQuery<HTMLInputElement> = $(this) as JQuery<HTMLInputElement>;
+					
+					// Get the corresponding widget property name
+					var propertyName: string = toggle.data('property');
+					
+					// Find all other toggle that also handle this property
+					var otherToggles: JQuery<HTMLInputElement> = windowContent.find('[data-property="' + propertyName + '"]').not(toggle) as JQuery<HTMLInputElement>;
+					
+					// Set the checkbox state to the property's current value from the widget
+					toggle[0].checked = self._widget.getProperty(propertyName);
+					
+					// Set up the change handler to update the property
+					toggle.on('change', function () {
+						self._widget.setProperty(propertyName, toggle[0].checked);
+						self._notifyObserversForProperty(propertyName);
+						
+						// Update the other toggles
+						otherToggles.prop('checked', toggle[0].checked);
+					});
+				});
+				
+				// Find all choice editors and set up their event handlers
+				var choices: $ = windowContent.find('[data-choice="YES"]');
+				choices.each(function () {
+					var choice: $ = $(this);
+					
+					// Get the corresponding widget property name
+					var propertyName: string = choice.data('property');
+					
+					// At this time, there are no multiple choice editors for the same property, so synchronization is not needed here
+					
+					// Set up the state to the property's current value from the widget
+					var currentValue: string = self._widget.getProperty(propertyName);
+					choice.find('[data-value="' + currentValue + '"]').addClass('BMCollectionViewVerticalTableEntryChoiceSelected');
+					
+					// Set up the click handler to update the property
+					choice.find('.BMCollectionViewVerticalTableEntryChoice').on('click', function (event) {
+						var selectedChoice = $(this).closest('.BMCollectionViewVerticalTableEntryChoice');
+						
+						// Get the internal value for the current choice
+						var value = selectedChoice.data('value');
+						self._widget.setProperty(propertyName, value);
+						self._notifyObserversForProperty(propertyName);
+						
+						// Update the UI accordingly
+						choice.find('.BMCollectionViewVerticalTableEntryChoiceSelected').removeClass('BMCollectionViewVerticalTableEntryChoiceSelected');
+						selectedChoice.addClass('BMCollectionViewVerticalTableEntryChoiceSelected');
+					});
+				});
+				
+				// Find all double bindings and set up their contents and event handlers
+				// Double bindings are a special case of string properties, whose contents is a JSON
+				// object having keys as binding sources and values as binding targets
+				var doubleBindings: $ = windowContent.find('[data-double-binding="YES"]');
+				doubleBindings.each(function () {
+					// NOTE: because they are only updated when the configuration window closes, double binding properties currently do not support notifying observers
+					
+					var doubleBinding = $(this);
+					
+					// Get the source and target property names
+					var sourceProperty = doubleBinding.data('source-property');
+					var targetProperty = doubleBinding.data('target-property');
+					
+					// Get the binding property name and current value
+					var propertyName = doubleBinding.data('property');
+					var currentBindings;
+					try {
+						currentBindings = JSON.parse(self._widget.getProperty(propertyName)) || {};
+					}
+					catch (error) {
+						currentBindings = {};
+					}
+					
+					var sourcePropertyFields = [];
+					var targetPropertyFields = [];
+					
+					// Load the fields
+					BMWidgetConfigurationWindowGetBindingFieldsForProperty(sourceProperty, {widget: self._widget, intoArray: sourcePropertyFields});
+					BMWidgetConfigurationWindowGetBindingFieldsForProperty(targetProperty, {widget: self._widget, intoArray: targetPropertyFields});
+						
+					function sourceObserver() {
+						sourcePropertyFields.length = 0;
+						BMWidgetConfigurationWindowGetBindingFieldsForProperty(sourceProperty, {widget: self._widget, intoArray: sourcePropertyFields});
+					}
+						
+					function targetObserver() {
+						targetPropertyFields.length = 0;
+						BMWidgetConfigurationWindowGetBindingFieldsForProperty(targetProperty, {widget: self._widget, intoArray: targetPropertyFields});
+					}
+					
+					// Register observerd that reload the fields when the source or target properties ar updated
+					self.registerObserver(sourceObserver, {forProperty: sourceProperty});
+					
+					// Populate the table
+					var table = $('<div class="BMCollectionViewConfigurationDoubleBindingTable"></div>');
+					
+					
+					// The binding model is the JSON object describing this double binding
+					// Internally, is modelled as an array of objects and is transformed to the
+					// required JSON format when saving this property
+					var bindingModel = [];
+					
+					/**
+					 * Adds a binding.
+					 * @param binding <Object>					The binding to add.
+					 * {
+					 *	@param animated <Boolean, nullable>		Defaults to NO. If set to YES, this change will be animated, otherwise it will be instant.
+					 * }
+					 */
+					function BMWidgetConfigurationWindowDoubleBindingAddBinding(binding: any, args?: {animated?: boolean}) {
+						// Add the binding to the binding model
+						bindingModel.push(binding);
+						
+						var animated = args && args.animated;
+						
+						// Create the HTML representation
+						var row = $('<div class="BMCollectionViewConfigurationDoubleBindingRow">\
+										<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewConfigurationDoubleBindingKey" value="' + binding.key + '"/>\
+										<div class="BMCollectionViewConfigurationDoubleBindingArrow"></div>\
+										<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewConfigurationDoubleBindingValue" value = "' + binding.value + '"/>\
+										<div class="BMCollectionViewConfigurationDoubleBindingDeleteButton">&times;</div>\
+									</div>');
+									
+						
+						// Set up the event handlers
+						row.find('.BMCollectionViewConfigurationDoubleBindingKey').on('change', function (event) {
+							binding.key = (this as HTMLInputElement).value;
+						}).on('focus', function () {
+							// Create the dropdown popover
+							var frame = BMRectMakeWithNodeFrame(this);
+							var keyField = $(this);
+							
+							var dropdown = $('<div class="BMCollectionViewConfigurationDropdown"></div>');
+							
+							sourcePropertyFields.forEach(function (key) {
+								var entry = $('<div class="BMCollectionViewConfigurationDropdownEntry">' + key + '</div>');
+								
+								entry.mousedown(function (event) {
+									keyField.val(key);
+									binding.key = key;
+									
+									event.stopPropagation();
+									event.preventDefault();
+								});
+								
+								entry.mouseup(function (event) {
+									keyField.blur();
+								});
+								
+								dropdown.append(entry);
+							});
+							
+							let top = frame.bottom;
+							let translation = '32px';
+
+							if (top + 480 > window.innerHeight) {
+								top = frame.top - Math.min(480, 32 * sourcePropertyFields.length);
+								translation = '-32px';
+							}
+							
+							dropdown.css({left: frame.left + 'px', top: top + 'px', opacity: 0});
+							
+							$(document.body).append(dropdown);
+							
+							BMHook(dropdown, {translateY: translation});
+							dropdown.velocity({translateY: 0, opacity: 1}, {duration: 200, easing: 'easeOutQuart'});
+							
+							binding.keyDropdown = dropdown;
+							
+						}).on('blur', function () {
+							if (!binding.keyDropdown) return;
+							
+							var dropdown = binding.keyDropdown;
+							binding.keyDropdown = undefined;
+							
+							dropdown.velocity({translateY: '32px', opacity: 0}, {duration: 200, easing: 'easeInQuart', complete: function () {dropdown.remove()}});
+						});
+									
+						row.find('.BMCollectionViewConfigurationDoubleBindingValue').on('change', function (event) {
+							binding.value = (this as HTMLInputElement).value;
+						}).on('focus', function () {
+							// Create the dropdown popover
+							var frame = BMRectMakeWithNodeFrame(this);
+							var keyField = $(this);
+							
+							var dropdown = $('<div class="BMCollectionViewConfigurationDropdown"></div>');
+							
+							targetPropertyFields.forEach(function (key) {
+								var entry = $('<div class="BMCollectionViewConfigurationDropdownEntry">' + key + '</div>');
+								
+								entry.mousedown(function (event) {
+									keyField.val(key);
+									binding.value = key;
+									
+									event.stopPropagation();
+									event.preventDefault();
+								});
+								
+								entry.mouseup(function (event) {
+									keyField.blur();
+								});
+								
+								dropdown.append(entry);
+							});
+							
+							let top = frame.bottom;
+							let translation = '32px';
+
+							if (top + 480 > window.innerHeight) {
+								top = frame.top - Math.min(480, 32 * targetPropertyFields.length);
+								translation = '-32px';
+							}
+							
+							dropdown.css({left: frame.left + 'px', top: top + 'px', opacity: 0});
+							
+							$(document.body).append(dropdown);
+							
+							BMHook(dropdown, {translateY: translation});
+							dropdown.velocity({translateY: 0, opacity: 1}, {duration: 200, easing: 'easeOutQuart'});
+							
+							binding.keyDropdown = dropdown;
+							
+						}).on('blur', function () {
+							if (!binding.keyDropdown) return;
+							
+							var dropdown = binding.keyDropdown;
+							binding.keyDropdown = undefined;
+							
+							dropdown.velocity({translateY: '32px', opacity: 0}, {duration: 200, easing: 'easeInQuart', complete: function () {dropdown.remove()}});
+						});
+									
+						row.find('.BMCollectionViewConfigurationDoubleBindingDeleteButton').on('click', function (event) {
+							BMWidgetConfigurationWindowDoubleBindingRemoveBinding(binding, {animated: YES});
+						});
+									
+						if (animated) {
+							BMHook(row, {height: 0, opacity: 0});
+						}
+									
+						addBindingButton.before(row);
+						
+						// Animate as needed
+						if (animated) {
+							row.velocity({height: '48px', opacity: 1}, {easing: 'easeInOutQuart', duration: 300});
+						}
+						
+						// Retain a reference to the HTML element for this binding
+						binding.row = row;
+						
+						// Update the property when the window closes
+						self.registerWindowDidCloseCallback(function () {
+							var bindings = {};
+							
+							bindingModel.forEach(function (binding) {
+								if (binding.key && binding.value) {
+									bindings[binding.key] = binding.value;
+								}
+							});
+							
+							self._widget.setProperty(propertyName, JSON.stringify(bindings));
+						});
+					}
+					
+					/**
+					 * Removes a binding.
+					 * @param binding <Object>					The binding to remove.
+					 * {
+					 *	@param animated <Boolean, nullable>		Defaults to NO. If set to YES, this change will be animated, otherwise it will be instant.
+					 * }
+					 */
+					function BMWidgetConfigurationWindowDoubleBindingRemoveBinding(binding, args) {
+						// Remove the binding from the model
+						bindingModel.splice(bindingModel.indexOf(binding), 1);
+						
+						var animated = args && args.animated;
+						
+						// Retrieve the associated HTML element
+						var row = binding.row;
+						
+						// Animate as needed
+						if (animated) {
+							row.css({pointerEvents: 'none'});
+							row.velocity({height: '0px', opacity: 0}, {easing: 'easeInOutQuart', duration: 300, complete: function () {row.remove()}});
+						}
+						else {
+							row.remove();
+						}
+					}
+					
+					// Set up the button used to add new bindings
+					var addBindingButton = $('<div class="BMCollectionViewConfigurationButton">Add Binding</div>');
+					addBindingButton.on('click', function () {
+						BMWidgetConfigurationWindowDoubleBindingAddBinding({key: '', value: ''}, {animated: YES});
+					});
+					
+					table.append(addBindingButton);
+					
+					// Create the already set bindings
+					Object.keys(currentBindings).forEach(function (key) {
+						BMWidgetConfigurationWindowDoubleBindingAddBinding({key: key, value: currentBindings[key]});
+					});
+					
+					doubleBinding.append(table);
+					
+					
+				});
+				
+				args.completionHandler();
+			}
+		};
+		
+		request.send();
+		
+		return this;
+	};
+	
+	/**
+	 * Invoked to create the collection view elements for this configuration window.
+	 */
+	_createCollectionView(): void {
+		var self = this;
+		
+		// Create the groups collection view
+		this._groupCollectionView = BMCollectionViewMakeWithContainer($(this.content.querySelectorAll('.BMWidgetConfigurationWindowNavigationSidebar')));
+		
+		// Set up its layout
+		this._groupCollectionView.layout = new BMCollectionViewTableLayout();
+		(this._groupCollectionView.layout as BMCollectionViewTableLayout).sectionInsets = BMInsetMake(0, 22, 0, 22);
+		
+		var sectionKeys = this._sections;
+		
+		var windowContent = $(this.content.querySelectorAll('.BMWidgetConfigurationWindowContent'));
+		
+		// Construct its data set
+		this._groupCollectionView.dataSet = {
+			numberOfSections: function () { return 1; },
+			numberOfObjectsInSectionAtIndex: function () { return sectionKeys.length; },
+			indexPathForObjectAtRow: function (row, options) {
+				return BMIndexPathMakeWithRow(row, {section: 1, forObject: sectionKeys[row]});
+			},
+			indexPathForObject: function (object) {
+				for (var i = 0; i < sectionKeys.length; i++) {
+					if (sectionKeys[i] === object) return BMIndexPathMakeWithRow(i, {section: 1, forObject: object});
+				}
+			},
+			contentsForCellWithReuseIdentifier: function (identifier) {
+				return $('<div class="BMWidgetConfigurationWindowNavigationSidebarLink"></div>');
+			},
+			cellForItemAtIndexPath: function (indexPath) {
+				var cell = self._groupCollectionView.dequeueCellForReuseIdentifier('link');
+				
+				// Style the cell based on whether it's selected or not
+				if (self._groupCollectionView.isCellAtIndexPathSelected(indexPath)) {
+					cell.element.find('.BMWidgetConfigurationWindowNavigationSidebarLink').addClass('BMWidgetConfigurationWindowNavigationSidebarLinkSelected');
+				}
+				else {
+					cell.element.find('.BMWidgetConfigurationWindowNavigationSidebarLink').removeClass('BMWidgetConfigurationWindowNavigationSidebarLinkSelected');
+				}
+				
+				// Update the cell's contents
+				var object = indexPath.object as any;
+				
+				cell.element.find('.BMWidgetConfigurationWindowNavigationSidebarLink').text(object.label);
+				
+				return cell;
+			},
+			contentsForSupplementaryViewWithIdentifier: function (identifier) {
+                // Supplementary views are not used, so it is not necessary to do anything in this method
+                return $();
+			},
+			cellForSupplementaryViewWithIdentifier: function (identifier, options) {
+                // Supplementary views are not used, so it is not necessary to do anything in this method
+                return self._groupCollectionView.dequeueCellForSupplementaryViewWithIdentifier('');
+			},
+			updateCell: function (cell, options) {
+				var object = options.atIndexPath.object as any;
+				
+				cell.element.find('.BMWidgetConfigurationNavigationSidebarLink').text(object.label);
+			},
+			updateSupplementaryView: function (view, options) {
+				// Supplementary views are not used, so it is not necessary to do anything in this method
+			},
+			useOldData: function (use) {
+				// This is never invoked as the data set never changes its contents
+            },
+            isUsingOldData: () => NO
+		};
+		
+		// Select the first cell if available
+		if (sectionKeys.length) {
+			this._groupCollectionView.selectedIndexPaths = [BMIndexPathMakeWithRow(0, {section: 0, forObject: sectionKeys[0]})];
+		}
+		
+		// Construct its delegate object
+		this._groupCollectionView.delegate = {
+			collectionViewDidSelectCellAtIndexPath: function (collectionView, indexPath) {
+				// Clear all other selections
+				collectionView.selectedIndexPaths = [indexPath];
+				
+				// Style the selected cell
+				var cell = collectionView.cellAtIndexPath(indexPath, {ofType: BMCellAttributesType.Cell});
+				if (cell) {
+					cell.element.find('.BMWidgetConfigurationWindowNavigationSidebarLink').addClass('BMWidgetConfigurationWindowNavigationSidebarLinkSelected');
+				}
+				
+				
+				// Show the appropriate content in the window
+				windowContent.find('.BMCollectionViewVerticalTableSelectedGroup').removeClass('BMCollectionViewVerticalTableSelectedGroup');
+				windowContent.find('[data-group="' + (indexPath.object as any).name + '"]').addClass('BMCollectionViewVerticalTableSelectedGroup');
+				
+				// Scroll back to the top
+				windowContent[0].scrollTop = 0;
+			},
+			
+			collectionViewDidDeselectCellAtIndexPath: function (collectionView, indexPath) {
+				// Style the deselected cell
+				var cell = collectionView.cellAtIndexPath(indexPath, {ofType: BMCellAttributesType.Cell});
+				if (cell) {
+					cell.element.find('.BMWidgetConfigurationWindowNavigationSidebarLink').removeClass('BMWidgetConfigurationWindowNavigationSidebarLinkSelected');
+				}
+			},
+			
+			collectionViewShouldRunIntroAnimation: function (collectionView) {
+				return NO;
+			},
+			
+			collectionViewCanDeselectCellAtIndexPath: function (collectionView, indexPath) {
+				// Do not allow the last cell to be deselected
+				return collectionView.selectedIndexPaths.length > 1;
+			}
+		};
+	};
+	
+	/**
+	 * Should be invoked to register a callback that will execute when this configuration window closes.
+	 * @param callback <void ^()>			The callback to execute.
+	 */
+	registerWindowDidCloseCallback(callback: () => void) {
+		this._windowDidCloseCallbacks.push(callback);
+	};
+	
+	/**
+	 * Registers an observer that will be notified whenever the given property is modified by this widget configuration window.
+	 * @param observer <void ^(AnyObject)>				The observer callback. This callback returns nothing and receives the property's new value as its parameter.
+	 * {
+	 *	@param forProperty <String>						The property to observe.
+	 * }
+	 */
+	registerObserver(observer: (any) => void, args: {forProperty: string}) {
+		var property = args.forProperty;
+		
+		if (!this._propertyObservers[property]) this._propertyObservers[property] = [];
+		
+		this._propertyObservers[property].push(observer);
+	};
+	
+	/**
+	 * Invoked internally when a property is updated and registered observers should be notified.
+	 * @param property <String>							The property that was changed.
+	 */
+	_notifyObserversForProperty(property: string) {
+		if (!this._propertyObservers[property]) return;
+		
+		var self = this;
+		this._propertyObservers[property].forEach(function (observer) {
+			observer(self._widget.getProperty(property));
+		});
+	};
+	
+	// @override - BMWindowDelegate
+	windowDidClose() {
+		// Run all registered callbacks
+		this._windowDidCloseCallbacks.forEach(function (callback) {
+			callback();
+		});
+		
+		// Then release all resources
+		this._groupCollectionView.release();
+		this.release();
+		
+		// And udpate the widget properties sidebar
+		this._widget.updatedProperties();
+	}
+	
+}
+
+/**
+ * Asynchronously loads the mashup parameter definitions for the given mashup.
+ * @param mashup <String>							The mashup for which to get the parameters.
+ * {
+ *	@param completionHandler <void ^(Object)>		The callback to invoke when the parameters are retrieved.
+ *													This callback returns nothing and receives the parameter definitions as its only parameter.
+ * }
+ */
+export function BMWidgetConfigurationWindowGetParametersForMashup(mashup: string, args: {completionHandler: (any) => void}) {
+	if (!mashup) {
+		args.completionHandler({});
+		return;
+	}
+	
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', '/Thingworx/Mashups/' + mashup + '?Accept=application/json');
+	
+	xhr.onload = function () {
+		if (xhr.status == 200) {
+			try {
+				var parameters = JSON.parse(xhr.response).parameterDefinitions;
+				args.completionHandler(parameters);
+			}
+			catch (error) {
+				args.completionHandler({});
+			}
+		}
+		else {
+			args.completionHandler({});
+		}
+	};
+	
+	xhr.send();
+}
+
+/**
+ * Loads the binding fields for the given property into the given array.
+ * Depending on the type of property, this may happen asynchronously.
+ * @param property <String>									The property for which to load the binding fields.
+ * {
+ *	@param widget <TWWidget>								The widget containing the given property.
+ *	@param intoArray <[String]>								The array into which the binding fields will be added.
+ *	@param completionHandler <void ^([String]), nullable>	An optional callback to invoke when the binding fields have been retrieved.
+ *															This callback returns nothing and will receive the array of binding fields as its only parameter.
+ * }
+ */
+export function BMWidgetConfigurationWindowGetBindingFieldsForProperty(property: string, args: {widget: TWComposerWidget, intoArray: string[], completionHandler?: (_: string[]) => void}) {
+	var widget = args.widget;
+	var array = args.intoArray;
+	var callback = args.completionHandler;
+	
+	var properties = (widget.allWidgetProperties() as any).properties;
+	
+	switch (properties[property].baseType) {
+		case 'INFOTABLE':
+			// Infotables can be loaded synchronously if their data shape is defined statically
+			var dataShape = widget.getSourceDatashapeName(property) || widget.getInfotableMetadataForProperty(property);
+			if (typeof dataShape == 'string') {
+				// String data shapes need an asynchronous request to be resolved
+				TW.IDE.GetDataShapeInfo(dataShape, function (dataShape) {
+					if (dataShape) {
+						array.push.apply(array, Object.keys(dataShape.fieldDefinitions || {}));
+					}
+					
+					if (args.completionHandler) {
+						args.completionHandler(array);
+					}
+				}, YES);
+			}
+			else {
+				// Object data shapes may be resolved synchronously
+				array.push.apply(array, Object.keys(dataShape || {}));
+				
+				if (args.completionHandler) {
+					args.completionHandler(array);
+				}
+			}
+		break;
+		case 'MASHUPNAME':
+			// Mashups need an asynchronous request to be resolved
+			BMWidgetConfigurationWindowGetParametersForMashup(widget.getProperty(property), {completionHandler: function (definitions) {
+				array.push.apply(array, Object.keys(definitions));
+				
+				if (args.completionHandler) {
+					args.completionHandler(array);
+				}
+			}});
+		break;
+	}
+};
+
+// #endregion
+
+/**
+ * An extension to widget properties containing the additional fields used by Collection View.
+ */
+export interface BMCollectionViewWidgetProperties extends TWWidgetProperties {
+
+    properties: Dictionary<BMCollectionViewWidgetProperty>;
+}
+
+/**
+ * An extension to widget properties containing the additional fields used by Collection View.
+ */
+export interface BMCollectionViewWidgetProperty extends TWWidgetProperty {
+    /**
+     * Reserved for future use.
+     */
+    _BMSection?: string,
+
+    /**
+     * Reserved for future use.
+     */
+    _BMFriendlyName?: string,
+
+    /**
+     * An array of categories to which this property belongs.
+     * This is used when filtering the list of properties via the `Show` property.
+     */
+    _BMCategories?: string[],
+
+    /**
+     * Should be set to `NO` when this property is not a built-in property but an
+     * automatically generated property.
+     */
+    isBaseProperty?: boolean,
+
+    /**
+     * The name of the property.
+     */
+    name?: string;
+}
+
+/**
+ * An extension to widget services containing the additional fields used by Collection View.
+ */
+export interface BMCollectionViewWidgetService extends TWWidgetService {
+    /**
+     * An array of categories to which this service belongs.
+     * This is used when filtering the list of properties via the `Show` property.
+     */
+    _BMCategories?: string[],
+
+    /**
+     * Should be set to `NO` when this property is not a built-in property but an
+     * automatically generated property.
+     */
+    isBaseProperty?: boolean
+}
+
+/**
+ * An extension to widget services containing the additional fields used by Collection View.
+ */
+export interface BMCollectionViewWidgetEvent extends TWWidgetEvent {
+    /**
+     * An array of categories to which this event belongs.
+     * This is used when filtering the list of properties via the `Show` property.
+     */
+    _BMCategories?: string[],
+
+    /**
+     * Should be set to `NO` when this property is not a built-in property but an
+     * automatically generated property.
+     */
+    isBaseProperty?: boolean
+}
+
+// #region BMCollectionViewWidget
+
+@TWNamedComposerWidget("BMCollectionView")
+export class BMCollectionViewWidget extends TWComposerWidget 
+implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDelegateTableLayout, BMCollectionViewDelegateFlowLayout, BMCollectionViewDelegateMasonryLayout {
+
+    collectionView!: BMCollectionView;
+
+    // #region BMCollectionViewDataSet
+    	
+	numberOfSections(): number {
+		return 3;
+	}
+	
+	numberOfObjectsInSectionAtIndex(index: number): number {
+		return 15;
+	}
+	
+	contentsForCellWithReuseIdentifier(identifier: string): $ | string {
+		return 'Cell';
+	}
+	
+	contentsForSupplementaryViewWithIdentifier(identifier: string): $ | string {
+		return identifier;	
+	}
+	
+	cellForItemAtIndexPath(indexPath: BMIndexPath): BMCollectionViewCell {
+		var cell = this.collectionView.dequeueCellForReuseIdentifier('PreviewCell');
+		
+		if (!(cell as any).initialized) {
+			(cell as any).initialized = YES;
+			
+			cell.element.addClass('BMCollectionViewPreviewCell');
+		}
+		
+		return cell;
+	};
+	
+	cellForSupplementaryViewWithIdentifier(identifier: string, args: {atIndexPath: BMIndexPath}): BMCollectionViewCell {
+		var cell = this.collectionView.dequeueCellForSupplementaryViewWithIdentifier(identifier);
+		
+		if (!(cell as any).initialized) {
+			(cell as any).initialized = YES;
+			
+			cell.element.addClass('BMCollectionViewPreviewCell');
+		}
+		
+		return cell;
+	}
+	
+	indexPathForObjectAtRow(row: number, args: {inSectionAtIndex: number}) {
+		return BMIndexPathMakeWithRow(row, {section: args.inSectionAtIndex, forObject: row + 15 * args.inSectionAtIndex});
+    }
+    
+    indexPathForObject(object: number): BMIndexPath {
+        let section = object % 15;
+        let row = object - section * 15;
+
+        return BMIndexPathMakeWithRow(row, {section: section, forObject: object});
+    }
+
+    useOldData() {};
+    isUsingOldData(): boolean {
+        return NO;
+    }
+
+    // #endregion
+
+    // #region BMCollectionViewDelegate
+	
+	collectionViewShouldRunIntroAnimation(): boolean {
+		return NO;
+    }
+
+	collectionViewSizeForCellAtIndexPath(collectionView: BMCollectionView, indexPath: BMIndexPath): BMSize {
+		return BMSizeMake(this.getProperty('CellWidth'), this.getProperty('CellHeight'));
+	}
+	
+	collectionViewHeightForCellAtIndexPath(collectionView: BMCollectionView, indexPath: BMIndexPath, options: {forColumnWidth: number}): number {
+		return this.getProperty('CellHeight');
+    }
+    
+    collectionViewRowHeightForCellAtIndexPath(collection: BMCollectionView, indexPath: BMIndexPath): number {
+        return this.getProperty('CellHeight');
+    }
+    
+    // #endregion
+
+    // #region Layout Generators
+
+	/**
+	 * Constructs and configures a flow layout based on this widget's property vlaues.
+	 * @return <BMCollectionViewFlowLayout>		A flow layout.
+	 */
+	createFlowLayout(): BMCollectionViewFlowLayout {
+		var layout = new BMCollectionViewFlowLayout();
+		layout.rowSpacing = this.getProperty('FlowLayoutRowSpacing');
+		layout.minimumSpacing = this.getProperty('FlowLayoutMinimumSpacing');
+		layout.cellSize = BMSizeMake(this.getProperty('CellWidth'), this.getProperty('CellHeight'));
+		layout.gravity = BMCollectionViewFlowLayoutGravity[this.getProperty('FlowLayoutGravity')];
+		layout.leftAlignFinalRow = this.getProperty('FlowLayoutLeftAlignFinalRow');
+		
+		layout.topPadding = this.getProperty('FlowLayoutTopPadding');
+		layout.bottomPadding = this.getProperty('FlowLayoutBottomPadding');
+
+		layout.contentGravity = BMCollectionViewFlowLayoutAlignment[this.getProperty('FlowLayoutContentGravity')];
+		
+		if (this.getProperty('SectionField')) {
+		
+			layout.showsHeaders = this.getProperty('ShowsHeaders');
+			layout.headerHeight = this.getProperty('HeaderHeight');
+			
+			layout.showsFooters = this.getProperty('ShowsFooters');
+			layout.footerHeight = this.getProperty('FooterHeight');
+			
+			layout.pinsHeadersToContentEdge = this.getProperty('FlowLayoutPinsHeadersToContentEdge', NO);
+			layout.pinsFootersToContentEdge = this.getProperty('FlowLayoutPinsFootersToContentEdge', NO);
+			
+		}
+			
+		layout.sectionInsets = BMInsetMake(this.getProperty('SectionInsetLeft') | 0, 
+											this.getProperty('SectionInsetTop') | 0, 
+											this.getProperty('SectionInsetRight') | 0, 
+											this.getProperty('SectionInsetBottom') | 0
+		);
+		
+		return layout;
+	};
+	
+	/**
+	 * Constructs and configures a masonry layout based on this widget's property vlaues.
+	 * @return <BMCollectionViewMasonryLayout>		A masonry layout.
+	 */
+	createMasonryLayout(): BMCollectionViewMasonryLayout {
+		var layout = new BMCollectionViewMasonryLayout();
+		
+		var speeds = this.getProperty('MasonryLayoutColumnSpeeds').split(',');
+		
+		for (var i = 0; i < speeds.length; i++) {
+			speeds[i] = parseFloat(speeds[i].trim());
+		}
+		
+		layout.columnSpeeds = speeds;
+		layout.numberOfColumns = this.getProperty('MasonryLayoutNumberOfColumns');
+		layout.minimumColumnWidth = this.getProperty('MasonryLayoutColumnWidth');
+		layout.columnSpacing = this.getProperty('MasonryLayoutColumnSpacing');
+		layout.cellSpacing = this.getProperty('MasonryLayoutCellSpacing');
+		
+		layout.topPadding = this.getProperty('MasonryLayoutTopPadding');
+		layout.bottomPadding = this.getProperty('MasonryLayoutBottomPadding');
+		
+		return layout;
+	};
+	
+	/**
+	 * Constructs and configures a table layout based on this widget's property vlaues.
+	 * @return <BMCollectionViewTableLayout>		A table layout.
+	 */
+	createTableLayout(): BMCollectionViewTableLayout {
+		var layout = new BMCollectionViewTableLayout();
+		layout.rowHeight = this.getProperty('CellHeight');
+		
+		if (this.getProperty('SectionField')) {
+		
+			layout.showsHeaders = this.getProperty('ShowsHeaders');
+			layout.headerHeight = this.getProperty('HeaderHeight');
+			
+			layout.showsFooters = this.getProperty('ShowsFooters');
+			layout.footerHeight = this.getProperty('FooterHeight');
+			
+			layout.pinsHeadersToContentEdge = this.getProperty('TableLayoutPinsHeadersToContentEdge', NO);
+			layout.pinsFootersToContentEdge = this.getProperty('TableLayoutPinsFootersToContentEdge', NO);
+			
+		}
+			
+		layout.sectionInsets = BMInsetMake(this.getProperty('SectionInsetLeft') | 0, 
+											this.getProperty('SectionInsetTop') | 0, 
+											this.getProperty('SectionInsetRight') | 0, 
+											this.getProperty('SectionInsetBottom') | 0
+		);
+		
+		return layout;
+	};
+	
+	/**
+	 * Constructs and configures a stack layout based on this widget's property vlaues.
+	 * @return <BMCollectionViewStackLayout>		A stack layout.
+	 */
+	createStackLayout(): BMCollectionViewStackLayout {
+		var layout = new BMCollectionViewStackLayout();
+
+		layout.insets = BMInsetMake(this.getProperty('StackLayoutInsetLeft'), 
+			this.getProperty('StackLayoutInsetTop'), 
+			this.getProperty('StackLayoutInsetRight'), 
+			this.getProperty('StackLayoutInsetBottom')
+		);
+
+		layout.spread = this.getProperty('StackLayoutSpread');
+		layout.numberOfBackgroundCells = this.getProperty('StackLayoutNumberOfBackgroundCells');
+		layout.minimumScale = this.getProperty('StackLayoutMinimumScale');
+		layout.blursBackgroundCells = this.getProperty('StackLayoutBlursBackgroundCells');
+		layout.maximumBlur = this.getProperty('StackLayoutMaximumBlur');
+		layout.showsSingleCell = this.getProperty('StackLayoutShowsSingleCell');
+
+		
+		return layout;
+	};
+	
+	/**
+	 * Constructs and configures a tile layout based on this widget's property vlaues.
+	 * @return <BMCollectionViewTileLayout>		A tile layout.
+	 */
+	createTileLayout(): BMCollectionViewTileLayout {
+		var layout = new BMCollectionViewTileLayout();
+
+		layout.gridSize = this.getProperty('TileLayoutGridSize');
+		layout.spacing = this.getProperty('TileLayoutSpacing');
+
+		layout.topPadding = this.getProperty('TileLayoutTopPadding');
+		layout.bottomPadding = this.getProperty('TileLayoutBottomPadding');
+		
+		if (this.getProperty('SectionField')) {
+		
+			layout.showsHeaders = this.getProperty('ShowsHeaders');
+			layout.headerHeight = this.getProperty('HeaderHeight');
+			
+			layout.showsFooters = this.getProperty('ShowsFooters');
+			layout.footerHeight = this.getProperty('FooterHeight');
+			
+			layout.pinsHeadersToContentEdge = this.getProperty('TileLayoutPinsHeadersToContentEdge', NO);
+			layout.pinsFootersToContentEdge = this.getProperty('TileLayoutPinsFootersToContentEdge', NO);
+			
+		}
+			
+		layout.sectionInsets = BMInsetMake(this.getProperty('SectionInsetLeft') | 0, 
+											this.getProperty('SectionInsetTop') | 0, 
+											this.getProperty('SectionInsetRight') | 0, 
+											this.getProperty('SectionInsetBottom') | 0
+		);
+		
+		return layout;
+	};
+	
+	/**
+	 * Constructs and returns a layout object based on this widget's property values.
+	 * @return <BMCollectionViewLayout>		A layout.
+	 */
+	createLayout(): BMCollectionViewLayout {
+		var layout = this.getProperty('Layout');
+		if (layout == 'table') {
+			return this.createTableLayout();
+		}
+		else if (layout == 'flow') {
+			return this.createFlowLayout();
+		}
+		else if (layout == 'masonry') {
+			return this.createMasonryLayout();
+		}
+		else if (layout == 'stack') {
+			return this.createStackLayout();
+		}
+		else if (layout == 'tile') {
+			return this.createTileLayout();
+		}
+	}
+
+    // #endregion
+
+    // #region Widget definition
+
+    widgetIconUrl(): string {
+        return require('./images/ComposerIcon@2x.png');
+    }
+
+    widgetProperties(): BMCollectionViewWidgetProperties {
+        require("./styles/ide.css");
+        let properties: BMCollectionViewWidgetProperties = {
+			name: 'Collection View',
+			description: 'A widget that manages a list of view elements, efficiently adding and removing them from view based on the current scroll position.',
+			icon: 'BMCollectionView.ide.png',
+			category: ['Common'],
+			supportsAutoResize: YES,
+			needsDataLoadingAndError: NO,
+			properties: {
+				// ******************************************** STANDARD PROPERTIES ********************************************
+				Width: {
+                    defaultValue: 480,
+                    baseType: 'NUMBER'
+				},
+				Height: {
+                    defaultValue: 640,
+                    baseType: 'NUMBER'
+				},
+				Show: {
+					baseType: 'STRING',
+					defaultValue: 'all',
+					description: 'Controls which property category to show.',
+					selectOptions: [
+						{text: 'All', value: 'all'},
+						{text: 'Data Configuration', value: 'data'},
+						{text: 'Layout', value: 'layout'},
+						{text: 'Table Layout', value: 'table'},
+						{text: 'Flow Layout', value: 'flow'},
+						{text: 'Masonry Layout', value: 'masonry'},
+						{text: 'Stack Layout', value: 'stack'},
+						{text: 'Tile Layout', value: 'tile'},
+						{text: 'Cell Configuration', value: 'cell'},
+						{text: 'Selection', value: 'selection'},
+						{text: 'Styles', value: 'styles'},
+						{text: 'Scrollbar', value: 'scrollbar'},
+						{text: 'Menu', value: 'menu'},
+						{text: 'Data Manipulation', value: 'manipulation'},
+						{text: 'Performance', value: 'performance'}
+					],
+				},
+				
+				
+				
+				// ******************************************** DATA SET PROPERTIES ********************************************
+				Data: {
+					baseType: 'INFOTABLE',
+					isBindingTarget: YES,
+					isBindingSource: YES,
+					description: 'Represents the data source of this collection view. Whenever the data is updated, either through drag & drop, deleting, inserting or modifying mashup parameters, this property will contain the updated data.',
+					_BMSection: 'Data',
+					_BMCategories: ['all', 'data']
+				},
+				UIDField: {
+					baseType: 'FIELDNAME',
+					sourcePropertyName: 'Data',
+					description: 'Represents the unique identifier of a collection view item. This can be any type of field that uniquely identifies an item.',
+					_BMSection: 'Data',
+					_BMFriendlyName: 'Unique Identifier Field',
+					_BMCategories: ['all', 'data']
+				},
+				SortField: {
+					baseType: 'FIELDNAME',
+					sourcePropertyName: 'Data',
+					description: 'Optional. When set or bound, this is the infotable field by which section contents are sorted. The sorting is performed client-side and does not affect the source infotable or other widgets bound to the data set.',
+					isBindingTarget: YES,
+					_BMSection: 'Data',
+					_BMFriendlyName: 'Sort Field',
+					_BMCategories: ['all', 'data']
+				},
+				SortAscending: {
+					baseType: 'BOOLEAN',
+					defaultValue: NO,
+					isBindingTarget: YES,
+					description: 'Used with SortField. When enabled, the sort will be performed ascending, otherwise it will be descending.',
+					_BMCategories: ['all', 'data']
+				},
+				SectionField: {
+					baseType: 'FIELDNAME',
+					sourcePropertyName: 'Data',
+					description: 'Optional. Represents the section identifier by which to group the items. If set, the items will be grouped in sections.'	,
+					_BMSection: 'Layout Type',
+					_BMFriendlyName: 'Section Field',
+					_BMCategories: ['all', 'data']
+				},
+				// NOTE: Filters are currently unsupported
+				/*Filter: {
+					baseType: 'QUERY',
+					description: 'Optional. When set or bound, this will filter the data set client-side. The filter will only affect this collection view, and not other widgets bound to the same data set.',
+					isBindingTarget: YES
+				},
+				FilteredData: {
+					baseType: 'INFOTABLE',
+					isBindingSource: YES,
+					description: 'When using a filter, this is the filtered infotable.'	
+				},*/
+				
+				
+				// ******************************************** LAYOUT TYPE PROPERTIES ********************************************
+				/*SectionInsets: {
+					baseType: 'STRING',
+					defaultValue: '0, 0, 0, 0',
+					description: 'If using sections, this represents the left, top, right and bottom paddings that each section will have from eachother and the edge.',
+					_BMSection: 'Layout Type',
+					_BMFriendlyName: 'Section Insets'
+				},*/
+				Layout: {
+					baseType: 'STRING',
+					defaultValue: 'flow',
+					description: 'The type of layout to use.',
+					selectOptions: [
+						{text: 'Table', value: 'table'},
+						{text: 'Flow', value: 'flow'},
+						{text: 'Masonry', value: 'masonry'},
+						{text: 'Stack', value: 'stack'},
+						{text: 'Tile', value: 'tile'}
+					],
+					isBindingTarget: true,
+					_BMSection: 'Layout Type',
+					_BMFriendlyName: 'Layout',
+					_BMCategories: ['all', 'layout']
+				},
+				SectionInsetLeft: {
+					baseType: 'NUMBER',
+					defaultValue: 0,
+					description: 'If using sections, this represents the left section inset',
+					_BMCategories: ['all', 'table', 'flow']
+				},
+				SectionInsetTop: {
+					baseType: 'NUMBER',
+					defaultValue: 0,
+					description: 'If using sections, this represents the left section inset',
+					_BMCategories: ['all', 'table', 'flow']
+				},
+				SectionInsetRight: {
+					baseType: 'NUMBER',
+					defaultValue: 0,
+					description: 'If using sections, this represents the left section inset',
+					_BMCategories: ['all', 'table', 'flow']
+				},
+				SectionInsetBottom: {
+					baseType: 'NUMBER',
+					defaultValue: 0,
+					description: 'If using sections, this represents the left section inset',
+					_BMCategories: ['all', 'table', 'flow']
+				},
+				
+				
+				
+				// ******************************************** TABLE LAYOUT PROPERTIES ********************************************
+				TableLayoutPinsHeadersToContentEdge: {
+					baseType: 'BOOLEAN',
+					defaultValue: false,
+					description: 'Must be used with Table layout. If enabled, the currently visible section\'s header will be stuck to the top edge of the collection view.',
+					_BMSection: 'Table Layout',
+					_BMFriendlyName: 'Pin Headers',
+					_BMCategories: ['all', 'table']
+				},
+				TableLayoutPinsFootersToContentEdge: {
+					baseType: 'BOOLEAN',
+					defaultValue: false,
+					description: 'Must be used with Table layout. If enabled, the currently visible section\'s footer will be stuck to the bottom edge of the collection view.',
+					_BMSection: 'Table Layout',
+					_BMFriendlyName: 'Pin Footers',
+					_BMCategories: ['all', 'table']
+				},
+				
+				
+				
+				// ******************************************** FLOW LAYOUT PROPERTIES ********************************************
+				FlowLayoutLeftAlignFinalRow: {
+					baseType: 'BOOLEAN',
+					defaultValue: false,
+					description: 'Must be used with Flow layout. If enabled, the final row in each section will be aligned to the left rather than the center.',
+					_BMSection: 'Flow Layout',
+					_BMFriendlyName: 'Left align final row',
+					_BMCategories: ['all', 'flow']
+				},
+				FlowLayoutGravity: {
+					baseType: 'STRING',
+					defaultValue: 'Spaced',
+					description: 'Must be used with Flow layout. Controls how cells will flow in their row.',
+					selectOptions: [
+						{text: 'Edge', value: 'Edge'},
+						{text: 'Spaced', value: 'Spaced'},
+						{text: 'Center', value: 'Center'},
+						{text: 'Expand', value: 'Expand'}
+					],
+					_BMSection: 'Flow Layout',
+					_BMFriendlyName: 'Gravity',
+					_BMCategories: ['all', 'flow']
+				},
+				FlowLayoutAlignment: {
+					baseType: 'STRING',
+					defaultValue: 'Center',
+					description: 'Must be used with Flow layout. Controls how cells will be aligned vertically in their row.',
+					selectOptions: [
+						{text: 'Top', value: 'Top'},
+						{text: 'Center', value: 'Center'},
+						{text: 'Bottom', value: 'Bottom'},
+						{text: 'Expand', value: 'Expand'}
+					],
+					_BMSection: 'Flow Layout',
+					_BMFriendlyName: 'Gravity',
+					_BMCategories: ['all', 'flow']
+				},
+				FlowLayoutContentGravity: {
+					baseType: 'STRING',
+					defaultValue: 'Center',
+					description: 'Must be used with Flow layout. Controls how content is aligned vertically within the collection view when its size is smaller than the collection view.',
+					selectOptions: [
+						{text: 'Top', value: 'Top'},
+						{text: 'Center', value: 'Center'},
+						{text: 'Bottom', value: 'Bottom'}
+					],
+					_BMSection: 'Flow Layout',
+					_BMFriendlyName: 'Gravity',
+					_BMCategories: ['all', 'flow']
+				},
+				FlowLayoutRowSpacing: {
+					baseType: 'INTEGER',
+					defaultValue: 44,
+					description: 'Must be used with Flow layout. Controls the spacing between headers, rows and footers.',
+					_BMSection: 'Flow Layout',
+					_BMFriendlyName: 'Row spacing',
+					_BMCategories: ['all', 'flow']
+				},
+				FlowLayoutMinimumSpacing: {
+					baseType: 'INTEGER',
+					defaultValue: 0,
+					description: 'Must be used with Flow layout. Controls the minimum amount of horizontal spacing between the cells.',
+					_BMSection: 'Flow Layout',
+					_BMFriendlyName: 'Row spacing',
+					_BMCategories: ['all', 'flow']
+				},
+				FlowLayoutTopPadding: {
+					baseType: 'INTEGER',
+					defaultValue: 22,
+					description: 'Must be used with Flow layout. Controls the padding the collection view\'s top margin and the first item.',
+					_BMSection: 'Flow Layout',
+					_BMFriendlyName: 'Top padding',
+					_BMCategories: ['all', 'flow']
+				},
+				FlowLayoutBottomPadding: {
+					baseType: 'INTEGER',
+					defaultValue: 22,
+					description: 'Must be used with Flow layout. Controls the padding the collection view\'s bottom margin and the last item.',
+					_BMSection: 'Flow Layout',
+					_BMFriendlyName: 'Bottom padding',
+					_BMCategories: ['all', 'flow']
+				},
+				FlowLayoutPinsHeadersToContentEdge: {
+					baseType: 'BOOLEAN',
+					defaultValue: false,
+					description: 'Must be used with Flow layout. If enabled, the currently visible section\'s header will be stuck to the top edge of the collection view.',
+					_BMSection: 'Table Layout',
+					_BMFriendlyName: 'Pin Headers',
+					_BMCategories: ['all', 'flow']
+				},
+				FlowLayoutPinsFootersToContentEdge: {
+					baseType: 'BOOLEAN',
+					defaultValue: false,
+					description: 'Must be used with Flow layout. If enabled, the currently visible section\'s footer will be stuck to the bottom edge of the collection view.',
+					_BMSection: 'Table Layout',
+					_BMFriendlyName: 'Pin Footers',
+					_BMCategories: ['all', 'flow']
+				},
+				
+				
+				
+				// ******************************************** MASONRY LAYOUT PROPERTIES ********************************************
+				MasonryLayoutNumberOfColumns: {
+					baseType: 'INTEGER',
+					defaultValue: 5,
+					description: 'Must be used with Masonry layout. If set to a number greater than 0, this is the number of columns the masonry layout will render.',
+					_BMSection: 'Masonry Layout',
+					_BMFriendlyName: 'Number of columns',
+					_BMCategories: ['all', 'masonry']
+				},
+				MasonryLayoutColumnWidth: {
+					baseType: 'INTEGER',
+					defaultValue: 0,
+					description: 'Must be used with Masonry layout. If the number of columns isn\'t specified, this is the minimum width to use for each column.',
+					_BMSection: 'Masonry Layout',
+					_BMFriendlyName: 'Column width',
+					_BMCategories: ['all', 'masonry']
+				},
+				MasonryLayoutColumnSpeeds: {
+					baseType: 'STRING',
+					defaultValue: '1, 2, 0.5, 1, 2, 0.5',
+					description: 'Must be used with Masonry layout. This is the scrolling speed modifier for each column.',
+					_BMSection: 'Masonry Layout',
+					_BMFriendlyName: 'Column speeds',
+					_BMCategories: ['all', 'masonry']
+				},
+				MasonryLayoutColumnSpacing: {
+					baseType: 'INTEGER',
+					defaultValue: 22,
+					description: 'Must be used with Masonry layout. Controls the horizontal spacing between columns.',
+					_BMSection: 'Masonry Layout',
+					_BMFriendlyName: 'Column spacing',
+					_BMCategories: ['all', 'masonry']
+				},
+				MasonryLayoutCellSpacing: {
+					baseType: 'INTEGER',
+					defaultValue: 22,
+					description: 'Must be used with Masonry layout. Controls the vertical spacing between cells.',
+					_BMSection: 'Masonry Layout',
+					_BMFriendlyName: 'Cell spacing',
+					_BMCategories: ['all', 'masonry']
+				},
+				MasonryLayoutTopPadding: {
+					baseType: 'INTEGER',
+					defaultValue: 22,
+					description: 'Must be used with Masonry layout. Controls the padding the collection view\'s top margin and the first item.',
+					_BMSection: 'Masonry Layout',
+					_BMFriendlyName: 'Top padding',
+					_BMCategories: ['all', 'masonry']
+				},
+				MasonryLayoutBottomPadding: {
+					baseType: 'INTEGER',
+					defaultValue: 22,
+					description: 'Must be used with Masonry layout. Controls the padding the collection view\'s bottom margin and the last item.',
+					_BMSection: 'Masonry Layout',
+					_BMFriendlyName: 'Bottom padding',
+					_BMCategories: ['all', 'masonry']
+				},
+				
+				
+				
+				// ******************************************** TILE LAYOUT PROPERTIES ********************************************
+				TileLayoutGridSize: {
+					baseType: 'NUMBER',
+					defaultValue: 256,
+					description: 'Must be used with Tile layout. If set to a positive number, cell sizes will be constrained to the closest multiple of this number.',
+					_BMSection: 'Tile Layout',
+					_BMFriendlyName: 'Grid Size',
+					_BMCategories: ['all', 'tile']
+				},
+				TileLayoutSpacing: {
+					baseType: 'NUMBER',
+					defaultValue: 32,
+					description: 'Must be used with Tile layout. If set to a positive number, cells will have at least this amount spacing between them and all other cells.',
+					_BMSection: 'Tile Layout',
+					_BMFriendlyName: 'Spacing',
+					_BMCategories: ['all', 'tile']
+				},
+				TileLayoutTopPadding: {
+					baseType: 'INTEGER',
+					defaultValue: 22,
+					description: 'Must be used with Tile layout. Controls the padding the collection view\'s top margin and the first item.',
+					_BMSection: 'Flow Layout',
+					_BMFriendlyName: 'Top padding',
+					_BMCategories: ['all', 'tile']
+				},
+				TileLayoutBottomPadding: {
+					baseType: 'INTEGER',
+					defaultValue: 22,
+					description: 'Must be used with Tile layout. Controls the padding the collection view\'s bottom margin and the last item.',
+					_BMSection: 'Flow Layout',
+					_BMFriendlyName: 'Bottom padding',
+					_BMCategories: ['all', 'tile']
+				},
+				TileLayoutPinsHeadersToContentEdge: {
+					baseType: 'BOOLEAN',
+					defaultValue: false,
+					description: 'Must be used with Tile layout. If enabled, the currently visible section\'s header will be stuck to the top edge of the collection view.',
+					_BMSection: 'Table Layout',
+					_BMFriendlyName: 'Pin Headers',
+					_BMCategories: ['all', 'tile']
+				},
+				TileLayoutPinsFootersToContentEdge: {
+					baseType: 'BOOLEAN',
+					defaultValue: false,
+					description: 'Must be used with Tile layout. If enabled, the currently visible section\'s footer will be stuck to the bottom edge of the collection view.',
+					_BMSection: 'Table Layout',
+					_BMFriendlyName: 'Pin Footers',
+					_BMCategories: ['all', 'tile']
+				},
+				
+				
+				// ******************************************** STACK LAYOUT PROPERTIES ********************************************
+				StackLayoutShowsSingleCell: {
+					baseType: 'BOOLEAN',
+					defaultValue: NO,
+					description: 'If enabled, stack layout will only show the first cell.',
+					_BMCategories: ['all', 'stack']
+				},
+				StackLayoutInsetLeft: {
+					baseType: 'NUMBER',
+					defaultValue: 0,
+					description: 'The left inset used by stack layout.',
+					_BMCategories: ['all', 'stack']
+				},
+				StackLayoutInsetTop: {
+					baseType: 'NUMBER',
+					defaultValue: 0,
+					description: 'The top inset used by stack layout.',
+					_BMCategories: ['all', 'stack']
+				},
+				StackLayoutInsetRight: {
+					baseType: 'NUMBER',
+					defaultValue: 0,
+					description: 'The right inset used by stack layout.',
+					_BMCategories: ['all', 'stack']
+				},
+				StackLayoutInsetBottom: {
+					baseType: 'NUMBER',
+					defaultValue: 0,
+					description: 'The bottom inset used by stack layout.',
+					_BMCategories: ['all', 'stack']
+				},
+				StackLayoutSpread: {
+					baseType: 'NUMBER',
+					defaultValue: 22,
+					description: 'Controls the spacing between background cells.',
+					_BMCategories: ['all', 'stack']
+				},
+				StackLayoutNumberOfBackgroundCells: {
+					baseType: 'NUMBER',
+					defaultValue: 3,
+					description: 'Controls how many background cells will be shown.',
+					_BMCategories: ['all', 'stack']
+				},
+				StackLayoutMinimumScale: {
+					baseType: 'NUMBER',
+					defaultValue: .9,
+					description: 'Controls how much the background cells will scale down before disappearing.',
+					_BMCategories: ['all', 'stack']
+				},
+				StackLayoutBlursBackgroundCells: {
+					baseType: 'BOOLEAN',
+					defaultValue: YES,
+					description: 'Controls whether the background cells will become blurred as they disappear.',
+					_BMCategories: ['all', 'stack']
+				},
+				StackLayoutMaximumBlur: {
+					baseType: 'NUMBER',
+					defaultValue: 8,
+					description: 'Controls how much the background cells will blur before disappearing.',
+					_BMCategories: ['all', 'stack']
+				},
+				
+				// ******************************************** CELL PROPERTIES ********************************************
+				CellMashupName: {
+					baseType: 'MASHUPNAME',
+					description: 'The mashup to use for data items.',
+					_BMSection: 'Cells',
+					_BMFriendlyName: 'Mashup name',
+					_BMCategories: ['all', 'cell']
+				},
+				CellMashupNameField: {
+					baseType: 'FIELDNAME',
+					sourcePropertyName: 'Data',
+					description: 'The field containing the mashup to use for data items. When this property is set, CellMashupName, CellMashupNameSelected and CellMashupName editing cannot be used.',
+					_BMCategories: ['all', 'cell']
+				},
+				CellMashupPropertyBinding: {
+					baseType: 'STRING',
+					defaultValue: '{}',
+					description: 'A serialized JSON object that has infotable fields as its keys and mashup parameters as values.',
+					_BMSection: 'Cells',
+					_BMFriendlyName: 'Mashup property binding',
+					_BMCategories: ['all', 'cell']
+				},
+				CellMashupGlobalPropertyBinding: {
+					baseType: 'STRING',
+					defaultValue: '{}',
+					description: 'A serialized JSON object that has global parameter names as its keys and data types as values. These are properties that may be bound on the collection view and will be sent down to each cell mashup.',
+					_BMSection: 'Cells',
+					_BMFriendlyName: 'Mashup global property binding',
+					_BMCategories: ['all', 'cell']
+				},
+				CellWidth: {
+					baseType: 'INTEGER',
+					defaultValue: 44,
+					description: 'Must be used with Flow layout. The default width to use for the collection view cells.',
+					_BMSection: 'Cells',
+					_BMFriendlyName: 'Cell width',
+					_BMCategories: ['all', 'flow', 'cell', 'tile']
+				},
+				CellHeight: {
+					baseType: 'INTEGER',
+					defaultValue: 44,
+					description: 'Must be used with Flow or Table layout. The default height to use for the collection view cells.',
+					_BMSection: 'Cells',
+					_BMFriendlyName: 'Cell height',
+					_BMCategories: ['all', 'table', 'flow', 'cell', 'tile']
+				},
+				CellWidthField: {
+					baseType: 'FIELDNAME',
+					sourcePropertyName: 'Data',
+					description: 'When set, has priority over CellWidth. Must be used with Flow layout. The default width to use for the collection view cells.',
+					_BMSection: 'Cells',
+					_BMFriendlyName: 'Cell width',
+					_BMCategories: ['all', 'flow', 'cell', 'tile']
+				},
+				CellHeightField: {
+					baseType: 'FIELDNAME',
+					sourcePropertyName: 'Data',
+					description: 'When set, has priority over CellHeight. Must be used with Flow or Table layout. The default height to use for the collection view cells.',
+					_BMSection: 'Cells',
+					_BMFriendlyName: 'Cell height',
+					_BMCategories: ['all', 'table', 'flow', 'cell', 'tile']
+				},
+				CellMashupHasIntrinsicSize: {
+					baseType: 'BOOLEAN',
+					defaultValue: NO,
+					description: 'Must be used with CellMashupNameField and static cell mashups. When this property is enabled, the collection view will use each mashup type\'s size as the cell size.',
+					_BMCategories: ['all', 'table', 'flow', 'cell', 'tile']
+				},
+				
+				
+				
+				// ******************************************** SELECTION PROPERTIES ********************************************
+				CanSelectCells: {
+					baseType: 'BOOLEAN',
+					defaultValue: true,
+					description: 'If enabled, cells can be selected, otherwise cells will be unselectable by this collection view.',
+					_BMSection: 'Selection',
+					_BMFriendlyName: 'Cell selection',
+					_BMCategories: ['all', 'selection']
+				},
+				/*CanSelectMultipleCells: {
+					baseType: 'BOOLEAN',
+					defaultValue: true,
+					description: 'If enabled, more than one cell can be selected at a time.',
+					_BMSection: 'Selection',
+					_BMFriendlyName: 'Multi-selection'
+				},*/
+				CellMultipleSelectionType: {
+					baseType: 'STRING',
+					defaultValue: 'Disabled',
+					description: 'Controls the multiple selection behaviour.',
+					selectOptions: [
+						{text: 'Disabled', value: 'Disabled'},
+						{text: 'Click/Tap', value: 'ClickTap'},
+						{text: 'Selection Mode', value: 'SelectionMode'},
+						{text: 'Ctrl+Click', value: 'CtrlClick'}
+					],
+					_BMCategories: ['all', 'selection']
+				},
+				CellMultipleSelectionModeEnabled: {
+					baseType: 'BOOLEAN',
+					defaultValue: NO,
+					isBindingSource: YES,
+					isEditable: NO,
+					description: 'Will be set to true whenever the multiple selection mode is active.',
+					_BMCategories: ['all', 'selection']
+				},
+				HasSelectedCells: {
+					baseType: 'BOOLEAN',
+					isEditable: NO,
+					description: 'Will be set to true whenever there is at least one selected cell in this collection view.',
+					isBindingSource: YES,
+					defaultValue: NO	,
+					_BMCategories: ['all', 'selection']
+				},
+				SelectedCellsCount: {
+					baseType: 'INTEGER',
+					isEditable: NO,
+					description: 'Contains the number of selected cells in the collection view.',
+					isBindingSource: YES,
+					defaultValue: 0,
+					_BMCategories: ['all', 'selection']
+				},
+				ScrollsToSelectedCell: {
+					baseType: 'BOOLEAN',
+					description: 'When enabled, whenever any other widget changes the selection, the collection view will automatically scroll to the first selected cell.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'selection']
+				},
+				AutoSelectsFirstCell: {
+					baseType: 'BOOLEAN',
+					description: 'When enabled, when data is updated and no cell is selected, the collection view will automatically select the first available cell.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'selection']
+				},
+				CellMashupSelectedField: {
+					baseType: 'STRING',
+					defaultValue: '',
+					description: 'Optional. If specified, this represents the mashup parameter that will receive the selected state of the object it is bound to.',
+					_BMSection: 'Cells',
+					_BMFriendlyName: 'Mashup selected parameter',
+					_BMCategories: ['all', 'cell', 'selection']
+				},
+				
+				
+				
+				// ******************************************** STYLE PROPERTIES ********************************************
+				BackgroundStyle: {
+					baseType: 'STYLEDEFINITION',
+					description: 'Controls the background of collection view. Only the backround color property of the style is used.',
+					_BMSection: 'Styles',
+					_BMFriendlyName: 'Background style',
+					_BMCategories: ['all', 'styles']
+				},
+				CellStyle: {
+					baseType: 'STYLEDEFINITION',
+					description: 'Controls the background of cells. Only the backround color property of the style is used.',
+					_BMSection: 'Styles',
+					_BMFriendlyName: 'Background style',
+					_BMCategories: ['all', 'styles']
+				},
+				CellStyleSelected: {
+					baseType: 'STYLEDEFINITION',
+					description: 'Controls the background of the selected cells. Only the backround color property of the style is used.',
+					_BMSection: 'Styles',
+					_BMFriendlyName: 'Selected style',
+					_BMCategories: ['all', 'styles']
+				},
+				CellMashupNameSelected: {
+					baseType: 'MASHUPNAME',
+					description: 'If specified, has priority over CellStyleSelected. An alternative mashup to use for selected cells. This mashup should have the same properties as the cell mashup.',
+					_BMSection: 'Styles',
+					_BMFriendlyName: 'Selected Mashup name',
+					_BMCategories: ['all', 'styles']
+				},
+				CellStyleHover: {
+					baseType: 'STYLEDEFINITION',
+					description: 'Controls the background of the cells when hovering. Only the background color property of the style is used.',
+					_BMSection: 'Styles',
+					_BMFriendlyName: 'Hover style',
+					_BMCategories: ['all', 'styles']
+				},
+				CellStyleActive: {
+					baseType: 'STYLEDEFINITION',
+					description: 'Controls the background of the cells when pressed. Only the background color property of the style is used.',
+					_BMSection: 'Cells',
+					_BMFriendlyName: 'Active style',
+					_BMCategories: ['all', 'styles']
+				},
+				CellBorderRadius: {
+					baseType: 'STRING',
+					description: 'An optional border radius to apply to the cells. When this value is set to a non-empty string, the cells will have their overflow property set to hidden.',
+					defaultValue: 0,
+					_BMSection: 'Styles',
+					_BMFriendlyName: 'Border radius',
+					_BMCategories: ['all', 'styles']
+				},
+				CellBoxShadow: {
+					baseType: 'STRING',
+					description: 'When set to a non-empty string, this will be used as the box-shadow for the cells.',
+					defaultValue: '',
+					_BMSection: 'Styles',
+					_BMFriendlyName: 'Box shadow',
+					_BMCategories: ['all', 'styles']
+				},
+				CellPointer: {
+					baseType: 'STRING',
+					description: 'Controls how the mouse pointer appears when hovering over this collection view\'s cells.',
+					selectOptions: [
+						{text: 'Auto', value: 'auto'},
+						{text: 'Hand', value: 'pointer'},
+						{text: 'Arrow', value: 'default'}
+					],
+					defaultValue: 'Auto',
+					_BMCategories: ['all', 'styles']
+				},
+				UsesRipple: {
+					baseType: 'BOOLEAN',
+					defaultValue: false,
+					description: 'If enabled, a ripple effect is used when clicking on cells. Using this option will cause the cells to have their overflow property set to hidden.',
+					_BMSection: 'Styles',
+					_BMFriendlyName: 'Ripple',
+					_BMCategories: ['all', 'styles']
+				},
+				RippleStyle: {
+					baseType: 'STYLEDEFINITION',
+					description: 'Must be used with UsesRipple. Only the background color property of this style is used, which will be applied to the ripple effect.',
+					_BMSection: 'Styles',
+					_BMFriendlyName: 'Ripple style',
+					_BMCategories: ['all', 'styles']
+				},
+				
+				
+				
+				// ******************************************** SCROLLBAR PROPERTIES ********************************************
+				ScrollbarStyle: {
+					baseType: 'STYLEDEFINITION',
+					description: 'The style to use for the scrollbar.',
+					_BMSection: 'Scrollbar',
+					_BMFriendlyName: 'Scrollbar Style',
+					_BMCategories: ['all', 'styles', 'scrollbar']
+				},
+				ScrollbarTrackStyle: {
+					baseType: 'STYLEDEFINITION',
+					description: 'Only used if you have also set a scrollbar style. The style to use for the scrollbar track.',
+					_BMSection: 'Scrollbar',
+					_BMFriendlyName: 'Scrollbar Style',
+					_BMCategories: ['all', 'styles', 'scrollbar']
+				},
+				ScrollbarBorderRadius: {
+					baseType: 'NUMBER',
+					description: 'Only used if you have also set a scrollbar style. The border radius to apply to the scrollbar, in pixels.',
+					defaultValue: 6,
+					_BMSection: 'Scrollbar',
+					_BMFriendlyName: 'Scrollbar Width',
+					_BMCategories: ['all', 'styles', 'scrollbar']
+				},
+				ScrollbarWidth: {
+					baseType: 'NUMBER',
+					description: 'Only used if you have also set a scrollbar style. The width of the scrollbar, in pixels.',
+					defaultValue: 12,
+					_BMSection: 'Scrollbar',
+					_BMFriendlyName: 'Scrollbar Width',
+					_BMCategories: ['all', 'styles', 'scrollbar']
+				},
+				
+				
+				
+				// ******************************************** MENU PROPERTIES ********************************************
+				CellSlideMenu: {
+					baseType: 'STATEDEFINITION',
+					description: 'If set to a string-based state definition, this will be the cell menu that appears when sliding over the cells. On devices without a touch interface, this menu can be displayed by right-clicking on the cells.',
+					_BMSection: 'Menu',
+					_BMFriendlyName: 'Slide menu definition',
+					_BMCategories: ['all', 'menu']
+				},
+				CellSlideMenuUseBuiltin: {
+					baseType: 'BOOLEAN',
+					defaultValue: YES,
+					description: 'If disabled, the default menu invoking behaviours will be disabled.',
+					_BMCategories: ['all', 'menu']
+				},
+				CellSlideMenuIconSize: {
+					baseType: 'INTEGER',
+					description: 'Must be used with CellSlideMenu. The menu icons will be set to this size.',
+					defaultValue: 16,
+					_BMSection: 'Menu',
+					_BMFriendlyName: 'Icon size',
+					_BMCategories: ['all', 'menu']
+				},
+				CellSlideMenuIconGravity: {
+					baseType: 'STRING',
+					description: 'Must be used with CellSlideMenu. Controls how the icon is anchored to the text in the menu entry.',
+					selectOptions: [
+						{text: 'Left', value: 'Left'},
+						{text: 'Above', value: 'Above'},
+						{text: 'Right', value: 'Right'},
+						{text: 'Below', value: 'Below'}
+					],
+					defaultValue: 'Left',
+					_BMSection: 'Menu',
+					_BMFriendlyName: 'Icon gravity',
+					_BMCategories: ['all', 'menu']
+				},
+				CellSlideMenuOrientation: {
+					baseType: 'STRING',
+					description: 'Must be used with CellSlideMenu. Controls how the menu entries are laid out.',
+					selectOptions: [
+						{text: 'Horizontal', value: 'Horizontal'},
+						{text: 'Vertical', value: 'Vertical'}
+					],
+					defaultValue: 'Horizontal',
+					_BMSection: 'Menu',
+					_BMFriendlyName: 'Orientation',
+					_BMCategories: ['all', 'menu']
+				},
+				// NOTE: CellSlideMenuType is not yet implemented
+				/*CellSlideMenuType: {
+					baseType: 'STRING',
+					description: 'Must be used with CellSlideMenu. Controls how the slide menu appears.',
+					selectOptions: [
+						{text: 'Auto', value: 'Auto'},
+						{text: 'Slide', value: 'Slide'},
+						{text: 'Popover', value: 'Popover'}
+					],
+					defaultValue: 'Auto'
+				},*/
+				
+				
+				
+				// ******************************************** HEADER PROPERTIES ********************************************
+				ShowsHeaders: {
+					baseType: 'BOOLEAN',
+					defaultValue: false,
+					description: 'If enabled and using sections, each section will have a header.',
+					_BMSection: 'Header',
+					_BMFriendlyName: 'Headers',
+					_BMCategories: ['all', 'table', 'flow', 'tile']
+				},
+				HeaderMashupName: {
+					baseType: 'MASHUPNAME',
+					description: 'Must be used with SectionField and ShowsHeaders. The mashup to use for headers.',
+					_BMSection: 'Header',
+					_BMFriendlyName: 'Header Mashup name',
+					_BMCategories: ['all', 'table', 'flow', 'tile']
+				},
+				HeaderMashupSectionProperty: {
+					baseType: 'STRING',
+					defaultValue: '',
+					description: 'The mashup parameter that will receive the section identifier.',
+					_BMSection: 'Header',
+					_BMFriendlyName: 'Section parameter',
+					_BMCategories: ['all', 'table', 'flow', 'tile']
+				},
+				HeaderHeight: {
+					baseType: 'INTEGER',
+					defaultValue: 44,
+					description: 'Must be used with SectionField and ShowsHeaders. The height of the header mashups.',
+					_BMSection: 'Header',
+					_BMFriendlyName: 'Height',
+					_BMCategories: ['all', 'table', 'flow', 'tile']
+				},
+				
+				
+				
+				// ******************************************** FOOTER PROPERTIES ********************************************
+				ShowsFooters: {
+					baseType: 'BOOLEAN',
+					defaultValue: false,
+					description: 'If enabled and using sections, each section will have a footer.',
+					_BMSection: 'Footer',
+					_BMFriendlyName: 'Footers',
+					_BMCategories: ['all', 'table', 'flow', 'tile']
+				},
+				FooterMashupName: {
+					baseType: 'MASHUPNAME',
+					description: 'Must be used with SectionField and ShowsFooters. The mashup to use for footers.',
+					_BMSection: 'Footer',
+					_BMFriendlyName: 'Footer mashup name',
+					_BMCategories: ['all', 'table', 'flow', 'tile']
+				},
+				FooterMashupSectionProperty: {
+					baseType: 'STRING',
+					defaultValue: '',
+					description: 'The mashup parameter that will receive the section identifier.',
+					_BMSection: 'Footer',
+					_BMFriendlyName: 'Section parameter',
+					_BMCategories: ['all', 'table', 'flow', 'tile']
+				},
+				FooterHeight: {
+					baseType: 'INTEGER',
+					defaultValue: 44,
+					description: 'Must be used with SectionField and ShowsFooters. The height of the footer mashups.',
+					_BMSection: 'Footer',
+					_BMFriendlyName: 'Height',
+					_BMCategories: ['all', 'table', 'flow', 'tile']
+				},
+				
+				
+				
+				// ******************************************** EMPTY VIEW PROPERTIES ********************************************
+				EmptyMashupName: {
+					baseType: 'MASHUPNAME',
+					description: 'Optional. If specified, this mashup will be displayed when the data set is empty',
+					_BMSection: 'Empty View',
+					_BMFriendlyName: 'Empty Mashup name',
+					_BMCategories: ['all', 'table', 'flow', 'tile']
+				},
+				
+				
+				
+				// ******************************************** ANIMATION PROPERTIES ********************************************
+				PlaysIntroAnimation: {
+					baseType: 		'BOOLEAN',
+					description: 	'If enabled, an animation will be played to show the cells when the data first arrives to this collection view. ' +
+									'Otherwise the cells will appear instantly the first time.',
+					defaultValue:	true,
+					_BMSection: 	'Styles',
+					_BMFriendlyName: 'Intro animation',
+					_BMCategories: ['all', 'styles']
+				},
+				
+				
+				
+				// ******************************************** DATA MANIPULATION ********************************************
+				
+				CanDragCells: {
+					baseType: 'BOOLEAN',
+					description: 'Can be enabled to allow collection view to manipulate items via drag & drop.',
+					defaultValue: NO,
+					isBindingTarget: YES,
+					_BMCategories: ['all', 'manipulation']
+				},
+				CanMoveCells: {
+					baseType: 'BOOLEAN',
+					description: 'Can be enabled to allow collection view to move items via drag & drop.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'manipulation']
+				},
+				CanMoveCellsAcrossSections: {
+					baseType: 'BOOLEAN',
+					description: 'Must be used with CanMoveCells. If enabled, collection view will allow dragged items to move to other sections.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'manipulation']
+				},
+				CanRemoveCells: {
+					baseType: 'BOOLEAN',
+					description: 'Can be enabled to allow collection view to remove items by dragging them out of its frame.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'manipulation']
+				},
+				CanTransferCells: {
+					baseType: 'BOOLEAN',
+					description: 'Can be enabled to allow collection view to transfer items to other collection views.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'manipulation']
+				},
+				CellTransferPolicy: {
+					baseType: 'STRING',
+					description: 'Controls what happens to items when they are dragged into another collection view.',
+					selectOptions: [
+						{text: 'Move', value: 'Move'},
+						{text: 'Copy', value: 'Copy'}
+					],
+					defaultValue: 'Move',
+					_BMCategories: ['all', 'manipulation']
+				},
+				CanAcceptCells: {
+					baseType: 'BOOLEAN',
+					description: 'Can be enabled to allow collection view to accept items from other collection views.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'manipulation']
+				},
+				CellAcceptPolicy: {
+					baseType: 'STRING',
+					description: 'Controls what happens to items when they are dragged into this collection view from another collection view.',
+					selectOptions: [
+						{text: 'Move', value: 'Move'},
+						{text: 'Copy', value: 'Copy'},
+						{text: 'Replace', value: 'Replace'}
+					],
+					defaultValue: 'Move',
+					_BMCategories: ['all', 'manipulation']
+				},
+				DataShape: {
+					baseType: 'DATASHAPENAME',
+					description: 'Optional. If specified and Data is not bound, this allows the CreateItem... services to be invoked.',
+					_BMCategories: ['all', 'manipulation']
+				},
+				CreationIndex: {
+					baseType: 'INTEGER',
+					description: 'Defaults to 0. If specified or bound, this index is used when invoking the CreateItemAtIndex service.',
+					isBindingTarget: YES,
+					_BMCategories: ['all', 'manipulation']
+				},
+				DeletionUID: {
+					baseType: 'ANYSCALAR',
+					isBindingTarget: YES,
+					description: 'Optional. If bound, this item UID is used when invoking the DeleteItem service.',
+					_BMCategories: ['all', 'manipulation']
+				},
+				CellMashupNameEditing: {
+					baseType: 'MASHUPNAME',
+					description: 'Optional. If specified, this mashup is used for cells that are being edited.'	,
+					_BMCategories: ['all', 'cell', 'manipulation']
+				},
+				CellMashupEditingParameter: {
+					baseType: 'STRING',
+					description: 'Optional. If specified, this is the mashup parameter that will receive the editing state of the mashup.',
+					_BMCategories: ['all', 'cell', 'manipulation']
+				},
+				
+				
+				// ******************************************** PERFORMANCE PROPERTIES ********************************************
+				UseCustomScrollerOnWindowsDesktops: {
+					baseType: 'BOOLEAN',
+					description: 'If enabled, the collection view will use iOS/macOS style scrollbars when running on desktop Windows browsers.',
+					defaultValue: NO,
+					_BMSection: 'Avanced',
+					_BMFriendlyName: 'Enable iScroll on Windows Desktops',
+					_BMCategories: ['all', 'performance']
+				},
+				AlwaysUseCustomScrollerOniOS: {
+					baseType: 'BOOLEAN',
+					description: 'If enabled, the collection will use the custom scroller on iOS even when not running in web-app mode',
+					defaultValue: NO,
+					_BMSection: 'Avanced',
+					_BMFriendlyName: 'Enable iScroll on iOS Safari',
+					_BMCategories: ['all', 'performance']
+				},
+				OffScreenBufferFactor: {
+					baseType: 'NUMBER',
+					defaultValue: 0.5,
+					description: 'The percentage of frame size to use when computing a new off-screen buffer size. Higher values will cause more off-screen elements to be rendered which decreases the flicker at high scrolling speeds. Lower values decrease the number of off-screen elements and should be used to reduce the jitter on iOS when complex layouts that reflow often are used as cell contents (such as cells with many gauges).',
+					_BMSection: 'Avanced',
+					_BMFriendlyName: 'Off-screen buffer factor',
+					_BMCategories: ['all', 'performance']
+				},
+				'[Experimental] Fast widget append': {
+					baseType: 'BOOLEAN',
+					defaultValue: NO,
+					description: 'If enabled, the collection view will use an experimental faster widget creation method.',
+					_BMSection: 'Avanced',
+					_BMFriendlyName: 'Experimental fast widget append',
+					_BMCategories: ['all', 'performance']
+				},
+				HandlesResponsiveWidgets: {
+					baseType: 'BOOLEAN',
+					defaultValue: NO,
+					description: 'If enabled, the collection view will invoke resize on responsive widgets.',
+					_BMCategories: ['all', 'performance']
+				},
+				DirectLink: {
+					baseType: 'BOOLEAN',
+					defaultValue: NO,
+					description: 'Requires the Debugger entities and extensions. If enabled, changes to this Collection View layout will automatically update the mashup.',
+					_BMCategories: ['all', 'performance']
+				},
+				
+				
+				
+				// ******************************************** INTERNAL PROPERTIES ********************************************
+				_EventDataShape: {
+					baseType: 'STRING',
+					isVisible: false,
+					defaultValue: '{}'
+				},
+				_CanDoubleClick: {
+					baseType: 'BOOLEAN',
+					isVisible: false,
+					defaultValue: false
+				},
+				_MenuDefinition: {
+					baseType: 'STRING',
+					isVisible: false,
+					defaultValue: '[]'
+				},
+				_GlobalDataShape: {
+					baseType: 'STRING',
+					isVisible: false,
+					defaultValue: '{}'
+				},
+				DirectLinkUUID: {
+					baseType: 'STRING',
+					defaultValue: '',
+					isVisible: NO
+				},
+				__BaseTypes: {
+					baseType: 'INFOTABLE',
+					isVisible: NO
+				}
+			}
+		};
+
+		if (!('BMCoreComposer' in window)) {
+			delete properties.properties.DirectLink;
+			delete properties.properties.DirectLinkUUID
+		}
+
+		return properties;
+    };
+
+    widgetServices(): Dictionary<BMCollectionViewWidgetService> {
+		return {
+			Deselect: {_BMCategories: ['all', 'selection'], description: 'Should be invoked to cause the collection view to deselect all rows from its data set.'},
+			SelectAll: {_BMCategories: ['all', 'selection'], description: 'Should be invoked to cause the collection view to select all rows in its data set.'},
+			InvalidateLayout: {_BMCategories: ['all', 'performance'], description: 'Should be invoked to cause the collection view to invalidate its layout.'},
+			CreateItemAtBeginning: {_BMCategories: ['all', 'manipulation'], description: 'When invoked, the collection view will add an item to the beginning of the data set. If sections are defined, the item will belong to an empty section.'},
+			CreateItemAtEnd: {_BMCategories: ['all', 'manipulation'], description: 'When invoked, the collection view will add an item to the end of the data set. If sections are defined, the item will belong to an empty section.'},
+			CreateItemAtIndex: {_BMCategories: ['all', 'manipulation'], description: 'When invoked, the collection view will add an item a specific index of the data set. The index is specified by setting or binding the \'CreationIndex\' property. If sections are defined, the item will belong to an empty section.'},
+			DeleteItem: {_BMCategories: ['all', 'manipulation'], description: 'When invoked, the collection view will delete a specific item from the data set. The item is specified by setting or binding the \'DeletionUID\' property.'},
+			BeginSelectionMode: {_BMCategories: ['all', 'selection'], description: 'Must be used with CellMultipleSelectionType set to Selection Mode. When invoked, the collection view enter selection mode and allow cells to be selected.'},
+			FinishSelectionMode: {_BMCategories: ['all', 'selection'], description: 'Must be used with CellMultipleSelectionType set to Selection Mode. When invoked, the collection view exit selection mode, deselect all cells and prevent further cells from being selected.'}
+		};
+    };
+
+    widgetEvents(): Dictionary<BMCollectionViewWidgetEvent> {
+		return {
+			CellWasClicked: {_BMCategories: ['all', 'data'], description: 'Triggered whenever any cell is clicked or tapped.'},
+			CellWasRightClicked: {_BMCategories: ['all', 'data'], description: 'Triggered whenever any cell is right-clicked.'},
+			CellWasDoubleClicked: {_BMCategories: ['all', 'data'], description: 'Triggered whenever any cell is double-clicked or double-tapped.'},
+			CellWasLongClicked: {_BMCategories: ['all', 'data'], description: 'Triggered whenever any cell is long-clicked or long-tapped.'},
+			CollectionViewDidAcceptDroppedItems: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view accepts items from another collection view.'},
+			CollectionViewDidMoveItems: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view moves items from a drag & drop operation.'},
+			CollectionViewDidRemoveItems: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view removes items from a drag & drop operation.'},
+			// NOTE: The hover event is currently unsupported
+			//CellWasHovered: {description: 'Triggered whenever any cell is hovered.'}
+		};
+    }
+
+    // #endregion
+
+    // #region Behaviours
+	
+	/**
+	 * A list of layout-specific widget properties.
+	 */
+    readonly layoutProperties: string[] = ['Layout', 'CellWidth', 'CellHeight', 'ShowsHeaders', 'ShowsFooters', 'HeaderHeight', 'FooterHeight', 'SectionInsets'];
+
+    private configurationWindow?: BMWidgetConfigurationWindow;
+
+    afterSetProperty(name: string, value: any): boolean {
+		if (name === 'CellSlideMenu') {
+			this.cellSlideMenuDidChange();
+		}
+		
+		if (name === 'CellMashupGlobalPropertyBinding') {
+			if (!this.globalPropertiesDidChange()) {
+				alert('The JSON is not valid or one of the property names is reserved.');
+			}
+		}
+		
+		if (name == 'Width' || name == 'Height') {
+			this.collectionView.resized();
+		}
+		
+		if (name.startsWith('TableLayout') || name.startsWith('FlowLayout') || name.startsWith('TileLayout') || name.startsWith('MasonryLayout') || name.startsWith('StackLayout') || name.startsWith('SectionInset') || this.layoutProperties.indexOf(name) != -1) {
+			this.collectionView.setLayout(this.createLayout(), {animated: YES});
+			if (this.getProperty('DirectLink')) {
+				BMDirectLinkPostWithUUID(this.getProperty('DirectLinkUUID'), {update: JSON.stringify({key: name, value: value})});
+			}
+		}
+
+		if (name.startsWith('Sort')) {
+			if (this.getProperty('DirectLink')) {
+				BMDirectLinkPostWithUUID(this.getProperty('DirectLinkUUID'), {update: JSON.stringify({key: name, value: value})});
+			}
+        }
+
+		if (name === 'Show') {
+			var properties = this.allWidgetProperties().properties as Dictionary<BMCollectionViewWidgetProperty>;
+
+			for (var key in properties) {
+				if (properties[key]._BMCategories) {
+					if (properties[key]._BMCategories.indexOf(value) != -1) {
+						properties[key].isVisible = YES;
+					}
+					else {
+						properties[key].isVisible = NO;
+					}
+				}
+			}
+			
+			// Update the properties UI
+			this.updatedProperties();
+		}
+
+		if (this.configurationWindow) {
+			this.configurationWindow._notifyObserversForProperty(name);
+		}
+		
+		return NO;
+    }
+    
+	/**
+	 * Will be invoked by the widget after changing the CellSlideMenu property.
+	 * Updates the Menu: event list.
+	 */
+	cellSlideMenuDidChange() {
+		var properties = this.allWidgetProperties().properties as Dictionary<BMCollectionViewWidgetProperty>;
+		
+		// Retrieve the actual state definition from the platform
+		var menuStateDefinition = TW.getStateDefinition(this.getProperty('CellSlideMenu'));
+		
+		// Delete the previous properties from the previous binding
+		var oldDefinition = JSON.parse(this.getProperty('_MenuDefinition'));
+		
+		for (var i = 0; i < oldDefinition.length; i++) {
+			delete properties['Menu:' + oldDefinition[i]];
+		}
+		
+		if (!(menuStateDefinition = (menuStateDefinition && menuStateDefinition.content && menuStateDefinition.content.stateDefinitions))) {
+			// If the state definition is undefined, there is nothing else to do
+			return;
+		}
+		
+		// Extract the state names from the menu definition
+		var menuDefinition = [];
+		for (var i = 0; i < menuStateDefinition.length; i++) {
+			if (menuStateDefinition[i].defaultValue) menuDefinition.push(menuStateDefinition[i].defaultValue);
+		}
+		
+		
+		this.setProperty('_MenuDefinition', JSON.stringify(menuDefinition));
+		
+		// Append the new properties to this widget
+		for (var i = 0; i < menuDefinition.length; i++) {
+			properties['Menu:' + menuDefinition[i]] = {
+				isBaseProperty: false,
+				name: 'Menu:' + menuDefinition[i],
+				type: 'event',
+				isVisible: true,
+				description: 'Triggered when selecting the ' + menuDefinition[i] + ' menu entry on a cell.',
+				_BMCategories: ['all', 'menu']
+			} as any;
+		}
+	
+		// Update the properties UI
+		this.updatedProperties();
+	}
+	
+	/**
+	 * Will be invoked by the widget after changing the CellMashupGlobalPropertyBinding property.
+	 * Updates the global bindable properties.
+	 * @return <Boolean>			YES if the global properties string was valid and the properties could be created, NO otherwise.
+	 */
+	globalPropertiesDidChange(): boolean {
+		var globalProperties;
+		
+		try {
+			globalProperties = JSON.parse(this.getProperty('CellMashupGlobalPropertyBinding'));
+		}
+		catch (err) {
+			return NO;
+		}
+		
+		// Delete the previous properties from the previous binding
+		var oldDefinition = JSON.parse(this.getProperty('_GlobalDataShape'));
+		
+		for (var i = 0; i < oldDefinition.length; i++) {
+			delete properties[oldDefinition[i]];
+		}
+		
+		var properties = this.allWidgetProperties().properties as Dictionary<BMCollectionViewWidgetProperty>;
+		
+		// Verify the new properties to make sure they don't conflict with any of the existing ones
+		for (key in globalProperties) {
+			if (properties[key]) {
+				// If there is a conflict, fail with an error and set the global properties to a blank object
+				this.setProperty('_GlobalDataShape', '{}');
+				return NO;
+			}
+		}
+		
+		// If there are no conflicts, update the global properties and create the relevant properties
+		for (var key in globalProperties) {
+			properties[key] = {
+				isBaseProperty: NO,
+				name: key,
+				type: 'property',
+				isVisible: YES,
+				isBindingTarget: YES,
+				isBindingSource: YES,
+				description: 'User-defined global property.',
+				baseType: globalProperties[key]
+			};
+		}
+		
+		this.setProperty('_GlobalDataShape', this.getProperty('CellMashupGlobalPropertyBinding'));
+	
+		// Update the properties UI
+		this.updatedProperties();
+		
+		return YES;
+		
+	}
+
+    resize(width: number, height: number): void {
+        this.collectionView.resized();
+    }
+
+	/**
+	 * Invoked by the platform to retrieve the data shape associated with an infotable property.
+	 * @param propertyName <String>				The name of the property whose data shape should be returned.
+	 * @return <String or Object, nullable>		The data shape field definitions object or a string identifying a data shape in the platform.
+	 *											The return value may also be undefined if the data shape cannot be determined at design time.
+	 */
+	getSourceDatashapeName(propertyName: string): string | Dictionary<TWFieldDefinition> {
+		if (propertyName == 'Data') {
+			return this.getInfotableMetadataForProperty(propertyName) || this.getProperty('DataShape');
+		}
+		else if (propertyName == '__BaseTypes') {
+			return {
+				STRING: {name: 'STRING', baseType: 'STRING'},
+				NUMBER: {name: 'NUMBER', baseType: 'NUMBER'},
+				DATETIME: {name: 'DATETIME', baseType: 'DATETIME'},
+				INFOTABLE: {name: 'INFOTABLE', baseType: 'INFOTABLE'},
+				BOOLEAN: {name: 'BOOLEAN', baseType: 'BOOLEAN'},
+				LOCATION: {name: 'LOCATION', baseType: 'LOCATION'}
+			}
+		}
+	};
+
+    renderHtml(): string {
+        return '<div class="widget-content BMCollectionViewWidget"><div class="BMCollectionViewWidgetBorder"></div><button class="BMCollectionViewWidgetConfigurationButton">CONFIGURE</button></div>';
+    };
+
+    afterRender(): void {
+		if (('BMCoreCompoer' in window) && !this.getProperty('DirectLinkUUID')) {
+			this.setProperty('DirectLinkUUID', BMUUIDMake());
+		}
+		
+		var self = this;
+		this.jqElement.find('button').click(function () {
+			var button = this;
+			
+			var sections = [
+				{name: 'data', label: 'Data Configuration'}, 
+				{name: 'layout', label: 'Layout Type'}, 
+				{name: 'tableLayout', label: 'Table Layout'}, 
+				{name: 'flowLayout', label: 'Flow Layout'}, 
+				{name: 'masonryLayout', label: 'Masonry Layout'}, 
+				{name: 'stackLayout', label: 'Stack Layout'}, 
+				{name: 'tileLayout', label: 'Tile Layout'}, 
+				{name: 'cellConfiguration', label: 'Cell Configuration'}, 
+				{name: 'selection', label: 'Selection'}, 
+				{name: 'styles', label: 'Styles'}, 
+				{name: 'menu', label: 'Slide Menu'}, 
+				{name: 'dataManipulation', label: 'Data Manipulation'}, 
+				{name: 'drag', label: 'Drag & Drop'}, 
+				{name: 'events', label: 'Events'}, 
+				{name: 'advanced', label: 'Advanced'}
+			];
+					
+			var frame = BMRectMakeWithOrigin(BMPointMake(
+				window.innerWidth * .05 | 0,
+				window.innerHeight * .05 | 0
+			), {size: BMSizeMake(
+				window.innerWidth * .9 | 0,
+				window.innerHeight * .9 | 0
+			)});
+			
+			var configurationWindow = (new BMWidgetConfigurationWindow()).initWithURL('../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/config.html?' + Math.random(), {widget: self, sections: sections, frame: frame, completionHandler: function () {
+				// Trigger a blocking layout, then post the animation, allowing the renderer enough time to breathe
+				/*configurationWindow._window.style.opacity = 0;
+				configurationWindow._window.style.display = 'block';
+				
+				configurationWindow._window.innerWidth;*/
+				
+				setTimeout(function () {
+					configurationWindow.bringToFrontAnimated(YES, {fromNode: button, completionHandler: function () {
+						configurationWindow._groupCollectionView.resized();
+						// Reflow the page to correct layout mismatches
+						document.body.getBoundingClientRect();
+					}});
+				}, 0);
+			}});
+			
+			$(window).on('resize.BMCollectionView', function () {
+						
+				var frame = BMRectMakeWithOrigin(BMPointMake(
+					window.innerWidth * .05 | 0,
+					window.innerHeight * .05 | 0
+				), {size: BMSizeMake(
+					window.innerWidth * .9 | 0,
+					window.innerHeight * .9 | 0
+				)});
+				
+				configurationWindow.frame = frame;
+		
+            });
+            
+            configurationWindow.delegate = {
+                DOMNodeForDismissedWindow() {
+                    return button;
+                },
+
+                windowWillClose() {
+                    self.configurationWindow = undefined;
+                    $(window).off('resize.BMCollectionView');
+                }
+            }
+
+			self.configurationWindow = configurationWindow;
+			
+		});
+		
+		// Construct the preview collection view
+		self.collectionView = BMCollectionViewMakeWithContainer(this.jqElement.find('.BMCollectionViewWidgetBorder'), {customScroll: NO});
+		
+		self.collectionView.layout = this.createLayout();
+		self.collectionView.delegate = this;
+		
+		setTimeout(function () {
+			self.collectionView.dataSet = self;
+		}, 0);
+    }
+
+    beforeDestroy(): void {
+		this.collectionView.release();
+    }
+
+    // #endregion
+
+}
+
+// #endregion
+
+// #region BMCollectionViewMenuController
+
+@TWNamedComposerWidget('CollectionViewMenuController')
+export class BMCollectionViewMenuController extends TWComposerWidget {
+    widgetIconUrl(): string {
+        return require('./images/MenuControllerIcon@2x.png');
+    }
+
+    widgetProperties(): BMCollectionViewWidgetProperties {
+        return {
+            name: 'Collection View Menu Controller',
+            description: 'When added to a collection view cell mash-up, this widget makes it possible to control the cell menu.',
+            category: ['Common'],
+            properties: {
+                Width: {
+                    defaultValue: 172,
+                    baseType: 'NUMBER'
+                },
+                Height: {
+                    defaultValue: 44,
+                    baseType: 'NUMBER'
+                },
+				CellSlideMenu: {
+					baseType: 'STATEDEFINITION',
+					description: 'If set to a string-based state definition, this will be the cell menu that appears when sliding over the cells. On devices without a touch interface, this menu can be displayed by right-clicking on the cells.',
+					_BMSection: 'Menu',
+					_BMFriendlyName: 'Slide menu definition'
+				},
+				_MenuDefinition: {
+					baseType: 'STRING',
+					isVisible: false,
+					defaultValue: '[]'
+				}
+			}
+        };
+    }
+
+    afterLoad(): void {
+		var properties = (this.allWidgetProperties() as any).properties;
+		
+		
+		// Retrieve the menu definition and generate the events for that menu
+		var menuDefinition = JSON.parse(this.getProperty('_MenuDefinition'));
+		for (var i = 0; i < menuDefinition.length; i++) {
+			properties['Menu:' + menuDefinition[i]] = {
+				isBaseProperty: false,
+				name: 'Menu:' + menuDefinition[i],
+				type: 'service',
+				isVisible: true,
+				description: 'Dispatches the ' + menuDefinition[i] + ' event on the collection view.'
+			};
+			properties['Event:' + menuDefinition[i]] = {
+				isBaseProperty: false,
+				name: 'Event:' + menuDefinition[i],
+				type: 'event',
+				isVisible: true,
+				description: 'Invoked when the ' + menuDefinition[i] + ' menu is selected for this cell.'
+			};
+		}
+		
+		// Update the properties UI
+		this.updatedProperties();
+    }
+
+    private isBuildingServices: boolean = NO;
+
+    widgetServices(): Dictionary<TWWidgetService> {
+	    var services = {
+			CollapseMenu: {description: "Should be invoked to collapse this cell's menu, if it was opened."},	
+			ExpandMenu: {description: "Should be invoked to expand this cell's menu, if it was opened."},	
+			ToggleMenu: {description: "Should be invoked to toggle this cell's menu."}	    
+		};
+
+		if (this.isBuildingServices) return services;
+
+		this.isBuildingServices = YES;
+		
+		JSON.parse(this.getProperty('_MenuDefinition')).forEach(function (entry) {
+			services['Menu:' + entry] = {description: 'User defined menu entry.'};
+		});
+
+
+		this.isBuildingServices = NO;
+		return services;
+    }
+	
+	private isBuildingEvents: boolean = NO;
+	widgetEvents(): Dictionary<TWWidgetEvent> {
+		var events = {};
+
+		if (this.isBuildingEvents) return events;
+		this.isBuildingEvents = YES;
+		
+		JSON.parse(this.getProperty('_MenuDefinition')).forEach(function (entry) {
+			events['Event:' + entry] = {description: 'User defined menu entry.'};
+		});
+
+		this.isBuildingEvents = NO;
+		return events;
+    }
+    
+    
+	
+	/**
+	 * Will be invoked by the widget after changing the CellSlideMenu property.
+	 * Updates the Menu: service list.
+	 */
+	cellSlideMenuDidChange(): void {
+		var properties = (this.allWidgetProperties() as any).properties;
+		
+		// Retrieve the actual state definition from the platform
+		var menuStateDefinition = TW.getStateDefinition(this.getProperty('CellSlideMenu'));
+		
+		// Delete the previous properties from the previous binding
+		var oldDefinition = JSON.parse(this.getProperty('_MenuDefinition'));
+		
+		for (var i = 0; i < oldDefinition.length; i++) {
+			delete properties['Menu:' + oldDefinition[i]];
+			delete properties['Event:' + oldDefinition[i]];
+		}
+		
+		if (!(menuStateDefinition = (menuStateDefinition && menuStateDefinition.content && menuStateDefinition.content.stateDefinitions))) {
+			// If the state definition is undefined, there is nothing else to do
+			return;
+		}
+		
+		// Extract the state names from the menu definition
+		var menuDefinition = [];
+		for (var i = 0; i < menuStateDefinition.length; i++) {
+			if (menuStateDefinition[i].defaultValue) menuDefinition.push(menuStateDefinition[i].defaultValue);
+		}
+		
+		
+		this.setProperty('_MenuDefinition', JSON.stringify(menuDefinition));
+		
+		// Append the new properties to this widget
+		for (var i = 0; i < menuDefinition.length; i++) {
+			properties['Menu:' + menuDefinition[i]] = {
+				isBaseProperty: false,
+				name: 'Menu:' + menuDefinition[i],
+				type: 'service',
+				isVisible: true,
+				description: 'Dispatches the ' + menuDefinition[i] + ' event on the collection view.'
+			};
+			properties['Event:' + menuDefinition[i]] = {
+				isBaseProperty: false,
+				name: 'Event:' + menuDefinition[i],
+				type: 'event',
+				isVisible: true,
+				description: 'Invoked when the ' + menuDefinition[i] + ' menu is selected for this cell.'
+			};
+		}
+	
+		// Update the properties UI
+		this.updatedProperties();
+	}
+	
+	afterSetProperty(name: string, value: any): boolean {
+		if (name === 'CellSlideMenu') {
+			this.cellSlideMenuDidChange();
+		}
+        return NO;
+    }
+	
+    renderHtml(): string {
+        return '<div class="widget-content BMCollectionViewMenuController">Collection View Menu Controller</div>';
+    }
+
+    afterRender() {
+
+    }
+
+    beforeDestroy() {
+
+    }
+
+}
+
+// #endregion
+
+// #region BMCollectionViewSelectionController
+
+@TWNamedComposerWidget('CollectionViewSelectionController')
+export class BMCollectionViewSelectionController extends TWComposerWidget {
+    widgetIconUrl(): string {
+        return require('./images/SelectionControllerIcon@2x.png');
+    }
+
+    widgetProperties(): BMCollectionViewWidgetProperties {
+        return {
+            name: 'Collection View Selection Controller',
+            description: 'When added to a collection view cell mash-up, this widget makes it possible to control the cell\'s selection.',
+            category: ['Common'],
+            properties: {
+                Width: {
+                    defaultValue: 184,
+                    baseType: 'NUMBER'
+                },
+                Height: {
+                    defaultValue: 44,
+                    baseType: 'NUMBER'
+                }
+			}
+        };
+    }
+
+    widgetServices(): Dictionary<TWWidgetService> {
+	    return {
+			DeselectCell: {description: "Should be invoked to deselect this cell, if it was selected."},	
+			SelectCell: {description: "Should be invoked to select this cell, if it was deselected."},	
+			ToggleSelection: {description: "Should be invoked to toggle this cell's selection."}	    
+	    };
+    }
+	
+	private isBuildingEvents: boolean = NO;
+	widgetEvents(): Dictionary<TWWidgetEvent> {
+		return {};
+    }
+    
+    renderHtml(): string {
+        return '<div class="widget-content BMCollectionViewSelectionController">Collection View Selection Controller</div>';
+    }
+
+    afterRender() {
+
+    }
+
+    beforeDestroy() {
+
+    }
+
+}
+
+// #endregion
+
+
+// #region BMCollectionViewEditingController
+
+@TWNamedComposerWidget('CollectionViewEditingController')
+export class BMCollectionViewEditingController extends TWComposerWidget {
+    widgetIconUrl(): string {
+        return require('./images/EditingControllerIcon@2x.png');
+    }
+
+    widgetProperties(): BMCollectionViewWidgetProperties {
+        return {
+            name: 'Collection View Editing Controller',
+            description: 'When added to a collection view cell mash-up, this widget makes it possible to control the cell\'s editing state.',
+            category: ['Common'],
+            properties: {
+                Width: {
+                    defaultValue: 184,
+                    baseType: 'NUMBER'
+                },
+                Height: {
+                    defaultValue: 44,
+                    baseType: 'NUMBER'
+                }
+			}
+        };
+    }
+
+    widgetServices(): Dictionary<TWWidgetService> {
+	    return {
+			BeginEditing: {description: "Begins editing the object associated with this cell."},	
+			FinishEditing: {description: "Finishes editing the object associated with this cell."}
+	    };
+    }
+	
+	widgetEvents(): Dictionary<TWWidgetEvent> {
+		return {};
+    }
+    
+    renderHtml(): string {
+        return '<div class="widget-content BMCollectionViewEditingController">Collection View Editing Controller</div>';
+    }
+
+    afterRender() {
+
+    }
+
+    beforeDestroy() {
+
+    }
+
+}
+
+// #endregion
+

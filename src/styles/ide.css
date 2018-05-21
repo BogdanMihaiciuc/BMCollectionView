@@ -1,0 +1,652 @@
+.BMCollectionViewWidget {
+	
+	box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, .1) inset;
+	
+}
+
+.BMCollectionViewWidgetBorder {
+	
+	box-sizing: border-box;
+	
+	position: absolute;
+	
+	left: 0px;
+	top: 0px;
+	
+	width: 100%;
+	height: 100%;
+}
+
+.BMCollectionViewPreviewCell {
+	
+	border: 1px solid rgba(0, 0, 0, .33);
+	border-radius: 5px;
+	
+	background: rgba(255, 255, 255, .33);
+	
+	box-sizing: border-box;
+	
+	pointer-events: none !important;
+	
+	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Helvetica', 'Segoe UI', sans-serif;
+	font-size: 16px;
+	
+	color: rgba(0, 0, 0, .66);
+	
+	display: flex;
+	
+	flex-direction: row;
+	
+	align-content: center;
+	align-items: center;
+	justify-content: center;
+	
+}
+
+.BMCollectionViewWidgetText {
+	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Helvetica', 'Segoe UI', sans-serif;
+	font-size: 16px;
+	
+	color: rgba(0, 0, 0, .66);
+	
+	display: block;
+	
+	position: absolute;
+	
+	left: 50%;
+	top: 50%;
+	
+	transform: translateX(-50%) translateY(56px);
+}
+
+.BMCollectionViewWidgetConfigurationButton {
+	-webkit-appearance: none;
+	
+	border-radius: 4px;
+	box-shadow: 0px 2px 4px rgba(0, 0, 0, .1), 0px 0px 1px 1px rgba(0, 0, 0, .1);
+	
+	background: rgba(0, 160, 255, 1);
+	
+	color: white;
+	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Helvetica', 'Segoe UI', sans-serif;
+	font-size: 14px;
+	font-weight: bold;
+	
+	padding: 8px;
+	position: absolute;
+	
+	left: 50%;
+	top: auto;
+	
+	width: 128px;
+	
+	bottom: 16px;
+	
+	margin-left: -64px;
+	border: none;
+	
+	z-index: 3;
+}
+
+.BMCollectionViewWidgetConfigurationButton:active {
+	background: rgb(0, 140, 235);
+}
+
+/************************** CONFIGURATION WINDOW ************************/
+	
+	
+.BMWidgetConfigurationWindowToolbar {
+	position: absolute;
+	left: 0px;
+	right: 0px;
+	top: 0px;
+	height: 44px;
+
+    width: 100%;
+
+	background: linear-gradient(to bottom, #ececec, #d5d5d5);
+
+	border-bottom: 1px solid rgba(0, 0, 0, .4);
+
+	color: rgba(0, 0, 0, .66);
+	text-shadow: 0px 1px 1px rgba(255, 255, 255, .5);
+
+	box-shadow: 0px 2px 3px rgba(0, 0, 0, .1);
+
+    box-sizing: border-box;
+}
+
+.BMWidgetConfigurationWindowNavigationSidebar {
+	background: rgba(255, 255, 255, .8);
+	border-right: 1px solid rgba(0, 0, 0, .2);
+
+	font-family:  -apple-system, BinkMacSystemFont, 'Roboto', 'Segoe UI', 'Helvetica', monospace;
+
+	font-size: 16px;
+	color: rgba(0, 0, 0, .8);
+
+    width: 256px;
+    height: 100%;
+    top: 0px;
+
+    position: absolute;
+
+    overflow-y: auto;
+}
+
+.BMWidgetConfigurationWindowNavigationSidebarCompatibility {
+	background-color: #F8F8F8;
+}
+
+.BMWidgetConfigurationWindowNavigationSidebarLink {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	
+	line-height: 44px;
+	vertical-align: middle;
+	
+	box-sizing: border-box;
+	padding-left: 22px;
+	
+	cursor: pointer;
+	
+	transition: background-color .2s ease;
+}
+
+.BMWidgetConfigurationWindowNavigationSidebarLinkSelected {
+	background-color: rgba(0, 0, 0, .1);
+}
+
+.BMWidgetConfigurationWindowContent {
+	background: rgba(245, 245, 245, 1);
+
+	font-family:  -apple-system, BinkMacSystemFont, 'Roboto', 'Segoe UI', 'Helvetica', monospace;
+
+	font-size: 16px;
+	color: rgba(0, 0, 0, .8);
+
+    width: calc(100% - 257px);
+    height: 100%;
+    left: 257px;
+    top: 0px;
+
+    position: absolute;
+    overflow: auto;
+}
+
+.BMWidgetConfigurationWindowDocumentation {
+	background: #FFF;
+
+	font-family:  -apple-system, BinkMacSystemFont, 'Roboto', 'Segoe UI', 'Helvetica', monospace;
+
+	font-size: 16px;
+	color: rgba(0, 0, 0, .8);
+
+    width: 384px;
+    height: calc(100% - 44px);
+    right: 0px;
+    top: 44px;
+
+    position: absolute;
+}
+
+.BMWidgetConfigurationWindowProperty {
+	background: #FFF;
+	box-sizing: border-box;
+	height: 100%;
+	
+	border-bottom: 1px solid rgba(0, 0, 0, .1);
+	
+	line-height: 44px;
+	vertical-align: middle;
+	
+	padding-left: 22px;
+	padding-right: 22px;
+	
+	overflow: hidden;
+}
+
+.BMWidgetConfigurationWindowPropertyHeader {
+	box-sizing: border-box;
+	height: 100%;
+	
+	line-height: 33px;
+	vertical-align: middle;
+	
+	font-size: 12px;
+	color: rgba(0, 0, 0, .66);
+	border-bottom: 1px solid rgba(0, 0, 0, .1);
+	
+	padding-left: 22px;
+	padding-right: 22px;
+}
+
+/**************************************** HELP WINDOW *********************************/
+
+			
+.BMCollectionViewWindowHeading {
+	width: 100%;
+	padding-top: 44px;
+	padding-bottom: 44px;
+	
+	font-size: 44px;
+	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Segoe UI', sans-serif;
+	font-weight: bold;
+	
+	text-align: center;
+	
+	color: rgba(0, 0, 0, .8);
+}
+
+.BMCollectionViewVerticalTable {
+	display: flex;
+	flex-direction: column;
+	
+	width: 100%;
+	
+	background: white;
+	
+	border-top: 1px solid rgba(0, 0, 0, .1);
+	border-bottom: 1px solid rgba(0, 0, 0, .1);
+	
+	margin-bottom: 32px;
+}
+
+.BMCollectionViewVerticalTableDivider {
+	width: 100%;
+	height: 1px;
+	background-color: rgba(0, 0, 0, .1);
+}
+
+.BMCollectionViewVerticalTableEntry {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	width: 100%;
+	
+	max-width: 800px;
+	
+	margin: 0 auto;
+}
+
+.BMCollectionViewVerticalTableEntryChoice {
+	border-radius: 5px;
+	transition: background-color .2s ease;
+	
+	cursor: pointer;
+}
+
+.BMCollectionViewVerticalTableEntryChoice:hover {
+	background-color: rgba(0, 0, 0, .05);
+}
+
+.BMCollectionViewVerticalTableEntryChoice:active {
+	background-color: rgba(0, 0, 0, .1);
+}
+
+.BMCollectionViewVerticalTableEntryChoiceSelected {
+	background-color: rgba(0, 160, 255, .25);
+	box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, .1) inset;
+}
+
+.BMCollectionViewVerticalTableEntryChoiceSelected:hover {
+	background-color: rgba(0, 160, 255, .33);
+	box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, .1) inset;
+}
+
+.BMCollectionViewVerticalTableEntryChoiceSelected:active {
+	background-color: rgba(0, 160, 255, .5);
+	box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, .1) inset;
+}
+
+.BMCollectionViewVerticalTableSectionHeading {
+	width: 100%;
+	
+	max-width: 800px;
+	
+	margin: 0 auto;
+	
+	font-size: 16px;
+	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Segoe UI', sans-serif;
+	color: rgba(0, 0, 0, .5);
+	
+	margin-bottom: 8px;
+}
+
+.BMCollectionViewVerticalTableImage {
+	display: block;
+	margin: 32px;
+	
+	width: 128px;
+	height: 128px;
+	
+	flex-grow: 0;
+}
+
+.BMCollectionViewVerticalTableImageMini {
+	height: 64px;
+	
+	margin-top: 16px;
+	margin-bottom: 16px;
+}
+
+.BMCollectionViewPropertyHeading {
+	font-size: 24px;
+	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Segoe UI', sans-serif;
+	font-weight: bold;
+	
+	color: rgba(0, 0, 0, .66);
+}
+
+.BMCollectionViewVerticalTableHeading {
+	margin-top: 16px;
+	margin-bottom: 32px;
+}
+
+.BMCollectionViewPropertyDescription, .BMCollectionViewVerticalTableSwitch {
+	font-size: 14px;
+	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Segoe UI', sans-serif;
+	font-weight: normal;
+	
+	color: rgba(0, 0, 0, .8);
+}
+
+.BMCollectionViewVerticalTablePropertyDescription {
+	margin-bottom: 16px;
+	line-height: 1.8em;
+}
+
+
+.BMCollectionViewVerticalTablePropertyList {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	
+	margin-bottom: 16px;
+}
+
+.BMCollectionViewVerticalTablePropertyListName {
+	font-size: 14px;
+	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Segoe UI', sans-serif;
+	font-weight: normal;
+	
+	color: rgba(0, 0, 0, .33);
+}
+
+.BMCollectionViewVerticalTablePropertyListValue {
+	-webkit-appearance: none;
+	
+	border-radius: 5px;
+	border: 1px solid rgba(0, 0, 0, .1);
+	
+	font-size: 14px;
+	color: rgba(0, 0, 0, .8);
+	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Segoe UI', sans-serif;
+	
+	padding-left: 8px;
+	padding-right: 8px;
+	
+	width: 64px;
+	
+	margin-left: 8px;
+	margin-right: 16px;
+	
+	box-shadow: 0px 0px 20px 20px rgba(0, 160, 255, 0);
+	transition: box-shadow .2s ease, border-color .2s ease;
+	
+	outline: none;
+}
+
+.BMCollectionViewVerticalTablePropertyListValue:focus {
+	box-shadow: 0px 0px 5px 2px rgba(0, 160, 255, .33);
+	border-color: rgba(0, 100, 200, .5);
+	outline: none;
+}
+
+.BMCollectionViewVerticalTablePropertyListString {
+	width: 256px;
+}
+
+.BMCollectionViewVerticalTableSwitch {
+	width: 128px;
+	padding-top: 8px;
+	padding-bottom: 8px;
+	
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	
+	color: rgba(0, 0, 0, .25);
+	
+	padding-left: 8px;
+	padding-right: 8px;
+	
+	box-sizing: border-box;
+	
+	margin-left: 32px;
+	margin-right: 32px;
+	
+	cursor: pointer;
+}
+
+.BMCollectionViewVerticalTableSwitch > input {
+	display: none;
+}
+
+.BMCollectionViewVerticalTableSwitchGutter {
+	border-radius: 5px;
+	
+	border: 1px solid rgba(0, 0, 0, .1);
+	background-color: rgba(0, 0, 0, .1);
+	
+	margin-left: 8px;
+	margin-right: 8px;
+	
+	flex-grow: 1;
+	height: 24px;
+	
+	box-sizing: border-box;
+	overflow: hidden;
+}
+
+.BMCollectionViewVerticalTableSwitchKnob {
+	width: 50%;
+	height: 100%;
+	background-color: #FFF;
+	
+	box-shadow: 0px 2px 8px rgba(0, 0, 0, .3), 0px -4px 8px rgba(0, 0, 0, .05) inset;
+	border-radius: 5px;
+	
+	transition: transform .2s ease;
+}
+
+input:not(:checked) + .BMCollectionViewVerticalTableSwitchGutter > .BMCollectionViewVerticalTableSwitchKnob, .BMCollectionViewVerticalTableSwitchKnobOFF {
+	transform: translateX(calc(100% + 1px));
+}
+
+.BMCollectionViewPropertyNotice {
+	margin: 0 auto;
+	max-width: 800px;
+	
+	margin-bottom: 32px;
+	color: rgba(0, 0, 0, .25);
+	line-height: 1.8em;
+}
+
+.BMCollectionViewPropertyNoticeInline {
+	margin-bottom: 8px;
+}
+
+.BMCollectionViewVerticalTableSelectedGroup {
+	display: block !important;
+}
+
+
+/**************************************** CONFIGURATION WINDOW DOUBLE BINDING *********************************/
+
+.BMCollectionViewConfigurationDoubleBindingTable {
+	width: 100%;
+	
+	display: flex;
+	flex-direction: column;
+}
+
+.BMCollectionViewConfigurationDoubleBindingRow {
+	height: 48px;
+	
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	align-content: center;
+	justify-content: center;
+	align-items: center;
+}
+
+.BMCollectionViewConfigurationButton {
+	height: 32px;
+	line-height: 32px;
+	vertical-align: middle;
+	
+	margin: 8px;
+	
+	align-self: right;
+	padding-left: 8px;
+	padding-right: 8px;
+	
+	color: rgba(0, 160, 255, 1);
+	font-weight: bold;
+	
+	transition: background .2s ease;
+	
+	border-radius: 4px;
+	
+	flex-grow: 0;
+	cursor: hand;
+	cursor: pointer;
+}
+
+.BMCollectionViewConfigurationDoubleBindingDeleteButton {
+	margin: 8px;
+	
+	color: rgba(200, 60, 0, 1);
+	font-weight: bold;
+	
+	border-radius: 50%;
+	
+	transition: background .2s ease;
+	cursor: hand;
+	cursor: pointer;
+	width: 32px;
+	height: 32px;
+	line-height: 32px;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.BMCollectionViewConfigurationButton:hover, .BMCollectionViewConfigurationDoubleBindingDeleteButton:hover {
+	background: rgba(0, 0, 0, .05);
+}
+
+.BMCollectionViewConfigurationButton:active, .BMCollectionViewConfigurationDoubleBindingDeleteButton:active {
+	background: rgba(0, 0, 0, .1);
+}
+
+.BMCollectionViewConfigurationDoubleBindingKey, .BMCollectionViewConfigurationDoubleBindingValue {
+	height: calc(100% - 16px);
+	flex-grow: 1;
+}
+
+.BMCollectionViewConfigurationDoubleBindingArrow {
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-width: 6px 0 6px 10.4px;
+	border-color: transparent transparent transparent rgba(0, 0, 0, .33);
+	
+	margin: 8px;
+	
+}
+
+.BMCollectionViewConfigurationDropdown {
+	position: absolute;
+	
+	background: white;
+	border-radius: 4px;
+	
+	box-shadow: 0px 4px 8px rgba(0, 0, 0, .1), 0px 0px 1px 1px rgba(0, 0, 0, .1);
+	
+	display: flex;
+	flex-direction: column;
+	
+	min-width: 240px;
+	max-width: 480px;
+	max-height: 480px;
+
+	overflow-y: auto;
+	
+	z-index: 999999;
+}
+
+.BMCollectionViewConfigurationDropdownEntry {
+	height: 32px;
+	
+	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Segoe UI', sans-serif;
+	font-size: 16px;
+	font-weight: 400;
+	color: rgba(0, 0, 0, .8);
+	
+	line-height: 32px;
+	vertical-align: middle;
+	
+	padding-left: 16px;
+	padding-right: 16px;
+	
+	cursor: pointer;
+	cursor: hand;
+	
+	transition: background .2s ease;
+}
+
+.BMCollectionViewConfigurationDropdownEntry:active {
+	background: rgba(0, 160, 255, .2);
+}
+
+
+.BMCollectionViewEditingController, .BMCollectionViewMenuController, .BMCollectionViewSelectionController {
+	box-sizing: border-box;
+	border-radius: 5px;
+	
+	padding-left: 55px;
+	padding-right: 11px;
+	
+	border: 1px dashed rgba(0, 0, 0, .2);
+	
+	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Helvetica', 'Segoe UI', sans-serif;
+	font-size: 12px;
+	
+	text-align: center;
+	vertical-align: middle;
+	line-height: 22px;
+	
+	color: rgba(0, 0, 0, .66);
+	
+	background-image: url(../images/EditingControllerImage@2x.png);
+	background-position: 6px 6px;
+	background-size: 32px 32px;
+	background-repeat: no-repeat;
+}
+
+.BMCollectionViewMenuController {
+
+	background-image: url(../images/MenuControllerImage@2x.png);
+	
+}
+
+.BMCollectionViewSelectionController {
+
+	background-image: url(../images/SelectionControllerImage@2x.png);
+	
+}

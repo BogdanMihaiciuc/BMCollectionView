@@ -1,0 +1,2881 @@
+<div class="BMCollectionViewVerticalTableSelectedGroup" style="display: none;" data-group="data">
+	<div class="BMCollectionViewWindowHeading">Data Configuration</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice">
+		Contains settings to configure the data source. Make sure the
+		<strong>Data</strong> property is bound before modifying these settings.<br/>
+		Alternatively, if this collection view generates its own data, go to the <b>Data Manipulation</b> 
+		section and set the <code>Data Shape</code> property.
+	</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/identifierField.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Identifier Field
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					This property
+					<strong>must</strong> be set to the data source field that uniquely identifies an item. This is used by the collection view
+					during layout and updates to determine how each item has changed during the update.
+					<br/>
+					<br/> Note that if two or more items have the same value for the identifier field, the collection view may behave in an unexpected
+					manner.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Identifier Field:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="UIDField" data-single-binding="YES" data-source-property="Data" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/sectionField.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Section Field
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The
+					<strong>Section Field</strong> may optionally be set to a data source field that controls what section each item belongs to.
+					Items that have the same value for the section field will be grouped together in the same section.
+					<br/>
+					<br/>Additionally, the Table and Flow layouts may create additional cells for each section.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Section Field:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="SectionField" data-single-binding="YES" data-source-property="Data" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">SORTING</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/sortFieldDescending.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Sort Field
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					This property may optionally be set to the data source field by which the collection view will sort the items. The collection
+					view will only sort items in response to a data update, and not when modifying mashup parameters or manually adding
+					or removing data. This property may also be bound.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Sort Field:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="SortField" data-single-binding="YES" data-source-property="Data" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/sortField.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Sort Ascending
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, when sorting, the items will be ordered ascending. Otherwise they will be ordered descending. This property may
+					also be bound.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Sort Ascending:</div>
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="SortAscending"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="layout">
+	<div class="BMCollectionViewWindowHeading">Layout Type</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice">
+		Controls how the cells are arranged in the collection view. After selecting the layout type here, you may further adjust
+		the layout settings by selecting the appropriate layout configuration page on the left hand side.
+	</div>
+	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="Layout">
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="table">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/tableLayout.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Table Layout
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					A basic layout implementation, the Table Layout will lay out its elements as a vertically scrolling list where each row can
+					have either a fixed height or a variable height.
+					<br/>
+					<br/> Optionally, the table layout may also display headers and footers for each section in the collection view.
+					<br/>
+					<br/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="flow">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayout.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Flow Layout
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The flow layout arranges cells in a grid-like vertically scrolling container. The cells may have a fixed or variable size.
+					<br/>
+					<br/> Optionally, the flow layout may also display headers and footers for each section in the collection view.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="masonry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/masonryLayout.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Masonry Layout
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The masonry layout arranges cells in a vertically scrolling container. Cells will be laid out in equally wide columns and
+					each new cell will be positioned in the column with the topmost space available, starting from the leftmost cell.
+					<br/>
+					<br/> Additionally, columns in the masonry layout may have a speed assigned to them which affects the scrolling for that
+					column alone.
+					<br/>
+					<br/> The masonry layout does not support grouping by sections or displaying headers and footers.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="stack">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/stackLayout.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Stack Layout
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The stack layout is a vertically scrolling layout that presents cells as a stack, where the current cell appears above the other cells. 
+					In the stack layout, previous cells appear behind the current cell, while upcoming cells are hidden.<br/>
+					<br/>
+					When scrolling in the stack layout, the scroll position will always snap back to fully show a single cell.<br/>
+					<br/>
+					The stack layout does not support sections or supplementary views.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="tile">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/tileLayout.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Tile Layout
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The tile layout is a vertically scrolling layout that arranges cells as they appear in the data set, wherever there is space for them 
+					within the visible area, preferring positions that are closer to the top-left corner of the area. <br/>
+					<br/>
+					To help with achieving a well aligned layout, tile layout allows setting a reference unit size and spacing between cells. 
+					Tile layout will automatically assign multiples of the unit size to cells, also taking the spacing size into account.<br/>
+					<br/>
+					Optionally, the tile layout may also display headers and footers for each section in the collection view.
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="tableLayout">
+	<div class="BMCollectionViewWindowHeading">Table Layout</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">GENERAL SETTINGS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/sectionInsets.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Section Insets
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the padding between each section and the collection view edges and other sections.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Left:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="SectionInsetLeft" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Top:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="SectionInsetTop" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Right:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="SectionInsetRight" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Bottom:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="SectionInsetBottom" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/cellSize.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Row Height
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the height of each row.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Height:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="CellHeight" data-primitive-type="Int"
+					/>
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Alternatively, the rows may be configured to use a dynamic sizing provided by the data set. If this field is set 
+					it takes precedence over the static row height.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Height Field:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="CellHeightField" data-single-binding="YES" data-source-property="Data" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">HEADERS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/header.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Headers
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					If enabled, the table layout will create a header mashup for each section. This requires having a value set for the
+					<strong>Section Field</strong>.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Headers:</div>
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="ShowsHeaders"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/pinnedHeader.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					If enabled, the header for the current section will stick to the top edge of the collection and never scroll out of view.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Pinned Headers:</div>
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="TableLayoutPinsHeadersToContentEdge"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewHeight.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					Controls the height of each section header.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Header Height:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="HeaderHeight" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewMashups.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin-top: 8px;">
+					The mashup to use as the header content.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Mashup Name:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="Mashups" data-property="HeaderMashupName"></div>
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The section parameter name for the selected mashup. This mashup parameter will receive the section's name.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Section Parameter Name:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="HeaderMashupSectionProperty" data-single-binding="YES" data-source-property="HeaderMashupName" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">FOOTERS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/footer.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Footers
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					If enabled, the table layout will create a footer mashup for each section. This requires having a value set for the
+					<strong>Section Field</strong>.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Footers:</div>
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="ShowsFooters"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/pinnedFooter.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					If enabled, the footer for the current section will stick to the bottom edge of the collection and never scroll out of view.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Pinned Footers:</div>
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="TableLayoutPinsFootersToContentEdge"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewHeight.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					Controls the height of each section footer.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Footer Height:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="FooterHeight" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewMashups.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin-top: 8px;">
+					The mashup to use as the footer content.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Mashup Name:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="Mashups" data-property="FooterMashupName"></div>
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The section parameter name for the selected mashup. This mashup parameter will receive the section's name.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Section Parameter Name:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="FooterMashupSectionProperty" data-single-binding="YES" data-source-property="FooterMashupName" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">EMPTY MASHUP</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/emptyMashup.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Empty Mashup
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin-top: 8px;">
+					If set, this mashup will be used when collection view receives a data set that is empty. The empty mashup will always be as large 
+					as collection view's frame and does not receive any parameter.
+					<br/>
+					<br/> Note that the empty mashup only appears after collection view loads an empty data set; it does not appear if collection view 
+					has not received any data set at all.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Mashup Name:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="Mashups" data-property="EmptyMashupName"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="flowLayout">
+	<div class="BMCollectionViewWindowHeading">Flow Layout</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">GENERAL SETTINGS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/sectionInsets.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Section Insets
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the padding between each section and the collection view edges and other sections.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Left:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="SectionInsetLeft" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Top:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="SectionInsetTop" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Right:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="SectionInsetRight" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Bottom:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="SectionInsetBottom" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/cellSize.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Cell size
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the size of each mashup.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Width:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="CellWidth" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Height:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="CellHeight" data-primitive-type="Int"
+					/>
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Alternatively, the cells may be configured to use a dynamic sizing provided by the data set. If these fields are set 
+					they take precedence over the static cell size.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Width Field:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+						data-property="CellWidthField" data-single-binding="YES" data-source-property="Data" />
+					<div class="BMCollectionViewVerticalTablePropertyListName">Height Field:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="CellHeightField" data-single-binding="YES" data-source-property="Data" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/contentPadding.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Content Padding
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the spacing between the top and bottom edges of the collection view and its content.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Top:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="FlowLayoutTopPadding" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Bottom:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="FlowLayoutBottomPadding"
+					 data-primitive-type="Int" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutRowSpacing.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Row Spacing
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the spacing between each row.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Spacing:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="FlowLayoutRowSpacing" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutEdge.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Minimum Spacing
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the minimum horizontal spacing between each cell. The spacing between cells is guaranteed to be greater than or
+					equal to this value regardless of the selected flow setting.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Spacing:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="FlowLayoutMinimumSpacing"
+					 data-primitive-type="Int" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutLeftAlignFinalRow.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Left Align Final Row
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, the cells in the final row will be left aligned so they match the positions of the cells in the other rows. Otherwise,
+					they will use the flow rule selected below.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="FlowLayoutLeftAlignFinalRow"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">FLOW SETTINGS</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		Controls how the cells are arranged in each row.
+	</div>
+	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="FlowLayoutGravity">
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Spaced">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutSpaced.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Spaced
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the cells will have equal horizontal space between them and the edges.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Edge">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutEdge.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Edge
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the cells will have equal horizontal space between them.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Center">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutCenter.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Center
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the cells will have no space between them.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Expand">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutExpand.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Expand
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the cells will enlarge to fill the entire row.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">ALIGNMENT SETTINGS</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		Controls how the cells are aligned vertically in each row, when they have varying heights.
+	</div>
+	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="FlowLayoutAlignment">
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Top">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutAlignmentTop.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Top
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, cells will align to the top of their row.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Center">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutAlignmentCenter.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Center
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, cells will align to the center of their row.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Bottom">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutAlignmentBottom.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Bottom
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, cells will align to the bottom of their row.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Expand">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutAlignmentCenter.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Expand
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, cells will expand to match the height of the tallest cell within their row.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">CONTENT GRAVITY</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		Controls how content is aligned within the collection view when its total size is smaller than the collection view's size.
+	</div>
+	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="FlowLayoutContentGravity">
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Top">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutTopContentGravity.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Top
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the content will be aligned to the top of the collection view.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Center">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutCenterContentGravity.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Center
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the content will be aligned to the center of the collection view.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Bottom">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutBottomContentGravity.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Bottom
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the content will be aligned to the bottom of the collection view.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">HEADERS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/header.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Headers
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					If enabled, the flow layout will create a header mashup for each section. This requires having a value set for the
+					<strong>Section Field</strong>.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Headers:</div>
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="ShowsHeaders"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/pinnedHeader.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					If enabled, the header for the current section will stick to the top edge of the collection and never scroll out of view.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Pinned Headers:</div>
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="FlowLayoutPinsHeadersToContentEdge"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewHeight.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					Controls the height of each section header.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Header Height:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="HeaderHeight" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewMashups.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin-top: 8px;">
+					The mashup to use as the header content.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Mashup Name:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="Mashups" data-property="HeaderMashupName"></div>
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The section parameter name for the selected mashup. This mashup parameter will receive the section's name.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Section Parameter Name:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="HeaderMashupSectionProperty" data-single-binding="YES" data-source-property="HeaderMashupName" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">FOOTERS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/footer.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Footers
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					If enabled, the flow layout will create a footer mashup for each section. This requires having a value set for the
+					<strong>Section Field</strong>.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Footers:</div>
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="ShowsFooters"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/pinnedFooter.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					If enabled, the footer for the current section will stick to the bottom edge of the collection and never scroll out of view.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Pinned Footers:</div>
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="FlowLayoutPinsFootersToContentEdge"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewHeight.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					Controls the height of each section footer.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Footer Height:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="FooterHeight" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewMashups.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin-top: 8px;">
+					The mashup to use as the footer content.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Mashup Name:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="Mashups" data-property="FooterMashupName"></div>
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The section parameter name for the selected mashup. This mashup parameter will receive the section's name.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Section Parameter Name:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="FooterMashupSectionProperty" data-single-binding="YES" data-source-property="FooterMashupName" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">EMPTY MASHUP</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/emptyMashup.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Empty Mashup
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin-top: 8px;">
+					If set, this mashup will be used when collection view receives a data set that is empty. The empty mashup will always be as large 
+					as collection view's frame and does not receive any parameter.
+					<br/>
+					<br/> Note that the empty mashup only appears after collection view loads an empty data set; it does not appear if collection view 
+					has not received any data set at all.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Mashup Name:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="Mashups" data-property="EmptyMashupName"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="masonryLayout">
+	<div class="BMCollectionViewWindowHeading">Masonry Layout</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">GENERAL SETTINGS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/cellSize.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Cell height
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Ideally, for masonry layout, the cells should be configured to use a dynamic sizing provided by the data set. If these fields are set 
+					they take precedence over the static row height.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Height Field:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+						data-property="CellHeightField" data-single-binding="YES" data-source-property="Data" />
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Alternatively a static height may be used instead.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Height:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="CellHeight" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/contentPadding.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Content Padding
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the spacing between the top and bottom edges of the collection view and its content.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Top:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="MasonryLayoutTopPadding"
+					 data-primitive-type="Int" />
+					<div class="BMCollectionViewVerticalTablePropertyListName">Bottom:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="MasonryLayoutBottomPadding"
+					 data-primitive-type="Int" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/masonryLayoutNumberOfColumns.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Number of Columns
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls how many columns the masonry layout should create. When setting this property, the cells will expand in width to
+					fill all available area.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Columns:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="MasonryLayoutNumberOfColumns"
+					 data-primitive-type="Int" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/masonryLayoutColumnWidths.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Column Width
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If this property is set, the
+					<strong>Number of Columns</strong> property is ignored. This property represents the minimum width that the cells in each column
+					may have. When setting property, the masonry layout will create as many columns as will fit in its container based on
+					this size.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Width:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="MasonryLayoutColumnWidth"
+					 data-primitive-type="Int" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/masonryLayoutColumnSpeeds.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Column Speeds
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls how fast each column should scroll. In the masonry layout, each column may have a different scrolling speed, set
+					as a factor of the regular scrolling speed. For example, a column with the speed set to 2 will scroll twice as fast
+					as normal.
+					<br/>
+					<br/> Columns with greater speeds will be able to fit more cells than columns with lower speeds.
+					<br/>
+					<br/> This property should be set as a comma-separated list of speeds (e.g. "1, 2, 0.5, 3, 1, 2"). The number of speeds should
+					generally match or exceed the number of columns, but if there are more columns than speeds, those columns will use a
+					speed of 1 by default.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Speeds:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="MasonryLayoutColumnSpeeds" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/masonryLayoutColumnSpacing.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Column Spacing
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the horizontal spacing between each column.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Spacing:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="MasonryLayoutColumnSpacing"
+					 data-primitive-type="Int" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/masonryLayoutCellSpacing.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Row Spacing
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the vertical spacing between each cell.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Spacing:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="MasonryLayoutCellSpacing"
+					 data-primitive-type="Int" />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="stackLayout">
+	<div class="BMCollectionViewWindowHeading">Stack Layout</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">GENERAL SETTINGS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/stackLayoutInsets.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Inset
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the padding between the frontmost cell and the collection view edges.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Left:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="StackLayoutInsetLeft" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Top:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="StackLayoutInsetTop" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Right:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="StackLayoutInsetRight" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Bottom:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="StackLayoutInsetBottom" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/stackLayoutSpread.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Spread
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the distance between the frontmost cell and each background cell.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Spread:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="StackLayoutSpread" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/stackLayoutBackgroundCell.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Background Cells
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls how many background cells can be visible before they fade into the background.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Cells:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="StackLayoutNumberOfBackgroundCells" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/stackLayoutScale.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Scale
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls how much background cells will scale down before disappearing into the background.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Scale:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="StackLayoutMinimumScale" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/stackLayoutBlur.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Blur
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, this controls how much blur to apply to background cells.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+
+					<div class="BMCollectionViewVerticalTablePropertyListName">Blur:</div>
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="StackLayoutBlursBackgroundCells"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+
+					<div class="BMCollectionViewVerticalTablePropertyListName">Blur Amount:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="StackLayoutMaximumBlur"
+					 data-primitive-type="Int" />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="tileLayout">
+	<div class="BMCollectionViewWindowHeading">Tile Layout</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">GENERAL SETTINGS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/sectionInsets.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Section Insets
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the padding between each section and the collection view edges and other sections.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Left:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="SectionInsetLeft" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Top:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="SectionInsetTop" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Right:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="SectionInsetRight" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Bottom:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="SectionInsetBottom" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/cellSize.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Cell size
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The cells should use a dynamic sizing provided by the data set. If these fields are set 
+					they take precedence over the static cell size.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Width Field:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+						data-property="CellWidthField" data-single-binding="YES" data-source-property="Data" />
+					<div class="BMCollectionViewVerticalTablePropertyListName">Height Field:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="CellHeightField" data-single-binding="YES" data-source-property="Data" />
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Alternatively, a static size may be selected. Note that in this case, Flow Layout will have a similar appearance and is likely to be
+					more performant.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Width:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="CellWidth" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Height:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="CellHeight" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/contentPadding.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Content Padding
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the spacing between the top and bottom edges of the collection view and its content.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Top:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="TileLayoutTopPadding" data-primitive-type="Int"
+					/>
+					<div class="BMCollectionViewVerticalTablePropertyListName">Bottom:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="TileLayoutBottomPadding"
+					 data-primitive-type="Int" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/tileLayoutGridSize.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Unit Size
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls size of the grid system used by tile layout. Cell sizes will be constrained to a multiple of this size, 
+					also taking the spacing size into account, so if a cell's size would be double this unit size, its final size will be 
+					<pre><code>2 * unit size + spacing size</code></pre>
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Size:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="TileLayoutGridSize" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/tileLayoutSpacingSize.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Spacing
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the spacing to use between the cells. This spacing will be applied to all sides of the cells.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Spacing:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="TileLayoutSpacing"
+					 data-primitive-type="Int" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">HEADERS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/header.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Headers
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					If enabled, tile layout will create a header mashup for each section. This requires having a value set for the
+					<strong>Section Field</strong>.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Headers:</div>
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="ShowsHeaders"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/pinnedHeader.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					If enabled, the header for the current section will stick to the top edge of the collection and never scroll out of view.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Pinned Headers:</div>
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="TileLayoutPinsHeadersToContentEdge"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewHeight.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					Controls the height of each section header.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Header Height:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="HeaderHeight" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewMashups.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin-top: 8px;">
+					The mashup to use as the header content.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Mashup Name:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="Mashups" data-property="HeaderMashupName"></div>
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The section parameter name for the selected mashup. This mashup parameter will receive the section's name.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Section Parameter Name:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="HeaderMashupSectionProperty" data-single-binding="YES" data-source-property="HeaderMashupName" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">FOOTERS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/footer.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Footers
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					If enabled, tile layout will create a footer mashup for each section. This requires having a value set for the
+					<strong>Section Field</strong>.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Footers:</div>
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="ShowsFooters"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/pinnedFooter.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					If enabled, the footer for the current section will stick to the bottom edge of the collection and never scroll out of view.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Pinned Footers:</div>
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="TileLayoutPinsFootersToContentEdge"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewHeight.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin: auto 0;">
+					Controls the height of each section footer.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Footer Height:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="FooterHeight" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewMashups.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin-top: 8px;">
+					The mashup to use as the footer content.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Mashup Name:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="Mashups" data-property="FooterMashupName"></div>
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The section parameter name for the selected mashup. This mashup parameter will receive the section's name.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Section Parameter Name:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="FooterMashupSectionProperty" data-single-binding="YES" data-source-property="FooterMashupName" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">EMPTY MASHUP</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/emptyMashup.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Empty Mashup
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription" style="margin-top: 8px;">
+					If set, this mashup will be used when collection view receives a data set that is empty. The empty mashup will always be as large 
+					as collection view's frame and does not receive any parameter.
+					<br/>
+					<br/> Note that the empty mashup only appears after collection view loads an empty data set; it does not appear if collection view 
+					has not received any data set at all.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList" style="margin-bottom: 32px;">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Mashup Name:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="Mashups" data-property="EmptyMashupName"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="cellConfiguration">
+	<div class="BMCollectionViewWindowHeading">Cell Configuration</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">MASHUP</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewMashups.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Mashup Name
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The Mashup that will be used as each cell's content.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Mashup Name:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="Mashups" data-property="CellMashupName"></div>
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Alternatively, collection view can dinamically select mashups to use for cells based on the value of a field within the data
+					set. When this field is specified <b>it prevents the use of separate Selected or Editing state mashups</b>.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Name Field:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="CellMashupNameField" data-single-binding="YES" data-source-property="Data" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">PARAMETERS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Parameters
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the mapping between the fields in the data source and the cell mashup. The left-hand side of this table contains
+					the data source fields while the right-hand side contains the matching cell mashup parameter.<br/><br/>
+					Note that the mashup parameters are two-way bindings. That is, it is possible to bind values back to the mashup parameters 
+					specified here and collection view will monitor them for changes. Whenever any parameter is updated in this way, collection view 
+					will update its <code>Data</code> property allowing the modified data to be used elsewhere.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableEntry" data-double-binding="YES" data-source-property="Data" data-target-property="CellMashupName"
+		 data-primary-property="CellMashupName" data-property="CellMashupPropertyBinding">
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">GLOBAL PARAMETERS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Global Parameters
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Global parameters are parameters whose values are shared by all cells within collection view. These parameters are created and 
+					bound directly on collection view. The mashup parameter names should be the same as these global parameters.<br/><br/>
+					Just like regular parameters these are two-way bindings. That is, it is possible to bind values back to the mashup parameters 
+					specified here and collection view will monitor them for changes. Whenever any parameter is updated in this way, collection view 
+					will update the relevant global property allowing the modified data to be used elsewhere.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableEntry" data-double-binding="YES" data-source-property="CellMashupName" data-target-property="__BaseTypes"
+		 data-primary-property="CellMashupName" data-property="CellMashupGlobalPropertyBinding">
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="selection">
+	<div class="BMCollectionViewWindowHeading">Selection</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice">
+		Contains settings to configure the selection behaviour.
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">GENERAL SETTINGS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewMashups.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Selection Parameter
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					This property may be set to one of the cell mashup's parameters. If it is set, that parameter will receive the selected state
+					of the item represented by the mashup.
+					<br/>
+					<br/>It may be used, for example, to further customize the appearance of selected rows.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Selection Parameter:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="CellMashupSelectedField" data-single-binding="YES" data-source-property="CellMashupName" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/cellSelection.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Cell Selection
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, clicking or tapping on a cell will select it. When this is disabled, the
+					<strong>Collection View Selection Controller</strong> widget may be used to control the selection.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="CanSelectCells"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/autoSelectFirstCell.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Auto Select First Cell
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, whenever the data set is updated, if there is no selected cell, the collection view will automatically select
+					the first available cell.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="AutoSelectsFirstCell"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/scrollToSelectedCell.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Scroll to Selected Cell
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled and there are any other widgets bound to the same data source as this collection view, whenever one of these other
+					widgets selects an item, the collection view will automatically scroll to reveal the newly selected cell.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="ScrollsToSelectedCell"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+				<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewMashups.png"
+				/>
+				<div class="BMCollectionViewVerticalTableDescription">
+					<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+						Selected Mashup Name
+					</div>
+					<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+						Optionally, when an item is selected, its mashup will be replaced by the mashup specified here. 
+						This may be used to further customize the appearance of selected cells.
+					</div>
+					<div class="BMCollectionViewVerticalTablePropertyList">
+						<div class="BMCollectionViewVerticalTablePropertyListName">Mashup Name:</div>
+						<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+						 data-entity-type="Mashups" data-property="CellMashupNameSelected"></div>
+					</div>
+				</div>
+			</div>
+	</div>
+
+	<div class="BMCollectionViewVerticalTableSectionHeading">MULTI SELECTION</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		Controls the behaviour of the multi-selection.
+	</div>
+	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="CellMultipleSelectionType">
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Disabled">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Disabled
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When chosen, multiple selection is disabled and selecting a cell will cause the current selection to be cleared.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="ClickTap">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Click or Tap
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When chosen, the collection view will allow users to select multiple cells by clicking or tapping on them. When clicking on a deselected
+					cell, that cell will be added to the selection. When clicking on a selected cell, that cell will be removed from the
+					selection.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="SelectionMode">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Selection Mode
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When chosen, multiple selection can be controlled by triggering the <code>BeginSelectionMode</code> and <code>FinishSelectionMode</code> services.<br/>
+					When selection mode is enabled, multiple selection works as if <b>Click or Tap</b> had been chosen and as if <b>Disabled</b> had been selected
+					when it is not enabled.<br/><br/>
+					Additionally, the <code>CellMultipleSelectionModeEnabled</code> property is a bindable BOOLEAN that may be used to verify the multiple selection mode 
+					status.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="CtrlClick">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Ctrl + Click
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When chosen, multiple selection is only enabled when clicking on cells while holding the <b>Control</b> key.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">ADDITIONAL INFORMATION</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Obtaining information about the selection
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					In addition to these settings, the <code>HasSelectedCells</code> property is a bindable BOOLEAN that may be used to retrieve whether the
+					collection view has any selected cells or not.<br/><br/>
+					Similarly, the <code>SelectedCellsCount</code> property is a bindable BOOLEAN that may be used to retrieve the number of selected cells 
+					within collection view.<br/><br/>
+					Finally, <code>CellMultipleSelectionModeEnabled</code> is a bindable BOOLEAN that may be used to retrieve whether multiple selection mode 
+					is enabled or not.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Controlling the selection
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Collection view provides several methods to control the selection beyond the multi-selection mode and built-in selection behaviours.<br/><br/>
+					The <code>SelectAll</code> service may be invoked to select all cells within collection view.<br/>
+					The <code>Deselect</code> service may be invoked to clear the entire selection.<br/><br/>
+					Finally, the <code>Collection View Selection Controller</code> widget, described in the next section, may be used to further control the 
+					selection behaviour.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Selection Controller
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The selection controller is a separate widget that may be used inside the cell mashups. Its purpose is to enable the cell itself to control 
+					its own selection state. It contains three services <code>SelectCell</code>, <code>DeselectCell</code> and <code>ToggleSelection</code>. 
+					The selection controller can be used together with the <code>Selection Parameter</code> to programatically control the selection.
+					<br/>
+					<br/> Trigger the <code>SelectCell</code> service to select the cell.<br/>
+					Trigger the <code>DeselectCell</code> service to deselect the cell.<br/>
+					Trigger the <code>ToggleSelection</code> service to toggle the selection state for the cell.<br/><br/>
+					Selection controller works regardless of whether selection is enabled for this collection view or not.
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="styles">
+	<div class="BMCollectionViewWindowHeading">Styles</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">STATES</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/cellHoverStyle.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Background Style
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The background color used for cells.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Background Style:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="StyleDefinitions" data-property="CellStyle"></div>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/cellHoverStyle.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Hover Style
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The background color used when hovering cells.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Hover Style:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="StyleDefinitions" data-property="CellStyleHover"></div>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/cellActiveStyle.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Active Style
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The background color used when clicking or tapping on cells.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Active Style:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="StyleDefinitions" data-property="CellStyleActive"></div>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/cellSelectedStyle.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Selected Style
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The background color used for selected cells. The hover and active background colors will appear on top of the selected color
+					when both styles are used.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Selected Style:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="StyleDefinitions" data-property="CellStyleSelected"></div>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/cellRippleStyle.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Ripple
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When this property is enabled, a ripple effect appears when clicking or tapping on a cell.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="UsesRipple"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When ripples are enabled, this is the background color of the ripple effect.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Ripple Style:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="StyleDefinitions" data-property="RippleStyle"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">APPEARANCE</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/cellCSSStyle.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					CSS Styles
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The CSS box-shadow to use for each cell. When this property set, the cells will additionally have their overflow CSS property
+					set to hidden.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">box-shadow:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="CellBoxShadow" />
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The CSS border-radius to use for each cell. When this property set, the cells will additionally have their overflow CSS property
+					set to hidden.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">border-radius:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="CellBorderRadius" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/introAnimation.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Intro Animation
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When this property is enabled, an animation will be played the first time any data loads for this collection view.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="PlaysIntroAnimation"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">SCROLL BAR</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/scrollBarStyle.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Scroll Bar Style
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the appearance of the scroll bar. Selecting a style here will cause collection view to use a custom scroll bar
+					instead of the platform default one.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Style:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="StyleDefinitions" data-property="ScrollbarStyle"></div>
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If a style has been selected, the width and rounded corners of the scroll bar may also be customized.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Width:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES"  data-primitive-type="Int"
+					 data-property="ScrollbarWidth" />
+					 <div class="BMCollectionViewVerticalTablePropertyListName">Border Radius:</div>
+					 <input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES"  data-primitive-type="Int"
+					  data-property="ScrollbarBorderRadius" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/scrollBarTrackStyle.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Scroll Bar Track Style
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the appearance of the scroll bar background area. Using this style requires also having chosen a scroll bar style.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Track Style:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="StyleDefinitions" data-property="ScrollbarTrackStyle"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">POINTER STYLE</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		Controls how the mouse pointer appears when hovering over this collection view's cells.
+	</div>
+	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="CellPointer">
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="auto">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/pointerStyleDefault.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Default
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the pointer will change based on the cell's contents. For example, when hovering
+					over text, the pointer will change into a caret pointer.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="pointer">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/pointerStyleHand.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Hand
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the pointer will appear as a hand, the same as when hovering on a link.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="default">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/pointerStyleArrow.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Arrow
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the pointer will appear as a regular arrow.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">COLLECTION VIEW</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/collectionViewBackgroundStyle.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Background Style
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The background color used for the collection view.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Background Style:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="StyleDefinitions" data-property="BackgroundStyle"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="menu">
+	<div class="BMCollectionViewWindowHeading">Slide Menu</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">CONFIGURATION</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/slideMenu.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Slide Menu
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When this property is set to a state definition, a hidden menu will be available for each cell. The states in the selected
+					state definition will be used as menu entries and their associated styles will be used to style each menu entry.
+					<br/>
+					<br/> To open the slide menu, right-click on the cells on devices with mice or slide the cells towards the left on touch
+					devices.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Slide Menu:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="StateDefinitions" data-property="CellSlideMenu"></div>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/slideMenuIconSize.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Icon Size
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the size of the icons for each menu entry. By using larger images, it is possible to target high-density displays
+					by specifying a lower icon size here.
+					<br/>
+					<br/> The images used as icons in slide menus should always have a square aspect ratio, otherwise they will appear stretched.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Icon Size:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="CellSlideMenuIconSize"
+					 data-primitive-type="Int" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/useBuiltInGestures.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Built-in Gestures
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, collection view will use the built-in gestures to show and hide the slide menu.
+					<br/>
+					<br/> If this property is disabled, use a <code>Collection View Menu Controller</code> widget, described at the end 
+					of this page to control the slide menu.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="CellSlideMenuUseBuiltIn"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">ENTRY ALIGNMENT</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		Controls the menu options are arranged.
+	</div>
+	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="CellSlideMenuOrientation">
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Horizontal">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/slideMenuHorizontalAlignment.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Horizontal
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the menu entries will be laid out horizontally. This is best used with the table layout.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Vertical">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/slideMenuVerticalAlignment.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Vertical
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the menu entries will be laid out vertically. This is best used with the flow or masonry layouts.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">ICON ALIGNMENT</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		Controls how the icon and label are arranged for each menu option.
+	</div>
+	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="CellSlideMenuIconGravity">
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Left">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/slideMenuIconLeft.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Left
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the entry icon will appear to the left of its label.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Above">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/slideMenuIconAbove.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Above
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the entry icon will appear above its label.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Right">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/slideMenuIconRight.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Right
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the entry icon will appear to the right of its label.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Below">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/slideMenuIconBelow.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Below
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the entry icon will appear below its label.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">ADDITIONAL INFORMATION</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Obtaining information about the menu selection
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					For each entry defined in the menu state definition, a <code>Menu:&lt;Entry&gt;</code> event is created collection view. 
+					Each of these events is triggered whenever the associated menu entry is selected for a cell.<br/><br/>
+					Information about which cell the menu entry was selected in is available through the various <code>Event:...</code> properties,
+					the same ones used for regular events.<br/><br/>
+					For more information about event handling, see the <b>Events</b> section.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Menu Controller
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The menu controller is a separate widget that may be used inside the cell mashups. Its purpose is to enable the cell itself to control 
+					the display of the menu, trigger menu events and get notified of when menu entries are selected for it.<br/>
+					It contains three services <code>ExpandMenu</code>, <code>CollapseMenu</code> and <code>ToggleMenu</code>.<br/>
+					Additionally, it contains the same <code>CellSlideMenu</code> property that should be set to the same value as collection view.<br/>
+					<br/>
+					<br/> Trigger the <code>ExpandMenu</code> service to open the slide menu.<br/>
+					Trigger the <code>CollapseMenu</code> service to close the slide menu.<br/>
+					Trigger the <code>ToggleMenu</code> service to toggle the slide menu.<br/><br/>
+					If <code>CellSlideMenu</code> is set, the menu controller creates one event and one service for each menu entry.<br/>
+					Trigger the service for one of the entries to cause collection view to emit the associated event initialized with 
+					the values of the triggering cell. The associated event on the menu controller is triggered when that entry is selected on the menu 
+					for that cell.<br/><br/>
+					When used in conjunction with the built-in behaviour disabled, the menu controller can become a powerful way to define and trigger custom 
+					events originating from collection view cells.
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="dataManipulation">
+	<div class="BMCollectionViewWindowHeading">Data Manipulation</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice">
+		Contains settings to configure client side data manipulation. When using client side data manipulation, the
+		<strong>Data</strong> property may be left unbound, but the
+		<strong>Identifier Field</strong> must still be set correctly.<br/><br/>
+		Note that regardless of whether a cell is within an editing state or not, widgets and services can bind their values
+		back to the mashup parameters. Collection View will see that the parameter's value has changed and update its own 
+		data property accordingly.
+	</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewMashups.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Editing Mashup Name
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Optionally, when using item editing, whenever an item is marked as being edited, its mashup will be replaced by the mashup
+					specified here.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Mashup Name:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="Mashups" data-property="CellMashupNameEditing"></div>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/supplementaryViewMashups.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Editing Parameter
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					This property may be set to one of the cell mashup's parameters. If it is set, that parameter will receive the editing state
+					of the item represented by the mashup.
+					<br/>
+					<br/>It may be used, for example, to make editable fields visible while the mashup is being edited. This property may be
+					used in place of or together with the
+					<strong>Editing Mashup Name</strong>.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Editing Parameter:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="CellMashupEditingField" data-single-binding="YES" data-source-property="CellMashupName" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/dataShape.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Data Shape
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When using the collection view to build an infotable on the client side, the
+					<strong>Data</strong> parameter may be left unbound. In this case, the
+					<strong>Data Shape</strong> parameter must be set instead. Whenever a new item is inserted into the collection view, it will
+					use this data shape to create the correct fields for that item.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Data Shape:</div>
+					<div class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-entity="YES"
+					 data-entity-type="DataShapes" data-property="DataShape"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">ADDITIONAL INFORMATION</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Creating and deleting items
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					To create an item, trigger one of the <code>CreateItemAtBeginning</code>, <code>CreateItemAtEnd</code>, <code>CreateItemAtIndex</code> services.
+					If you are using the <code>CreateItemAtIndex</code> service, make sure to bind the <code>CreationIndex</code> property to the appropriate
+					index.<br/><br/>
+					Collection View will create a random value for the field that is selected as the <code>Identifier Field</code> and set all other fields to blank.<br/>
+					When an item is created in this way, collection view will automatically put its cell into an editing state.<br/><br/>
+					To delete an item, bind the identifier that should be deleted to the <code>DeletionUID</code> property and trigger the <code>DeleteItem</code> service.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Editing Controller
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The editing controller is a separate widget that may be used inside the cell mashups. Its purpose is to enable and disable the editing state
+					of the item represented by that cell. It contains two services <code>BeginEditing</code> and <code>FinishEditing</code>.
+					<br/>
+					<br/> Trigger the <code>BeginEditing</code> service to start editing mode for that item. The item's mashup will have its 
+					<code>Editing Parameter</code> set to <code>true</code> and if there is a separate <code>Editing Mashup Name</code> specified, the cell will switch
+					to displaying that mashup.<br/><br/>
+					Trigger the <code>FinishEditing</code> service to end editing mode for that item. The item's mashup will have its 
+					<code>Editing Parameter</code> set to <code>false</code> and if there is a separate <code>Editing Mashup Name</code> specified, the cell will 
+					switch back to displaying its usual mashup.<br/><br/>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="drag">
+	<div class="BMCollectionViewWindowHeading">Drag & Drop</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice">
+		Contains settings to configure the drag & drop behaviour.
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">GENERAL SETTINGS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/canDrag.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Drag & Drop Enabled
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, dragging & dropping cells will be enabled. Use the additional settings below to configure what behaviours should be enabled 
+					through drag & drop.<br/><br/>
+					Note that the <code>CanDragCells</code> property is also a binding target which can be used to enable or disable dragging & dropping based 
+					on custom criteria.<br/><br/>
+					To begin a drag & drop operation on a mouse device, click and drag on a cell.<br/>
+					To begin a drag & drop operation on a touch device, long tap on a cell until the dragging badge appears in the top-left corner, then begin
+					dragging.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="CanDragCells"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/canMove.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Move Cells
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, cells can be reordered through drag & drop.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="CanMoveCells"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/canMoveAcrossSections.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Move Cells Across Sections
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, cells can be moved across sections via drag & drop. If a cell is moved to a different section, its <code>Section Field</code>'s 
+					value will be changed to match the new section.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="CanMoveCellsAcrossSections"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/canRemove.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Remove Cells
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, cells can be removed from the collection view by dragging them outside of the collection view.<br/><br/>
+					When a cell is removed in this way, the <code>CollectionViewDidRemoveItems</code> event is invoked.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="CanRemoveCells"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/canTransfer.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Transfer Cells
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, data can be moved or copied from this collection view into other collection views. To transfer a cell, drag it into another 
+					collection view.<br/><br/>
+					The target collection view must have the <code>Accept Cells</code> property enabled and a compatible data shape.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="CanTransferCells"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/canAccept.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Accept Cells
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, this collection view can accept cells dragged in from other collection views. In order to accept items in this way 
+					the two collection views must have compatible data shapes.<br/><br/>
+					When a cell is accepted in this way, the <code>CollectionViewDidAcceptDroppedItems</code> event is invoked.<br/><br/>
+					Note that whenever collection view accepts items, it will create and assign a random value to each item's 
+					<code>Identifier Field</code>.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="CanAcceptCells"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">TRANSFER POLICY</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		Controls the behaviour preferred by this collection view when it transfers items into another collection view.
+	</div>
+	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="CellTransferPolicy">
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Move">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/transferPolicyMove.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Move
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, this collection view will prefer moving items completely. The receiving collection view must have its accept policy 
+					set to <b>Move</b> as well, otherwise the items will be copied.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Copy">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/transferPolicyCopy.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Copy
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, items transferred by this collection view will always be copied into the target collection view regardless of its accept policy.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">ACCEPT POLICY</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		Controls the behaviour preferred by this collection view when it receives items from another collection view.
+	</div>
+	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="CellTransferPolicy">
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Move">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/acceptPolicyMove.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Move
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, this collection view will prefer moving items completely. The source collection view must have its transfer policy 
+					set to <b>Move</b> as well, otherwise the items will be copied.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Copy">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/acceptPolicyCopy.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Copy
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, items accepted by this collection view will always be copied from the target collection view regardless of its transfer policy.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Replace">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/acceptPolicyReplace.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Replace
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, items accepted by this collection view will be copied from the source collection view and completely replace this collection view's 
+					current content.
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="events">
+	<div class="BMCollectionViewWindowHeading">Events</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice">
+		Contains information about the available events and how they are handled.
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">AVAILABLE EVENTS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					CellWasClicked
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					This event is triggered whenever any cell is clicked. This event triggers even if selection is disabled.<br/>
+					The event does not trigger for supplementary views such as headers.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					CellWasRightClicked
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					This event is triggered whenever any cell is right-clicked. When this event is bound to any action, the usual browser right-click menu
+					will not appear for this collection view's cells.<br/>
+					The event does not trigger for supplementary views such as headers.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					CellWasDoubleClicked
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					This event is triggered whenever any cell is double-clicked. When this event is bound to any action, the usual click event will be triggered 
+					with a delay, in which collection view waits for a second click to occur.<br/>
+					The event does not trigger for supplementary views such as headers.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					CellWasLongClicked
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					This event is triggered whenever any cell is long-clicked. <br/>
+					Additionally, if this event is bound to the collection view's own <code>BeginSelectionMode</code> service, long-clicking on a cell
+					will also select it.<br/>
+					The event does not trigger for supplementary views such as headers.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">ADDITIONAL INFORMATION</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Handling events
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Upon choosing a data source, collection view creates one binding source for each field in that data set. The purpose of these 
+					binding sources is to make it easy to interact with events.<br/><br/>
+					Whenever any event is triggered for a cell, all of the binding sources from the data set are updated to match the value of the 
+					cell that triggered the event. Note that it is only guaranteed that these values are correct only while the event is being 
+					handled.<br/>
+					For example, if you bind the double-click event to an action that shows the details of the double-clicked item and then click 
+					on a different item, even if the click doesn't trigger any action, the values of the event bindings will be modified to match
+					the newly clicked item.<br/>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="advanced">
+	<div class="BMCollectionViewWindowHeading">Advanced</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice">
+		NOTE: These properties primarily deal with lower-level performance optimizations and using them incorrectly may lead to unexpected
+		behavior. You should not change these properties if the collection view does not have any performance issues.
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">TESTED ADVANCED FEATURES</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/offscreenBuffer.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Off-screen Buffer
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When scrolling quickly, the renderer may not be able to keep up with adding and removing items from the collection view,
+					which may lead to items missing from the edges of the visible area or the collection view contents flashing.
+					<br/>
+					<br/> To help combat this, the collection will render elements off-screen so that they are already rendered when its container
+					scrolls.
+					<br/> Increasing this value will cause more items to be rendered off-screen, increasing the initial rendering time but decreasing
+					the likelihood of unexpected behavior while scrolling.
+					<br/> Decreasing this value will increase the initial rendering time, but is likely to cause temporarily flashing items while
+					scrolling.
+					<br/>
+					<br/> When using iScroll this value is ignored and always assumed to be 0.
+					<br/>
+					<br/> iScroll is automatically enabled when using a scroll bar style, the stack or masonry layout or when pinned headers or footers are enabled.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Off-screen Buffer:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="OffScreenBufferFactor"
+					 data-primitive-type="Int" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/iScrollWindows.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Use iScroll on Windows Desktop
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Causes iScroll, a custom scrolling implementation to be used instead of native scrolling on Windows desktops. This will cause
+					the collection to take control of the entire scrolling process, eliminating all issues related to flashing items while
+					scrolling, but it may have a negative impact on scrolling performance in certain configurations.
+					<br/> Additionally, the usual system scrollbars will be replaced with a custom iOS-like scrollbar.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="UseCustomScrollerOnWindowsDesktops"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/iScrolliOS.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Always Use iScroll on iOS
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Causes iScroll, a custom scrolling implementation to be used instead of native scrolling on all iOS browsers. This will cause
+					the collection to take control of the entire scrolling process, eliminating all issues related to flashing items while
+					scrolling, but it may have a negative impact on scrolling performance in certain configurations.
+					<br/>
+					<br/> This should be used when the cell mashups have more complex contents. In certain cases, this can cause a jittering
+					behavior while scrolling as the renderer is unable to keep up with the increased load; Enabling this property will resolve
+					that issue on iOS devices.
+					<br/>
+					<br/> Note that while running in an UIWebView, the collection view will always use iScroll to be able to react to all scroll
+					events.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="AlwaysUseCustomScrollerOniOS"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutExpand.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Resize Responsive Widgets
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					This property should be enabled if the cell mashups contain responsive widgets that need to perform additional work during
+					resizes (for example charts and gauges) and the cells can be resized if the size of the collection view changes (for example 
+					when using flow layout with the flow setting set to <strong>expand</strong>).
+					<br/>
+					<br/> Normally, to improve performance, collection view does not invoke the resize method on the cell mashup. This works fine for 
+					most mashups, but in certain cases it may lead to visual artifacts after the cell is resized. In those cases, this property should be 
+					enabled to resolve those issues at a minor cost in performance.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="HandlesResponsiveWidgets"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">EXPERIMENTAL ADVANCED FEATURES</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/fastWidgetAppend.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Fast Widget Append
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When this property is enabled, the usual widget rendering method is replaced for collection view cells with a faster version
+					that skips certain steps in the widget initialization process. This will cause certain complex mashups (especially those
+					with nested layouts) to render faster in some configurations, reducing the initial rendering time.
+					<br/>
+					<br/> Widgets created through this method will never have bounding boxes or outer containers thereby reducing the number
+					of elements added to the document, however this method has not been fully tested with all widgets and may produce unexpected
+					side-effects when the cell mashups contain certain widgets.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="[Experimental] Fast widget append"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
