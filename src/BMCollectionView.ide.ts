@@ -1198,7 +1198,15 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				Height: {
                     defaultValue: 640,
                     baseType: 'NUMBER'
-				},
+                },
+                CustomClass: {
+                    description: TW.IDE.I18NController.translate('tw.button-ide.properties.custom-class.description'),
+                    baseType: 'STRING',
+                    isLocalizable: NO,
+                    isBindingSource: YES,
+                    isBindingTarget: YES,
+                    isVisible: NO
+                },
 				Show: {
 					baseType: 'STRING',
 					defaultValue: 'all',

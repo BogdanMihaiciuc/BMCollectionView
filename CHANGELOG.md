@@ -1,4 +1,4 @@
-# 2.2
+# 2.2.1
 
 Collection View is now a typescript widget and requires the Typescript Support extension (built-in).
 
@@ -14,6 +14,8 @@ Resolved an issue that would cause the `BMCollectionViewCellSelected` CSS class 
 A new `BMCollectionViewCellEditing` CSS class is now temporarily added to cells that are in the editing state.
 
 The various controllers are now delivered in the same package as Collection View.
+
+The `CustomClass` property is now available for Collection View.
 
 # 2.1
 
