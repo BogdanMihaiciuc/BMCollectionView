@@ -1,6 +1,6 @@
 # 2.2.2
 
-Resolved an issue that would cause an improper error message to appear when modifying the global parameter. That error message would indicate that the value of the property is an invalid JSON even though it was correct.
+Resolved an issue that would cause an improper error message to appear when modifying the global parameters. That error message would indicate that the value of the property is an invalid JSON even though it was correct.
 
 Resolved a regression that would require the configuration window to be closed before picking up on mashup parameters after the mashup property was changed.
 
