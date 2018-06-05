@@ -1,3 +1,9 @@
+# 2.2.2
+
+Resolved an issue that would cause an improper error message to appear when modifying the global parameter. That error message would indicate that the value of the property is an invalid JSON even though it was correct.
+
+Resolved a regression that would require the configuration window to be closed before picking up on mashup parameters after the mashup property was changed.
+
 # 2.2.1
 
 Collection View is now a typescript widget and requires the Typescript Support extension (built-in).

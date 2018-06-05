@@ -120,13 +120,13 @@ class BMWidgetConfigurationWindow extends BMWindow {
 							entityName: self._widget.getProperty(propertyName),
 			                singleEntityChanged: function (entity){
 				                self._widget.setProperty(propertyName, entity.entityName);
-								self._notifyObserversForProperty(propertyName);
+								//self._notifyObserversForProperty(propertyName);
 				                
 				                // TODO Handle other entity pickers for the same property
 			                },
 				            singleEntityRemoved: function () {
 					            self._widget.setProperty(propertyName, undefined);
-								self._notifyObserversForProperty(propertyName);
+								//self._notifyObserversForProperty(propertyName);
 				                
 				                // TODO Handle other entity pickers for the same property
 				            }
@@ -173,7 +173,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 					// Set up the input event handler to update the property
 					primitiveEditor.on('input', function () {
 						self._widget.setProperty(propertyName, valueByConvertingValue(primitiveEditor.val()));
-						self._notifyObserversForProperty(propertyName);
+						//self._notifyObserversForProperty(propertyName);
 						
 						// Update the other primitive editors to the new value
 						otherPrimitiveEditors.val(primitiveEditor.val());
@@ -209,7 +209,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 								entry.mousedown(function (event) {
 									primitiveEditor.val(key);
 									self._widget.setProperty(propertyName, valueByConvertingValue(key));
-									self._notifyObserversForProperty(propertyName);
+									//self._notifyObserversForProperty(propertyName);
 									
 									event.stopPropagation();
 									event.preventDefault();
@@ -267,7 +267,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 					// Set up the change handler to update the property
 					toggle.on('change', function () {
 						self._widget.setProperty(propertyName, toggle[0].checked);
-						self._notifyObserversForProperty(propertyName);
+						//self._notifyObserversForProperty(propertyName);
 						
 						// Update the other toggles
 						otherToggles.prop('checked', toggle[0].checked);
@@ -295,7 +295,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 						// Get the internal value for the current choice
 						var value = selectedChoice.data('value');
 						self._widget.setProperty(propertyName, value);
-						self._notifyObserversForProperty(propertyName);
+						//self._notifyObserversForProperty(propertyName);
 						
 						// Update the UI accordingly
 						choice.find('.BMCollectionViewVerticalTableEntryChoiceSelected').removeClass('BMCollectionViewVerticalTableEntryChoiceSelected');
@@ -345,6 +345,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 					
 					// Register observerd that reload the fields when the source or target properties ar updated
 					self.registerObserver(sourceObserver, {forProperty: sourceProperty});
+					self.registerObserver(targetObserver, {forProperty: targetProperty});
 					
 					// Populate the table
 					var table = $('<div class="BMCollectionViewConfigurationDoubleBindingTable"></div>');
@@ -770,6 +771,8 @@ export function BMWidgetConfigurationWindowGetParametersForMashup(mashup: string
 			args.completionHandler({});
 		}
 	};
+
+	xhr.onerror = () => args.completionHandler({});
 	
 	xhr.send();
 }
@@ -2389,24 +2392,25 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		
 		// Delete the previous properties from the previous binding
 		var oldDefinition = JSON.parse(this.getProperty('_GlobalDataShape'));
-		
-		for (var i = 0; i < oldDefinition.length; i++) {
-			delete properties[oldDefinition[i]];
-		}
-		
+
 		var properties = this.allWidgetProperties().properties as Dictionary<BMCollectionViewWidgetProperty>;
 		
+		for (let key in oldDefinition) {
+			delete properties[key];
+		}
+		
 		// Verify the new properties to make sure they don't conflict with any of the existing ones
-		for (key in globalProperties) {
+		for (let key in globalProperties) {
 			if (properties[key]) {
-				// If there is a conflict, fail with an error and set the global properties to a blank object
+				// If there is a conflict, fail with an error and set the global properties to a blank object as the previous global properties
+				// have been deleted previously
 				this.setProperty('_GlobalDataShape', '{}');
 				return NO;
 			}
 		}
 		
 		// If there are no conflicts, update the global properties and create the relevant properties
-		for (var key in globalProperties) {
+		for (let key in globalProperties) {
 			properties[key] = {
 				isBaseProperty: NO,
 				name: key,
