@@ -51,8 +51,9 @@ module.exports = function (env, argv) {
             // generates the metadata xml file and adds it to the archive
             new WidgetMetadataGenerator(),
             new DeclarationBundlerPlugin({
-                moduleName:`${packageJson.name}`,
+                moduleName:`${packageJson.moduleName || packageJson.name}`,
                 out: path.join('typings', `${packageJson.name}.d.ts`),
+                excludePattern: new RegExp(`${packageJson.name}\.ide\.d\.ts`)
             }),
             // create the extension zip
             new ZipPlugin({
@@ -282,9 +283,9 @@ module.exports = function (env, argv) {
                     //throw err;
                 }
                 if (httpResponse.statusCode != 200) {
-                    /*throw `Failed to delete widget from thingworx. We got status code ${httpResponse.statusCode} (${httpResponse.statusMessage})
+                    console.log(`Failed to delete widget from thingworx. We got status code ${httpResponse.statusCode} (${httpResponse.statusMessage})
                     body:
-                    ${httpResponse.body}`;*/
+                    ${httpResponse.body}`);
                 } else {
                     console.log(`Deleted previous version of ${packageName} from Thingworx!`);
                 }

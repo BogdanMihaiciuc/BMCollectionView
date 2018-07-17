@@ -327,7 +327,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
     /**
      * The collection view managing this mashup cell's lifecycle.
      */
-    collectionView: BMManagedCollectionView;
+    collectionView!: BMManagedCollectionView;
 
     /**
      * The name of the animation queue used by Collection View Mashup Cell when animating the background color of cells.
@@ -337,15 +337,18 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 	/**
 	 * The name of the mashup managed by this mashup cell.
 	 */
-    private _mashup: string;
+    private _mashup?: string;
     
 	/**
 	 * The name of the mashup managed by this mashup cell.
 	 */
-	get mashup(): string {
+	get mashup(): string | undefined {
 		return this._mashup;
 	}
-	set mashup(mashup: string) {
+	set mashup(mashup: string | undefined) {
+		// Ignore undefined assignments
+		if (!mashup) return;
+
 		if (mashup != this._mashup) {
 			if (this.itemType == BMCollectionViewLayoutAttributesType.Cell) this.reuseIdentifier = mashup;
 			this._mashup = mashup;
@@ -356,12 +359,12 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 	/**
 	 * The mashup definition for the currently loaded mashup.
 	 */
-	private _mashupDefinition: TWMashupEntityDefinition;
+	private _mashupDefinition?: TWMashupEntityDefinition;
 
 	/**
 	 * The mashup instance managed by this mashup cell.
 	 */
-	_mashupInstance: BMCollectionViewMashup;
+	_mashupInstance?: BMCollectionViewMashup;
 
 	/**
 	 * The mashup instance managed by this mashup cell.
@@ -483,7 +486,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 	 * A dictionary containing the mapping between infotable field names and mashup parameter names.
 	 * This object should have the infotable field names as keys and their corresponding parameter names as values.
 	 */
-	_parameterMap: Dictionary<string>;
+	_parameterMap: Dictionary<string> = {};
 
 	/**
 	 * The widget managing this cell's collection view.
@@ -497,6 +500,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 	 * to the values currently used by the cell.
 	 */
 	_setParametersInternal(): void {
+
 		var mashup = this._mashupInstance;
 		if (mashup && this._parameters) for (var parameter in this._parameterMap) {
             mashup.BM_setParameterInternal(this._parameterMap[parameter], this._parameters[parameter]);
@@ -510,7 +514,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 	_setGlobalParametersInternal(): void {
 		var mashup = this._mashupInstance;
 		if (mashup) Object.getOwnPropertyNames(this._globalParameters).forEach(parameter => {
-            mashup.BM_setParameterInternal(parameter, this._globalParameters[parameter]);
+            mashup!.BM_setParameterInternal(parameter, this._globalParameters[parameter]);
         });
 	}
 
@@ -652,9 +656,13 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 	 * If the mashup definition is not in the mashup cache, the cell will perform an asynchronous request
 	 * to retrieve the mashup's definition.
 	 */
-	_loadMashup(): void {
+	private _loadMashup(): void {
 		let definition;
 		var self = this;
+
+		// If mashup is undefined, there is nothing to load
+		if (!this._mashup) return;
+
 		if (BMCollectionViewMashupDefinitionCache[this._mashup]) {
 			definition = BMCollectionViewMashupDefinitionCache[this._mashup];
 			self._renderMashupNamed(this._mashup, {withDefinition: definition});
@@ -677,7 +685,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 		if (this._awaitsRendering) {
 			this._awaitsRendering = NO;
 			if (this._mashupDefinition) {
-				this._renderMashupNamed(this._mashup, {withDefinition: this._mashupDefinition});
+				this._renderMashupNamed(this._mashup!, {withDefinition: this._mashupDefinition});
 			}
 		}
 	}
@@ -1080,7 +1088,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 					widget.mashup.dataMgr.addSelectedRowsForWidgetHandleSelectionUpdateSubscription(binding, function (sourceId, selectedRows, selectedRowIndices) {
 						// Only notify if the selection update comes from a different widget
 						if (sourceId !== widget.jqElementId) {
-							widget.handleSelectionUpdate(binding.PropertyMaps[0].TargetProperty, selectedRows, selectedRowIndices);
+							widget.handleSelectionUpdate!(binding.PropertyMaps[0].TargetProperty, selectedRows, selectedRowIndices);
 						}
 					} as any);
 				}
@@ -1089,6 +1097,13 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 	}
 	//#endregion
 
+}
+
+// Export mashup cell as a global property to allow non-webpack scripts to extend it
+declare global {
+	interface Window {
+		BMCollectionViewMashupCell: typeof BMCollectionViewMashupCell;
+	}
 }
 
 (window as any).BMCollectionViewMashupCell = BMCollectionViewMashupCell;
@@ -2151,6 +2166,16 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					
 					// If an object changes section, the layout must be invalidated
 					if (this.sectionField && oldObject[this.sectionField] !== newObject[this.sectionField]) {
+						shouldUpdateLayout = YES;
+						break;
+					}
+
+					// When using data-driven dimensions and any dimension changes, the layout must be invalidated
+					if (this.cellWidthField && oldObject[this.cellWidthField] != newObject[this.cellWidthField]) {
+						shouldUpdateLayout = YES;
+						break;
+					}
+					if (this.cellHeightField && oldObject[this.cellHeightField] != newObject[this.cellHeightField]) {
 						shouldUpdateLayout = YES;
 						break;
 					}

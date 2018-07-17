@@ -1,3 +1,9 @@
+# 2.2.3
+
+Resolved an issue that caused the layout to not update when the only changes in a data update were item size changes. For non-standard layouts, it is still the responsibility of the developer to ensure that data changes trigger layout invalidations correctly when custom item properties change.
+
+Resolved an issue that caused `Event:...` properties to not be created when binding a data source.
+
 # 2.2.2
 
 Resolved an issue that would cause an improper error message to appear when modifying the global parameters. That error message would indicate that the value of the property is an invalid JSON even though it was correct.

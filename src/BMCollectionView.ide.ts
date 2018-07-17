@@ -39,22 +39,22 @@ class BMWidgetConfigurationWindow extends BMWindow {
 	/**
 	 * The collection view that will manage the main sections.
 	 */
-	_groupCollectionView: BMCollectionView;
+	_groupCollectionView!: BMCollectionView;
 	
 	/**
 	 * The callbacks to execute when this window closes.
 	 */
-	private _windowDidCloseCallbacks: (() => void)[];
+	private _windowDidCloseCallbacks!: (() => void)[];
 	
 	/**
 	 * A dictionary containing the registered observers for each property.
 	 */
-    private _propertyObservers: Dictionary<((any) => void)[]>;
+    private _propertyObservers!: Dictionary<((any) => void)[]>;
     
     /**
      * The jQuery element representing this window's content.
      */
-    private _content: $;
+    private _content!: $;
 	
 	/**
 	 * Must be invoked after creation to initialize this widget configuration window.
@@ -176,7 +176,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 						//self._notifyObserversForProperty(propertyName);
 						
 						// Update the other primitive editors to the new value
-						otherPrimitiveEditors.val(primitiveEditor.val());
+						otherPrimitiveEditors.val(primitiveEditor.val()!);
 					});
 					
 					// Check if this property is a single binding
@@ -354,7 +354,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 					// The binding model is the JSON object describing this double binding
 					// Internally, is modelled as an array of objects and is transformed to the
 					// required JSON format when saving this property
-					var bindingModel = [];
+					var bindingModel: any[] = [];
 					
 					/**
 					 * Adds a binding.
@@ -598,6 +598,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 				for (var i = 0; i < sectionKeys.length; i++) {
 					if (sectionKeys[i] === object) return BMIndexPathMakeWithRow(i, {section: 1, forObject: object});
 				}
+				return BMIndexPathNone;
 			},
 			contentsForCellWithReuseIdentifier: function (identifier) {
 				return $('<div class="BMWidgetConfigurationWindowNavigationSidebarLink"></div>');
@@ -798,7 +799,7 @@ export function BMWidgetConfigurationWindowGetBindingFieldsForProperty(property:
 	switch (properties[property].baseType) {
 		case 'INFOTABLE':
 			// Infotables can be loaded synchronously if their data shape is defined statically
-			var dataShape = widget.getSourceDatashapeName(property) || widget.getInfotableMetadataForProperty(property);
+			var dataShape = widget.getSourceDatashapeName!(property) || widget.getInfotableMetadataForProperty(property);
 			if (typeof dataShape == 'string') {
 				// String data shapes need an asynchronous request to be resolved
 				TW.IDE.GetDataShapeInfo(dataShape, function (dataShape) {
@@ -861,7 +862,7 @@ export interface BMCollectionViewWidgetProperty extends TWWidgetProperty {
      * An array of categories to which this property belongs.
      * This is used when filtering the list of properties via the `Show` property.
      */
-    _BMCategories?: string[],
+    _BMCategories: string[],
 
     /**
      * Should be set to `NO` when this property is not a built-in property but an
@@ -1173,6 +1174,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		else if (layout == 'tile') {
 			return this.createTileLayout();
 		}
+		return this.createFlowLayout();
 	}
 
     // #endregion
@@ -1196,11 +1198,13 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				// ******************************************** STANDARD PROPERTIES ********************************************
 				Width: {
                     defaultValue: 480,
-                    baseType: 'NUMBER'
+					baseType: 'NUMBER',
+					_BMCategories: ['all']
 				},
 				Height: {
                     defaultValue: 640,
-                    baseType: 'NUMBER'
+					baseType: 'NUMBER',
+					_BMCategories: ['all']
                 },
                 CustomClass: {
                     description: TW.IDE.I18NController.translate('tw.button-ide.properties.custom-class.description'),
@@ -1208,7 +1212,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
                     isLocalizable: NO,
                     isBindingSource: YES,
                     isBindingTarget: YES,
-                    isVisible: NO
+					isVisible: NO,
+					_BMCategories: ['all']
                 },
 				Show: {
 					baseType: 'STRING',
@@ -1231,6 +1236,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 						{text: 'Data Manipulation', value: 'manipulation'},
 						{text: 'Performance', value: 'performance'}
 					],
+					_BMCategories: ['all']
 				},
 				
 				
@@ -2199,31 +2205,37 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				_EventDataShape: {
 					baseType: 'STRING',
 					isVisible: false,
-					defaultValue: '{}'
+					defaultValue: '{}',
+					_BMCategories: []
 				},
 				_CanDoubleClick: {
 					baseType: 'BOOLEAN',
 					isVisible: false,
-					defaultValue: false
+					defaultValue: false,
+					_BMCategories: []
 				},
 				_MenuDefinition: {
 					baseType: 'STRING',
 					isVisible: false,
-					defaultValue: '[]'
+					defaultValue: '[]',
+					_BMCategories: []
 				},
 				_GlobalDataShape: {
 					baseType: 'STRING',
 					isVisible: false,
-					defaultValue: '{}'
+					defaultValue: '{}',
+					_BMCategories: []
 				},
 				DirectLinkUUID: {
 					baseType: 'STRING',
 					defaultValue: '',
-					isVisible: NO
+					isVisible: NO,
+					_BMCategories: []
 				},
 				__BaseTypes: {
 					baseType: 'INFOTABLE',
-					isVisible: NO
+					isVisible: NO,
+					_BMCategories: []
 				}
 			}
 		};
@@ -2351,7 +2363,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		}
 		
 		// Extract the state names from the menu definition
-		var menuDefinition = [];
+		var menuDefinition: any[] = [];
 		for (var i = 0; i < menuStateDefinition.length; i++) {
 			if (menuStateDefinition[i].defaultValue) menuDefinition.push(menuStateDefinition[i].defaultValue);
 		}
@@ -2374,6 +2386,111 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		// Update the properties UI
 		this.updatedProperties();
 	}
+	
+
+	/**
+	 * Invoked by the runtime immediately after this widget was placed in a mashup.
+	 */
+	afterLoad() {
+		var properties = this.allWidgetProperties().properties;
+			
+		// Retrieve the data shape and generate the properties for the event fields
+		var dataShape = JSON.parse(this.getProperty('_EventDataShape'));
+			
+		// Append the properties to this widget
+		var newProperties = Object.keys(dataShape);
+		for (var i = 0; i < newProperties.length; i++) {
+			var property = dataShape[newProperties[i]];
+			properties['Event:' + newProperties[i]] = BMExtend({
+				isBindingSource: YES, 
+				isBaseProperty: NO,
+				isVisible: YES
+			}, property, {
+				name: 'Event:' + property.name,
+				type: 'property',
+				description: 'Initialized before any event is triggered with the value from the triggering cell\'s bound object.',
+				_BMCategories: ['all', 'data']
+			});
+		}
+		
+		// Retrieve the menu definition and generate the events for that menu
+		var menuDefinition = JSON.parse(this.getProperty('_MenuDefinition'));
+		for (var i = 0; i < menuDefinition.length; i++) {
+			properties['Menu:' + menuDefinition[i]] = <any>{
+				isBaseProperty: false,
+				name: 'Menu:' + menuDefinition[i],
+				type: 'event',
+				isVisible: true,
+				description: 'Triggered when selecting the ' + menuDefinition[i] + ' menu entry on a cell.',
+				_BMCategories: ['all', 'menu']
+			};
+		}
+		
+		// Retrieve the global properties and generate the relevant properties
+		var globalProperties = JSON.parse(this.getProperty('_GlobalDataShape'));
+		for (var key in globalProperties) {
+			properties[key] = <any>{
+				isBaseProperty: NO,
+				name: key,
+				type: 'property',
+				isVisible: YES,
+				isBindingTarget: YES,
+				isBindingSource: YES,
+				description: 'User-defined global property.',
+				baseType: globalProperties[key],
+				_BMCategories: ['all', 'data']
+			};
+		}
+		
+		// Update the properties UI
+		this.updatedProperties();
+	};
+
+	
+	
+	/**
+	 * Invoked by the runtime whenever the user binds a data source to a property on this widget.
+	 * @param bindingInfo <Object>		An object containing the newly created binding's properties.
+	 */
+	afterAddBindingSource(bindingInfo: any): void {
+		let property = bindingInfo.targetProperty;
+		
+		if (property === 'Data') {
+			var properties = this.allWidgetProperties().properties;
+			
+			// Retrieve the data shape and generate the properties for the event fields
+			var dataShape = this.getInfotableMetadataForProperty('Data') || {};
+			
+			// Delete the previous properties from the previous binding
+			var oldDataShape = JSON.parse(this.getProperty('_EventDataShape'));
+			var oldProperties = Object.keys(oldDataShape);
+			
+			for (var i = 0; i < oldProperties.length; i++) {
+				delete properties['Event:' + oldProperties[i]];
+			}
+			
+			this.setProperty('_EventDataShape', JSON.stringify(dataShape));
+			
+			// Append the new properties to this widget
+			var newProperties = Object.keys(dataShape);
+			for (var i = 0; i < newProperties.length; i++) {
+				let property = dataShape[newProperties[i]];
+				properties['Event:' + newProperties[i]] = BMExtend({
+					isBindingSource: YES, 
+					isBaseProperty: NO,
+					isVisible: YES
+				}, property, {
+					name: 'Event:' + property.name,
+					type: 'property',
+					description: 'Initialized before any event is triggered with the value from the triggering cell\'s bound object.',
+					_BMCategories: ['all', 'data']
+				});
+			}
+		
+			// Update the properties UI
+			this.updatedProperties();
+		}
+	};
 	
 	/**
 	 * Will be invoked by the widget after changing the CellMashupGlobalPropertyBinding property.
@@ -2419,7 +2536,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				isBindingTarget: YES,
 				isBindingSource: YES,
 				description: 'User-defined global property.',
-				baseType: globalProperties[key]
+				baseType: globalProperties[key],
+				_BMCategories: []
 			};
 		}
 		
@@ -2456,6 +2574,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				LOCATION: {name: 'LOCATION', baseType: 'LOCATION'}
 			}
 		}
+		return this.getInfotableMetadataForProperty(propertyName)!;
 	};
 
     renderHtml(): string {
@@ -2571,7 +2690,7 @@ export class BMCollectionViewMenuController extends TWComposerWidget {
         return require('./images/MenuControllerIcon@2x.png');
     }
 
-    widgetProperties(): BMCollectionViewWidgetProperties {
+    widgetProperties(): TWWidgetProperties {
         return {
             name: 'Collection View Menu Controller',
             description: 'When added to a collection view cell mash-up, this widget makes it possible to control the cell menu.',
@@ -2588,8 +2707,6 @@ export class BMCollectionViewMenuController extends TWComposerWidget {
 				CellSlideMenu: {
 					baseType: 'STATEDEFINITION',
 					description: 'If set to a string-based state definition, this will be the cell menu that appears when sliding over the cells. On devices without a touch interface, this menu can be displayed by right-clicking on the cells.',
-					_BMSection: 'Menu',
-					_BMFriendlyName: 'Slide menu definition'
 				},
 				_MenuDefinition: {
 					baseType: 'STRING',
@@ -2690,7 +2807,7 @@ export class BMCollectionViewMenuController extends TWComposerWidget {
 		}
 		
 		// Extract the state names from the menu definition
-		var menuDefinition = [];
+		var menuDefinition: any[] = [];
 		for (var i = 0; i < menuStateDefinition.length; i++) {
 			if (menuStateDefinition[i].defaultValue) menuDefinition.push(menuStateDefinition[i].defaultValue);
 		}
@@ -2751,7 +2868,7 @@ export class BMCollectionViewSelectionController extends TWComposerWidget {
         return require('./images/SelectionControllerIcon@2x.png');
     }
 
-    widgetProperties(): BMCollectionViewWidgetProperties {
+    widgetProperties(): TWWidgetProperties {
         return {
             name: 'Collection View Selection Controller',
             description: 'When added to a collection view cell mash-up, this widget makes it possible to control the cell\'s selection.',
@@ -2807,7 +2924,7 @@ export class BMCollectionViewEditingController extends TWComposerWidget {
         return require('./images/EditingControllerIcon@2x.png');
     }
 
-    widgetProperties(): BMCollectionViewWidgetProperties {
+    widgetProperties(): TWWidgetProperties {
         return {
             name: 'Collection View Editing Controller',
             description: 'When added to a collection view cell mash-up, this widget makes it possible to control the cell\'s editing state.',
