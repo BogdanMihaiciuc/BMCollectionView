@@ -4213,6 +4213,28 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 */
 	definitionForMashupNamed: ((name: string, args?: {atomic?: boolean, completionHandler?: any}) => BMCollectionViewDeserializedMashupEntityDefinition | Promise<BMCollectionViewDeserializedMashupEntityDefinition>) = BMCollectionViewDefinitionForMashupNamed;
 
+	
+	/**
+	 * @override
+	 * Invoked by the platform to remove this widget.
+	 */
+    destroy() {
+        try {
+            for (let widget of this.getWidgets()) widget.destroy();
+		} 
+		catch (err) {
+		}
+		
+		// NOTE: The following unsupported features are not handled by Collection View's destructor:
+		// * Tooltips
+		// * Popups & Popup overlays
+		// * jQuery element purging
+		// * Unnecessary property deletions
+
+		this.beforeDestroy();
+		
+		this.jqElement.remove();
+    };
 
 	/**
 	 * Invoked by the platform when this widget is removed.

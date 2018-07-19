@@ -1,3 +1,7 @@
+# 2.2.4
+
+Resolved an issue that caused Collection View to not be destroyed correctly when its mashup was removed. This could then cause a crash when using drag & drop.
+
 # 2.2.3
 
 Resolved an issue that caused the layout to not update when the only changes in a data update were item size changes. For non-standard layouts, it is still the responsibility of the developer to ensure that data changes trigger layout invalidations correctly when custom item properties change.
