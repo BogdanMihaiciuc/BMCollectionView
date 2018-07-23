@@ -7,6 +7,7 @@
         "target": "es5",
         "experimentalDecorators": true,
         "declaration": true,
+        "strict": true,
         "lib": [
             "es2015",
             "dom"

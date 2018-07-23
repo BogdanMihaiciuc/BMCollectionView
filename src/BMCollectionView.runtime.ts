@@ -202,7 +202,7 @@ export interface TWRuntimeWidgetPrivate extends TWRuntimeWidget {
  * 																									undefined otherwise. 
  * 																									If the request is nonatomic, this function will return a promise that resolves when the request completes.
  */
-function BMCollectionViewDefinitionForMashupNamed(name: string, args: {atomic?: boolean, completionHandler?: (mashup?: (BMCollectionViewDeserializedMashupEntityDefinition | undefined), error?: (Error | undefined)) => void}): BMCollectionViewDeserializedMashupEntityDefinition | Promise<BMCollectionViewDeserializedMashupEntityDefinition> {
+function BMCollectionViewDefinitionForMashupNamed(name: string, args?: {atomic?: boolean, completionHandler?: (mashup?: (BMCollectionViewDeserializedMashupEntityDefinition | undefined), error?: (Error | undefined)) => void}): BMCollectionViewDeserializedMashupEntityDefinition | Promise<BMCollectionViewDeserializedMashupEntityDefinition> {
 	args = args || {};
 	if (args.atomic === undefined) args.atomic = YES;
 
@@ -1127,44 +1127,44 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	/**
 	 * The raw infotable data set.
 	 */
-	data: any[];
+	data: any[] = [];
 	
 	/**
 	 * When using the SortField or Filter properties, this variable will hold a reference to the original unmodified data.
 	 */
-	originalData: any[];
+	originalData?: any[];
 	
 	/**
 	 * Temporary storage variables holding references to the old and new data sets during an
 	 * animated data update.
 	 */
-    oldData: any[];
+    oldData?: any[];
 	
 	/**
 	 * Temporary storage variables holding references to the old and new data sets during an
 	 * animated data update.
 	 */
-    newData: any[];
+    newData?: any[];
 	
 	/**
 	 * The infotable field that uniquely identifies an object.
 	 */
-	UIDField: string;
+	UIDField!: string;
 	
 	/**
 	 * The infotable field that uniquely identifies an object's section.
 	 */
-	sectionField: string;
+	sectionField?: string;
 	
 	/**
 	 * The infotable field by which section contents are sorted.
 	 */
-	sortField: string;
+	sortField?: string;
 	
 	/**
 	 * Whether the sort should be ascending or descending.
 	 */
-	sortAscending: boolean;
+	sortAscending: boolean = false;
 	
 	/**
 	 * The predicate used to filter the data set.
@@ -1174,7 +1174,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	/**
 	 * The name of the mashup to use for cells.
 	 */
-	cellMashupName: string;
+	cellMashupName?: string;
 
 	/**
 	 * The name of the infotable field that contains the mashup name.
@@ -1194,7 +1194,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	/**
 	 * The mapping between infotable fields and mashup parameters.
 	 */
-	cellMashupPropertyBinding: Dictionary<string>;
+	cellMashupPropertyBinding!: Dictionary<string>;
 	
 	/**
 	 * The mashup parameter that represents the selected state of its associated data object.
@@ -1224,7 +1224,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	/**
 	 * The array of sections.
 	 */
-	sections: any[];
+	sections?: any[];
 	
 	/**
 	 * The name of the mashup displayed when the data set is empty.
@@ -1285,12 +1285,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	/**
 	 * The opacity of the selected background color.
 	 */
-	cellStyleSelectedAlpha: number; // <Number>
+	cellStyleSelectedAlpha?: number; // <Number>
 	
 	/**
 	 * The color of the selected cells, without the alpha component.
 	 */
-	cellStyleSelectedColorComponents: [number, number, number];
+	cellStyleSelectedColorComponents?: [number, number, number];
 	
 	
 	/**
@@ -1313,19 +1313,19 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 */
 	cellMashupNameSelected?: string;
 	
-    oldSections: any[]; 
-    newSections: any[];
+    oldSections?: any[]; 
+    newSections?: any[];
 	
 	/**
 	 * When CellStyleHover is defined, this represents the CSS rule added to the document
 	 * that changes the cell's hover style.
 	 */
-	hoverStyleBlock: $;
+	hoverStyleBlock?: $;
 	
 	/**
 	 * Whether or not ripples are enabled.
 	 */
-	usesRipple: boolean;
+	usesRipple!: boolean;
 	
 	/**
 	 * The ripple color style.
@@ -1335,19 +1335,19 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	/**
 	 * The border radius to apply to the cells.
 	 */
-	cellBorderRadius: string;
+	cellBorderRadius?: string;
 	
 	/**
 	 * The box shadow to apply to the cells.
 	 */
-	cellBoxShadow: string;
+	cellBoxShadow?: string;
 	
 	
 	// ******************************************** MENU PROPERTIES ********************************************
 	/**
 	 * The array of menu entries.
 	 */
-	menuDefinition: string[];
+	menuDefinition?: string[];
 	
 	/**
 	 * The array of state definitions for the menu.
@@ -1363,17 +1363,17 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	/**
 	 * Controls how menu entries are laid out.
 	 */
-	menuOrientation: string;
+	menuOrientation?: string;
 	
 	/**
 	 * Controls the size of the menu icons.
 	 */
-	menuIconSize: number;
+	menuIconSize?: number;
 	
 	/**
 	 * Controls the placement of the menu icons.
 	 */
-	menuIconGravity: string;
+	menuIconGravity?: string;
 
 	/**
 	 * The type of slide menu to use.
@@ -1394,12 +1394,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	/**
 	 * The map of global properties with their data types.
 	 */
-    globalDataShape: Dictionary<TWBaseType>;
+    globalDataShape!: Dictionary<TWBaseType>;
     
     /**
      * An object containing the current values of all the global parameters.
      */
-    globalParameters: Dictionary<any>;
+    globalParameters!: Dictionary<any>;
 	
 	
 	// ******************************************** DATA MANIPULATION PROPERTIES ********************************************
@@ -1407,7 +1407,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	/**
 	 * The data shape to use when manipulating data.
 	 */
-	dataShape: TWDataShape;
+	dataShape!: TWDataShape;
 	
 	/**
 	 * The mashup to use for editing cells.
@@ -1651,7 +1651,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			this.jqElement.css({backgroundColor: backgroundStyle.backgroundColor});
 		}
 
-		var useCustomScrollbar = undefined;
+		var useCustomScrollbar: boolean | undefined;
 		
 		// Load the menu properties
 		try {
@@ -1736,7 +1736,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			useCustomScrollbar = !navigator.platform.match(/(Mac|iPhone|iPod|iPad|Windows Phone|Android)/i) || (window.navigator as any).standalone;
 		}
 		if (this.getProperty('AlwaysUseCustomScrollerOniOS')) {
-			useCustomScrollbar = useCustomScrollbar || navigator.platform.match(/(iPhone|iPod|iPad)/i) || (window.navigator as any).standalone;
+			useCustomScrollbar = useCustomScrollbar! || navigator.platform.match(/(iPhone|iPod|iPad)/i) || (window.navigator as any).standalone;
 		}
 		
 		// Custom scrollbars are required for the masonry layout
@@ -1841,11 +1841,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		this.cellMashupNameField = this.getProperty('CellMashupNameField');
 		if (this.cellMashupNameField) {
 			this.reuseIdentifierForCellAtIndexPath = (indexPath) => {
-				return indexPath.object[this.cellMashupNameField];
+				return indexPath.object[this.cellMashupNameField!];
 			};
 
 			this.mashupNameForCellAtIndexPath = (indexPath) => {
-				return indexPath.object[this.cellMashupNameField];
+				return indexPath.object[this.cellMashupNameField!];
 			};
 		}
 
@@ -1861,7 +1861,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			// Used by Flow layout
 			this.collectionViewSizeForCellAtIndexPath = (collectionView, indexPath) => {
                 // In the new framework, by this point mashups are always cached
-				var mashupDefinition = BMCollectionViewMashupDefinitionCache[indexPath.object[this.cellMashupNameField]] || this.definitionForMashupNamed(indexPath.object[this.cellMashupNameField], {atomic: YES}) as BMCollectionViewDeserializedMashupEntityDefinition;
+				var mashupDefinition = BMCollectionViewMashupDefinitionCache[indexPath.object[this.cellMashupNameField!]] || this.definitionForMashupNamed(indexPath.object[this.cellMashupNameField!], {atomic: YES}) as BMCollectionViewDeserializedMashupEntityDefinition;
 
 				var content = mashupDefinition._BMDeserializedContent || (mashupDefinition._BMDeserializedContent = JSON.parse(mashupDefinition.mashupContent) as TWMashupDefinition);
 
@@ -1870,7 +1870,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 			// Used by Table layout
 			this.collectionViewRowHeightForCellAtIndexPath = (collectionView, indexPath) => {
-				var mashupDefinition = BMCollectionViewMashupDefinitionCache[indexPath.object[this.cellMashupNameField]] || this.definitionForMashupNamed(indexPath.object[this.cellMashupNameField], {atomic: YES}) as BMCollectionViewDeserializedMashupEntityDefinition;
+				var mashupDefinition = BMCollectionViewMashupDefinitionCache[indexPath.object[this.cellMashupNameField!]] || this.definitionForMashupNamed(indexPath.object[this.cellMashupNameField!], {atomic: YES}) as BMCollectionViewDeserializedMashupEntityDefinition;
 
 				var content = mashupDefinition._BMDeserializedContent || (mashupDefinition._BMDeserializedContent = JSON.parse(mashupDefinition.mashupContent) as TWMashupDefinition);
 
@@ -1879,7 +1879,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 			// Used by Masonry layout
 			this.collectionViewHeightForCellAtIndexPath = (collectionView, indexPath, args) => {
-				var mashupDefinition = BMCollectionViewMashupDefinitionCache[indexPath.object[this.cellMashupNameField]] || this.definitionForMashupNamed(indexPath.object[this.cellMashupNameField], {atomic: YES}) as BMCollectionViewDeserializedMashupEntityDefinition;
+				var mashupDefinition = BMCollectionViewMashupDefinitionCache[indexPath.object[this.cellMashupNameField!]] || this.definitionForMashupNamed(indexPath.object[this.cellMashupNameField!], {atomic: YES}) as BMCollectionViewDeserializedMashupEntityDefinition;
 
 				var content = mashupDefinition._BMDeserializedContent || (mashupDefinition._BMDeserializedContent = JSON.parse(mashupDefinition.mashupContent) as TWMashupDefinition);
 
@@ -1950,7 +1950,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
         }
 
 		if (this.cellStyle && this.cellStyle.backgroundColor) {
-			this.cellStyleColor = BMColorMakeWithString(this.cellStyle.backgroundColor);
+			this.cellStyleColor = BMColorMakeWithString(this.cellStyle.backgroundColor)!;
 		}
 		
 		this.usesRipple = this.getProperty('UsesRipple');
@@ -1964,7 +1964,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		if (this.emptyMashupName) await BMCollectionViewDefinitionForMashupNamed(this.emptyMashupName, {atomic: NO});
 		
 		if (this.cellStyleSelected && this.cellStyleSelected.backgroundColor) {
-			this.cellStyleSelectedColor = BMColorMakeWithString(this.cellStyleSelected.backgroundColor);	
+			this.cellStyleSelectedColor = BMColorMakeWithString(this.cellStyleSelected.backgroundColor)!;	
 		}
 		
 		try {
@@ -2042,7 +2042,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 * that update info is temporarily saved to this variable until the collection view has finished processing its current update request.
 	 * When that update request is finished, this update is then applied and the pendingDataUpdate variable is reset to undefined.
 	 */
-	pendingDataUpdate: TWUpdatePropertyInfo;
+	pendingDataUpdate?: TWUpdatePropertyInfo;
 
 	/**
 	 * A promise that resolves when the current data update finishes processing.
@@ -2138,7 +2138,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				
 				// Sort the data by the sortField when it is defined
 				this.newData.sort((o1, o2) => {
-					return (this.sortAscending ? (o1[this.sortField] < o2[this.sortField]) : (o1[this.sortField] > o2[this.sortField])) ? 1 : (o1[this.sortField] == o2[this.sortField] ? 0 : -1);
+					return (this.sortAscending ? (o1[this.sortField!] < o2[this.sortField!]) : (o1[this.sortField!] > o2[this.sortField!])) ? 1 : (o1[this.sortField!] == o2[this.sortField!] ? 0 : -1);
 				});
 				
 				this.data = this.newData;
@@ -2374,7 +2374,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			var mashup = cell._mashupInstance;
 		
 			try {
-				mashup.BM_setParameterInternal(property, args.didUpdateToValue);
+				if (mashup) mashup.BM_setParameterInternal(property, args.didUpdateToValue);
 			}
 			catch (e) {
 				console.log(e);
@@ -2398,7 +2398,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 */
 	handleSelectionUpdate(propertyName: string, selectedRows: any[], selectedRowIndices: number[]) {
 		// Construct the selection indexPaths
-		var selectedIndexPaths = [];
+		var selectedIndexPaths: BMIndexPath[] = [];
 		
 		// When the sortField, the object has to be looked up using the _BMCollectionViewInfoTableIndex property
 		if (this.sortField) {
@@ -2450,7 +2450,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
     @TWService('SelectAll')
     selectAll(): void {
         if (this.sectionField) {
-            var indexPaths = [];
+            var indexPaths: BMIndexPath[] = [];
             var sectionsLength = this.numberOfSections();
             for (var j = 0; j < sectionsLength; j++) {
                 var length = this.numberOfObjectsInSectionAtIndex(j);
@@ -2463,7 +2463,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
             this.updateThingworxSelection();
         }
         else {
-            var indexPaths = [];
+            var indexPaths: BMIndexPath[] = [];
             var length = this.numberOfObjectsInSectionAtIndex(0);
             for (var i = 0; i < length; i++) {
                 indexPaths.push(this.indexPathForObjectAtRow(i, {inSectionAtIndex: 0}));
@@ -2520,18 +2520,20 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 	// @override - BMCollectionViewDataSet
 	numberOfSections(): number {
-		return this.sectionField ? this.sections.length : (this.data.length ? 1 : 0);
+		// The existence of sectionField implies that sections is also nonnull
+		return this.sectionField ? this.sections!.length : (this.data.length ? 1 : 0);
 	};
 	
 	// @override - BMCollectionViewDataSet
 	numberOfObjectsInSectionAtIndex(i: number): number {
-		return this.sectionField ? this.sections[i].rows.length : this.data.length;
+		// The existence of sectionField implies that sections is also nonnull
+		return this.sectionField ? this.sections![i].rows.length : this.data.length;
 	};
 				
 	// @override - BMCollectionViewDataSet
 	indexPathForObjectAtRow(row: number, options: {inSectionAtIndex: number}): BMIndexPath {
 		if (this.sectionField) {
-			return BMIndexPathMakeWithRow(row, {section: options.inSectionAtIndex, forObject: this.sections[options.inSectionAtIndex].rows[row].data});
+			return BMIndexPathMakeWithRow(row, {section: options.inSectionAtIndex, forObject: this.sections![options.inSectionAtIndex].rows[row].data});
 		}
 		else {
 			return BMIndexPathMakeWithRow(row, {section: options.inSectionAtIndex, forObject: this.data[row]});
@@ -2542,19 +2544,19 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	indexPathForObject(object: any): BMIndexPath {
 		if (this.sectionField) {
 			// First attempt a fast look up
-			let sectionObject = this.sections[object._BMCollectionViewSectionIndex];
+			let sectionObject = this.sections![object._BMCollectionViewSectionIndex];
 			if (sectionObject) {
 				let dataObject = sectionObject.rows[object._BMCollectionViewRowIndex];
 				if (dataObject && dataObject.data[this.UIDField] == object[this.UIDField]) {
 					return BMIndexPathMakeWithRow(object._BMCollectionViewRowIndex, {
 						section: object._BMCollectionViewSectionIndex, 
-						forObject: this.sections[object._BMCollectionViewSectionIndex].rows[object._BMCollectionViewRowIndex].data
+						forObject: this.sections![object._BMCollectionViewSectionIndex].rows[object._BMCollectionViewRowIndex].data
 					});
 				}
 				
 			}
-			for (var section = 0; section < this.sections.length; section++) {
-				var sectionData = this.sections[section].rows;
+			for (var section = 0; section < this.sections!.length; section++) {
+				var sectionData = this.sections![section].rows;
 				for (var row = 0; row < sectionData.length; row++) {
 					if (sectionData[row].data[this.UIDField] == object[this.UIDField]) return BMIndexPathMakeWithRow(row, {section: section, forObject: sectionData[row].data});
 				}
@@ -2568,6 +2570,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			}
 			
 		}
+
+		throw new Error('Unexpected indexPath requested for object ' + object);
 	};
 	
 	/**
@@ -2585,7 +2589,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		args = args || {};
 
 		// CellMashupNameField has priority over all other mashup names and disables the selection and editing mashups.
-		if (this.cellMashupNameField) return this.mashupNameForCellAtIndexPath(indexPath) || this.cellMashupNameField;
+		if (this.cellMashupNameField) return this.mashupNameForCellAtIndexPath!(indexPath) || this.cellMashupNameField;
 
 		if (args.selected === undefined) args.selected = this.collectionView.isCellAtIndexPathSelected(indexPath);
 		if (args.editing === undefined) args.editing = this.isCellAtIndexPathEditing(indexPath);
@@ -2595,7 +2599,9 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		// And selection has priority over the default mashup
 		if (args.selected && this.cellMashupNameSelected) return this.cellMashupNameSelected;
 
-		return this.cellMashupName;
+		// If none of the fields or alternative mashup names are set, the default mashup name is used
+		// If no default mashup name has been set, it is a configuration error
+		return this.cellMashupName!;
 	};
 	
 	// @override - BMCollectionViewDataSet
@@ -2642,7 +2648,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
             cell.isEditing = isEditing;
 
             // Initialize the menu touch event handler if there are menu entries
-            if (this.menuDefinition.length) {
+            if (this.menuDefinition!.length) {
                 this.initializeMenuTouchEventHandlersForCell(cell);
             }
 
@@ -2658,7 +2664,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	updateCell(cell: BMCollectionViewMashupCell, options: {atIndexPath: BMIndexPath}): void {
         var indexPath = options.atIndexPath;
         
-        cell.parameters = this.sectionField ? this.sections[indexPath.section].rows[indexPath.row].data : this.data[indexPath.row];
+        cell.parameters = this.sectionField ? this.sections![indexPath.section].rows[indexPath.row].data : this.data[indexPath.row];
 
         // updateCell is not invoked in cases where the cell's selection or editing state changes - these are handled elsewhere
 	};
@@ -2714,10 +2720,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 * @return <String, nullable>				The name of the mashup that will be used as this supplementary view's contents,
 	 * 											or undefined if the supplementary view has an unsupported identifier.
 	 */
-	_mashupNameForSupplementaryViewWithIdentifier(identifier: string, args: {atIndexPath: BMIndexPath}): string {
-		if (identifier == BMCollectionViewTableLayoutSupplementaryView.Header) return this.headerMashupName;
-		if (identifier == BMCollectionViewTableLayoutSupplementaryView.Footer) return this.footerMashupName;
-		if (identifier == BMCollectionViewTableLayoutSupplementaryView.Empty) return this.emptyMashupName;
+	_mashupNameForSupplementaryViewWithIdentifier(identifier: string, args: {atIndexPath: BMIndexPath}): string | undefined {
+		if (identifier == BMCollectionViewTableLayoutSupplementaryView.Header) return this.headerMashupName!;
+		if (identifier == BMCollectionViewTableLayoutSupplementaryView.Footer) return this.footerMashupName!;
+		if (identifier == BMCollectionViewTableLayoutSupplementaryView.Empty) return this.emptyMashupName!;
 	}
 	
 	// @override - BMCollectionViewDataSet
@@ -2761,7 +2767,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	updateSupplementaryView(cell: BMCollectionViewMashupCell, options: {withIdentifier: string, atIndexPath: BMIndexPath}) {
 		var indexPath = options.atIndexPath;
 		
-		var sectionIdentifier = (cell.reuseIdentifier !== BMCollectionViewTableLayoutSupplementaryView.Empty && this.sections[options.atIndexPath.section].identifier);
+		var sectionIdentifier = (cell.reuseIdentifier !== BMCollectionViewTableLayoutSupplementaryView.Empty && this.sections![options.atIndexPath.section].identifier);
 
 		try {
             if (cell.reuseIdentifier == BMCollectionViewTableLayoutSupplementaryView.Header) {
@@ -2782,11 +2788,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	// @override - BMCollectionViewDataSet
 	useOldData(use: boolean) {
 		if (use) {
-			this.data = this.oldData;
+			this.data = this.oldData!;
 			this.sections = this.oldSections;
 		}
 		else {
-			this.data = this.newData;
+			this.data = this.newData!;
 			this.sections = this.newSections;
 		}
 	};
@@ -2804,13 +2810,13 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 		items.forEach(item => {
 			item[this.UIDField] = this.uniqueIdentifier();
-			if (targetIndexPath.object) {
+			if (targetIndexPath.object && this.sectionField) {
 				item[this.sectionField] = targetIndexPath.object[this.sectionField];
 			}
 		});
 
 		if (this.sectionField) {
-			targetIndex = this.sections[targetIndexPath.section].rows[targetIndexPath.row].index;
+			targetIndex = this.sections![targetIndexPath.section].rows[targetIndexPath.row].index;
 		}
 		else {
 			targetIndex = this.sortField ? this.data[targetIndexPath.row]._BMCollectionViewInfoTableIndex : targetIndexPath.row;
@@ -2844,8 +2850,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		let sourceIndex;
 
 		if (this.sectionField) {
-			targetIndex = this.sections[targetIndexPath.section].rows[targetIndexPath.row].index;
-			sourceIndex = this.sections[indexPath.section].rows[indexPath.row].index;
+			targetIndex = this.sections![targetIndexPath.section].rows[targetIndexPath.row].index;
+			sourceIndex = this.sections![indexPath.section].rows[indexPath.row].index;
 		}
 		else {
 			targetIndex = this.sortField ? this.data[targetIndexPath.row]._BMCollectionViewInfoTableIndex : targetIndexPath.row;
@@ -2855,7 +2861,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		let item = this.data[sourceIndex];
 
 		// Change the section as well if needed and allowed
-		if (item[this.sectionField] != this.data[targetIndex][this.sectionField]) {
+		if (this.sectionField) if (item[this.sectionField] != this.data[targetIndex][this.sectionField]) {
 			if (!this.getProperty('CanMoveCellsAcrossSections')) return NO;
 
 			item[this.sectionField] = this.data[targetIndex][this.sectionField];
@@ -2885,7 +2891,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		if (this.collectionView.isUpdatingData) return indexPaths;
 
 		let targetIndexPath = args.toIndexPath;
-		let finalIndexPaths = [];
+		let finalIndexPaths: BMIndexPath[] = [];
 
 		let newData = this.data.slice();
 
@@ -2896,8 +2902,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			//		- for each index path in the same section whose row is less than the target index path
 			//			the target index path decreases by 1, except for the first occurence
 			let firstOccurence = YES;
-			let items = [];
-			let targetItem = this.data[this.sections[targetIndexPath.section].rows[targetIndexPath.row].index];
+			let items: any[] = [];
+			let targetItem = this.data[this.sections![targetIndexPath.section].rows[targetIndexPath.row].index];
 			indexPaths.forEach(indexPath => {
 				if (indexPath.section == targetIndexPath.section && indexPath.row < targetIndexPath.row) {
 					if (firstOccurence) {
@@ -2908,7 +2914,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					}
 				}
 				
-				items.push(newData[this.sections[indexPath.section].rows[indexPath.row].index]);
+				items.push(newData[this.sections![indexPath.section].rows[indexPath.row].index]);
 			});
 
 			// Remove the items from the data array
@@ -2921,7 +2927,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 			// Supply the index paths back to collection view
 			items.forEach(item => {
-				if (this.getProperty('CanMoveCellsAcrossSections')) item[this.sectionField] = targetItem[this.sectionField];
+				if (this.getProperty('CanMoveCellsAcrossSections')) item[this.sectionField!] = targetItem[this.sectionField!];
 				let itemIndexPath = finalIndexPath.copy();
 				itemIndexPath.object = item;
 
@@ -2940,7 +2946,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			//		- for each index path in the same section whose row is less than the target index path
 			//			the target index path decreases by 1, except for the first occurence
 			let firstOccurence = YES;
-			let items = [];
+			let items: any[] = [];
 			let targetItem = this.data[targetIndexPath.row];
 			indexPaths.forEach(indexPath => {
 				if (indexPath.row < targetIndexPath.row) {
@@ -2987,12 +2993,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	// @override - BMCollectionViewDataSet
 	async removeItemsAtIndexPaths(indexPaths: BMIndexPath[]) {
 		let newData = this.data.slice();
-		let indexes = [];
+		let indexes: number[] = [];
 
 		indexPaths.forEach(indexPath => {
 			let index;
 			if (this.sectionField) {
-				index = this.sections[indexPath.section].rows[indexPath.row].index;
+				index = this.sections![indexPath.section].rows[indexPath.row].index;
 			}
 			else {
 				index = this.sortField ? this.data[indexPath.row]._BMCollectionViewInfoTableIndex : indexPath.row;
@@ -3112,7 +3118,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
         cell.isSelected = YES;
         //cell.node.classList.add('BMCollectionViewCellSelected');
-        cell.backgroundColor = BMColorMakeWithString(this.cellStyleSelected.backgroundColor);
+        cell.backgroundColor = BMColorMakeWithString(this.cellStyleSelected.backgroundColor)!;
         cell.mashup = this._mashupNameForCellAtIndexPath(indexPath);
 			
         return;
@@ -3127,7 +3133,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
         
         cell.isSelected = NO;
         //cell.node.classList.remove('BMCollectionViewCellSelected');
-        cell.backgroundColor = BMColorMakeWithString(this.cellStyle.backgroundColor);
+        cell.backgroundColor = BMColorMakeWithString(this.cellStyle.backgroundColor)!;
         cell.mashup = this._mashupNameForCellAtIndexPath(indexPath);
 		
     };
@@ -3148,7 +3154,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		if (this.selectionUpdateBlocked) return;
 		var selectedIndexPaths = this.collectionView.selectedIndexPaths;
 		
-		var selectedDataIndices = [];
+		var selectedDataIndices: number[] = [];
 		for (var i = 0; i < selectedIndexPaths.length; i++) {
 			if (!isNaN(selectedIndexPaths[i].object._BMCollectionViewInfoTableIndex)) {
 				selectedDataIndices.push(selectedIndexPaths[i].object._BMCollectionViewInfoTableIndex);
@@ -3156,7 +3162,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			}
 			if (this.sectionField) {
 				var indexPath = selectedIndexPaths[i];
-				selectedDataIndices.push(this.sections[indexPath.section].rows[indexPath.row].index);
+				selectedDataIndices.push(this.sections![indexPath.section].rows[indexPath.row].index);
 			}
 			else {
 				selectedDataIndices.push(this.sortField ? this.data[selectedIndexPaths[i].row]._BMCollectionViewInfoTableIndex : selectedIndexPaths[i].row);
@@ -3267,10 +3273,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		// When right clicking the current cell, just dismiss the menu
 		if (cell == this.currentMenuCell) {
 			this.currentMenuCell = undefined;
-			return;
+			return NO;
 		}
 		
-		if (this.menuDefinition.length) {
+		if (this.menuDefinition!.length) {
 			this.currentMenuCell = cell;
 		
 			this.expandMenuInCell(cell, {animated: YES});
@@ -3430,10 +3436,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		var menu = $('<div class="BMCollectionViewMenu">');
 		var menuWrapper = $('<div class="BMCollectionViewMenuWrapper">');
 		
-		for (var i = 0; i < this.menuDefinition.length; i++) {
+		for (var i = 0; i < this.menuDefinition!.length; i++) {
 			var style = TW.getStyleFromStyleDefinition(this.menuStateDefinition[i].defaultStyleDefinition);
 			
-			menu.append(this.menuEntryWithName(this.menuDefinition[i], {style: style, handler: handler}));
+			menu.append(this.menuEntryWithName(this.menuDefinition![i], {style: style, handler: handler}));
 		}
 		
 		switch (this.menuOrientation) {
@@ -3472,7 +3478,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		var oldMenuWrapper = cell.element.children('.BMCollectionViewMenuWrapper');
 		
 		var menu = oldMenuWrapper.children();
-		var menuWidth = menu.outerWidth();
+		var menuWidth: number = menu.outerWidth() || 0;
 		
 		// Slide the mashup in the cell back to its original position
 		mashup.velocity('stop', NO as any).velocity({
@@ -3562,7 +3568,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		
 		var menu = menuWrapper.children();
 		
-		var menuWidth = menu.outerWidth();
+		var menuWidth = menu.outerWidth() || 0;
 		var mashup = cell.element.children().eq(0);
 		
 		if (!options || !options.animated) {
@@ -3625,7 +3631,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 * Should be invoked to set up the touch event handlers that implement the touch-based slide menu behaviours.
 	 * @param cell <BMCell>				The cell for which to initialize the touch event handlers.
 	 */
-	initializeMenuTouchEventHandlersForCell(cell: BMCollectionViewMashupCell): boolean {
+	initializeMenuTouchEventHandlersForCell(cell: BMCollectionViewMashupCell): boolean { // TODO: return value type?
 		// Don't install event handlers if use builtin is disabled
 		if (!this.getProperty('CellSlideMenuUseBuiltin')) return NO;
 							
@@ -3637,7 +3643,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		var steps: number;
 		var isTrackingMenuEvent: boolean;
 		
-		var menuWrapper: $, menu: $, menuEntries: $;
+		var menuWrapper: $ | undefined, menu: $ | undefined, menuEntries: $ | undefined;
         var menuWidth: number;
         
         let self = this;
@@ -3690,7 +3696,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					// the collection will completely discard this cell
 					cell.retain();
 					
-					menuWidth = menu.outerWidth();
+					menuWidth = menu.outerWidth() || 0;
 					
 					// Quickly collapse the current menu if it exists
 					if (self.currentMenuCell) {
@@ -3715,19 +3721,19 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				var displacement = Math.max(startingX - x, 0);
 				
 				// Slide over the menu; the menu itself should never slide past its final position
-				BMHook(menuWrapper, {translateX: Math.max(menuWidth - displacement, 0) + 'px'});
+				BMHook(menuWrapper!, {translateX: Math.max(menuWidth - displacement, 0) + 'px'});
 				
 				// The mashup may slide past its final position, but it should generate greater resistance once it passes that position
 				BMHook(cell.element.children().eq(0), {translateX: -displacement + Math.max((displacement - menuWidth) / 2, 0) + 'px'});
 				
 				if (self.menuOrientation == 'Horizontal') {
 					// Additionally, for horizontal menus, the entries will first be on top of eachother and slide towards their usual positions
-					var menuEntriesLength = menuEntries.length;
+					var menuEntriesLength = menuEntries!.length;
 					var menuEntryWidth = menuWidth / menuEntriesLength;
 					var displacementPercentage = BMNumberByConstrainingNumberToBounds(displacement / menuWidth, 0, 1);
 					console.log('Raw displacement is ' + (displacement / menuWidth));
 					for (var i = 0; i < menuEntriesLength; i++) {
-						var menuEntry = menuEntries.eq(i);
+						var menuEntry = menuEntries!.eq(i);
 						
 						BMHook(menuEntry, {translateX: (-menuEntryWidth * i) + (menuEntryWidth * i * displacementPercentage) + 'px'});
 					}
@@ -3761,6 +3767,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			}
 			
 		});
+
+		return NO;
 	}
 	//#endregion
 	
@@ -3776,7 +3784,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		if (this.currentMenuCell != cell) {
 			if (this.currentMenuCell) this.collapseMenuInCell(this.currentMenuCell, {animated: YES});	
 		
-			if (this.menuDefinition.length) {
+			if (this.menuDefinition!.length) {
 				this.currentMenuCell = cell;
 			
 				this.expandMenuInCell(cell, {animated: YES});
