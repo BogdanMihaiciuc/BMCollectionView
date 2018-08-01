@@ -3555,8 +3555,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			// Construct the menu and add it to the cell
 			var menuWrapper = self.renderMenuWithHandler(function (name) {
 				// Fire the menu controller event if it was defined
-				if (cell._mashupInstance && cell._mashupInstance._BMCollectionViewController) {
-					cell._mashupInstance._BMCollectionViewController.jqElement.triggerHandler('Event:' + name);
+				if (cell._mashupInstance && cell._mashupInstance._BMCollectionViewMenuController) {
+					cell._mashupInstance._BMCollectionViewMenuController.jqElement.triggerHandler('Event:' + name);
 				}
 
 				// Then fire the global event and collapse the menu
