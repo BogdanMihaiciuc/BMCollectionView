@@ -1451,6 +1451,12 @@ declare interface TWMashupDataBindingDefinition {
     PropertyMaps: TWMashupPropertyBindingDefinition[];
 }
 
+
+
+/**
+ * An object representing a property binding that occurs in a mashup.
+ * This specifies the source and source property and the target and target property of a data binding.
+ */
 declare interface TWMashupPropertyBindingDefinition {
     
     /**
@@ -1543,7 +1549,7 @@ declare interface TWMashupWidgetDefinition {
     Properties: TWMashupWidgetPropertiesDefinition;
 
     /**
-     * An array containing this widget's sub-widgets.
+     * An array containing this widget's child widgets.
      */
     Widgets: TWMashupWidgetDefinition[];
 }
@@ -1573,7 +1579,7 @@ declare abstract class TWMashupDefinition {
     Data: Dictionary<TWMashupDataSource>;
 
     /**
-     * An arrat of data bindings within this mashup.
+     * An array of data bindings within this mashup.
      */
     DataBindings: TWMashupDataBindingDefinition[];
 

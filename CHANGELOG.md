@@ -1,3 +1,33 @@
+# 2.5
+
+Collection View is now compatible with Thingworx 8.4 and compiled in strict mode.
+
+Table Layout has been deprecated and cannot be selected as a layout for newly created collection views. Old collection views using it will continue to function, but the option is no longer visible in the layout options - **changing the layout for one of these collection views will be irreversible**. Flow Layout with the `FlowLayoutMaximumCellsPerRow` property set to `1` can now be used instead of table layout to obtain the same behaviour with more options for configuration.
+
+Collection View widget will now behave as a view-based widget when part of a view hierarchy - in other cases it will behave as a regular widget. When part of a view hierarchy, the `coreUIView` property will return the collection view.
+
+A new `FlowLayoutMaximumCellsPerRow` property can be set to control the maximum number of cells that can be placed in each row by flow layout.
+
+A new `FlowLayoutOrientation` property can be set to control flow layout's orientation.
+
+When using data-driven mashup names, it is now possible to change a visible's cell mashup at runtime. When a cell's mashup changes at runtime, this change will be animated. When the root view of both mashups is a `BMView` widget, collection view will attempt to independently interpolate views from the previous mashup to matching view from the new mashup, resulting in a more accurate transition animation. The matching is done based on the assigned `DisplayName` property of the widgets in the mashups.
+
+A new `HandlesResponsiveCellsImmediately` property is available on collection view. When this property is enabled, collection view will repeatedly resize cells when their size changes because of an animation.
+
+When using mashups whose root widget is a `BMView` widget, the root view will be attached to the cell's view hierarchy. This allows the mashup's layout process to be linked to that of the cell and take advantage of collection view's specialized layout queue. This also makes using `HandlesResponsiveCells` and `HandlesResponsiveCellsImmediately` optional, as the CoreUI layout will handle resizing the contents of the cell appropriately.
+
+When animating the size of cells whose root widget is a `BMView`, the resulting layout change will also be animated, regardless of whether `HandlesResponsiveCells` or `HandlesResponsiveCellsImmediately` are enabled. This leverages `BMView`'s built-in animation mechanism for improved performance, avoiding repeated layout passes.
+
+**`[BETA]`** A new `AutomaticCellSize` property may be enabled on Collection View for testing. This requires the cell mashup's root widget to be a `BMView` widget. When this property is enabled, collection view will automatically determine the size of cells based on the intrinsic size of their contents. When this property is enabled and the root widget of any mashup is not a `BMView` widget, an error will be thrown, preventing collection view from functioning correctly.
+
+A new `BMCollectionViewMashupDefinitionCacheWipe` global function is available for debugging. When invoked, the mashup caches are emptied for collection view, forcing it to reload mashup definitions whenever it has to render cells.
+
+The `Left` and `Right` gravities are now available for flow layout.
+
+Resolved an issue that caused Collection View to incorrectly trigger the `CollectionViewDidRemoveItems` event when moving items instead of the expected `CollectionViewDidMoveItems` event.
+
+On macOS Mojave, the configuration window now respects the system dark mode setting.
+
 # 2.2.4
 
 Resolved an issue that caused Collection View to not be destroyed correctly when its mashup was removed. This could then cause a crash when using drag & drop.

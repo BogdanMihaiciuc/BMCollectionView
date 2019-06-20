@@ -106,7 +106,7 @@
 		the layout settings by selecting the appropriate layout configuration page on the left hand side.
 	</div>
 	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="Layout">
-		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="table">
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="table" style="display: none;">
 			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/tableLayout.png"
 			/>
 			<div class="BMCollectionViewVerticalTableDescription">
@@ -123,7 +123,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableDivider" style="display: none;"></div>
 		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="flow">
 			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayout.png"
 			/>
@@ -483,7 +483,7 @@
 			/>
 			<div class="BMCollectionViewVerticalTableDescription">
 				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
-					Cell size
+					Cell Size
 				</div>
 				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
 					Controls the size of each mashup.
@@ -507,6 +507,33 @@
 					<div class="BMCollectionViewVerticalTablePropertyListName">Height Field:</div>
 					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
 					 data-property="CellHeightField" data-single-binding="YES" data-source-property="Data" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/automaticCellSize.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					<code>[BETA]</code> Automatic Cell Size 
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, flow layout will automatically calculate the size of each cell based on the intrinsic size of its content.<br/>
+					This requires that the mashups used for cells use a <code>BMView</code> widget as their layout manager.<br/>
+					<br/>
+					When this property is enabled, the static cell size should be set to a size that represents the expected average size of cells.<br/>
+					Flow Layout will use this as a general measurement of the cells to quickly build a preliminary layout. Afterwards it will measure and correctly 
+					lay out each cell as needed.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="AutomaticCellSize"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
 				</div>
 			</div>
 		</div>
@@ -591,10 +618,29 @@
 				</div>
 			</div>
 		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/masonryLayoutNumberOfColumns.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Maximum Cells per Row
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When set to a positive number, this controls how many cells flow layout will allow in each row. 
+					After exceeding this number, subsequent cells will be moved to a new row.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Maximum Cells:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="FlowLayoutMaximumCellsPerRow"
+					 data-primitive-type="Int" />
+				</div>
+			</div>
+		</div>
 	</div>
 	<div class="BMCollectionViewVerticalTableSectionHeading">FLOW SETTINGS</div>
 	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
-		Controls how the cells are arranged in each row.
+		Controls how the cells are distributed in each row.
 	</div>
 	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="FlowLayoutGravity">
 		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Spaced">
@@ -631,7 +677,33 @@
 					Center
 				</div>
 				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
-					When selected, the cells will have no space between them.
+					When selected, the cells will have no space between them and be aligned to the center.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Left">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutLeft.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Start
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the cells will have no space between them and be aligned to the start of the row.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Right">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutRight.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					End
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, the cells will have no space between them and be aligned to the end of the row.
 				</div>
 			</div>
 		</div>
@@ -651,7 +723,7 @@
 	</div>
 	<div class="BMCollectionViewVerticalTableSectionHeading">ALIGNMENT SETTINGS</div>
 	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
-		Controls how the cells are aligned vertically in each row, when they have varying heights.
+		Controls how the cells are aligned in each row.
 	</div>
 	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="FlowLayoutAlignment">
 		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Top">
@@ -659,10 +731,10 @@
 			/>
 			<div class="BMCollectionViewVerticalTableDescription">
 				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
-					Top
+					Start
 				</div>
 				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
-					When selected, cells will align to the top of their row.
+					When selected, cells will align to the start of their row.
 				</div>
 			</div>
 		</div>
@@ -685,16 +757,16 @@
 			/>
 			<div class="BMCollectionViewVerticalTableDescription">
 				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
-					Bottom
+					End
 				</div>
 				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
-					When selected, cells will align to the bottom of their row.
+					When selected, cells will align to the end of their row.
 				</div>
 			</div>
 		</div>
 		<div class="BMCollectionViewVerticalTableDivider"></div>
 		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Expand">
-			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutAlignmentCenter.png"
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/flowLayoutAlignmentExpand.png"
 			/>
 			<div class="BMCollectionViewVerticalTableDescription">
 				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
@@ -716,10 +788,10 @@
 			/>
 			<div class="BMCollectionViewVerticalTableDescription">
 				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
-					Top
+					Start
 				</div>
 				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
-					When selected, the content will be aligned to the top of the collection view.
+					When selected, the content will be aligned to the start of the collection view.
 				</div>
 			</div>
 		</div>
@@ -742,10 +814,10 @@
 			/>
 			<div class="BMCollectionViewVerticalTableDescription">
 				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
-					Bottom
+					End
 				</div>
 				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
-					When selected, the content will be aligned to the bottom of the collection view.
+					When selected, the content will be aligned to the end of the collection view.
 				</div>
 			</div>
 		</div>
@@ -1308,7 +1380,7 @@
 				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
 					Controls size of the grid system used by tile layout. Cell sizes will be constrained to a multiple of this size, 
 					also taking the spacing size into account, so if a cell's size would be double this unit size, its final size will be 
-					<pre><code>2 * unit size + spacing size</code></pre>
+					<code>2 * unit size + spacing</code>
 				</div>
 				<div class="BMCollectionViewVerticalTablePropertyList">
 					<div class="BMCollectionViewVerticalTablePropertyListName">Size:</div>
@@ -1756,7 +1828,7 @@
 					When chosen, multiple selection can be controlled by triggering the <code>BeginSelectionMode</code> and <code>FinishSelectionMode</code> services.<br/>
 					When selection mode is enabled, multiple selection works as if <b>Click or Tap</b> had been chosen and as if <b>Disabled</b> had been selected
 					when it is not enabled.<br/><br/>
-					Additionally, the <code>CellMultipleSelectionModeEnabled</code> property is a bindable BOOLEAN that may be used to verify the multiple selection mode 
+					Additionally, the <code>CellMultipleSelectionModeEnabled</code> property is a bindable <code>BOOLEAN</code> that may be used to verify the multiple selection mode 
 					status.
 				</div>
 			</div>
@@ -1781,11 +1853,11 @@
 					Obtaining information about the selection
 				</div>
 				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
-					In addition to these settings, the <code>HasSelectedCells</code> property is a bindable BOOLEAN that may be used to retrieve whether the
+					In addition to these settings, the <code>HasSelectedCells</code> property is a bindable <code>BOOLEAN</code> that may be used to retrieve whether the
 					collection view has any selected cells or not.<br/><br/>
-					Similarly, the <code>SelectedCellsCount</code> property is a bindable BOOLEAN that may be used to retrieve the number of selected cells 
+					Similarly, the <code>SelectedCellsCount</code> property is a bindable <code>INTEGER</code> that may be used to retrieve the number of selected cells 
 					within collection view.<br/><br/>
-					Finally, <code>CellMultipleSelectionModeEnabled</code> is a bindable BOOLEAN that may be used to retrieve whether multiple selection mode 
+					Finally, <code>CellMultipleSelectionModeEnabled</code> is a bindable <code>BOOLEAN</code> that may be used to retrieve whether multiple selection mode 
 					is enabled or not.
 				</div>
 			</div>
@@ -2835,6 +2907,9 @@
 					<br/> Normally, to improve performance, collection view does not invoke the resize method on the cell mashup. This works fine for 
 					most mashups, but in certain cases it may lead to visual artifacts after the cell is resized. In those cases, this property should be 
 					enabled to resolve those issues at a minor cost in performance.
+					<br/>
+					<br/> Note that when the root widget of the cell mashups is a <code>View</code> widget, this property has no effect as resizing is handled
+					by CoreUI instead of the usual Thingworx methods.
 				</div>
 				<div class="BMCollectionViewVerticalTablePropertyList">
 					<label class="BMCollectionViewVerticalTableSwitch">

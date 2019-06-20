@@ -94,6 +94,16 @@
 
 /************************** CONFIGURATION WINDOW ************************/
 	
+@media (prefers-color-scheme: dark) {
+	.BMWindow pre, .BMWindow code {
+		background-color: rgb(40, 40, 40);
+		border-color: rgba(255, 255, 255, .1);
+	}
+
+	.BMWindow code {
+		color: rgb(214, 122, 126);
+	}
+}
 	
 .BMWidgetConfigurationWindowToolbar {
 	position: absolute;
@@ -117,7 +127,6 @@
 }
 
 .BMWidgetConfigurationWindowNavigationSidebar {
-	background: rgba(255, 255, 255, .8);
 	border-right: 1px solid rgba(0, 0, 0, .2);
 
 	font-family:  -apple-system, BinkMacSystemFont, 'Roboto', 'Segoe UI', 'Helvetica', monospace;
@@ -132,6 +141,18 @@
     position: absolute;
 
     overflow-y: auto;
+}
+
+.BMWidgetConfigurationWindowMini .BMWidgetConfigurationWindowNavigationSidebar {
+	font-size: 12px;
+	width: 156px;
+}
+
+@media (prefers-color-scheme: dark) {
+	.BMWidgetConfigurationWindowNavigationSidebar {
+		background: transparent;
+		border-right-color: black;
+	}
 }
 
 .BMWidgetConfigurationWindowNavigationSidebarCompatibility {
@@ -156,8 +177,23 @@
 	transition: background-color .2s ease;
 }
 
+.BMWidgetConfigurationWindowMini .BMWidgetConfigurationWindowNavigationSidebarLink {
+	line-height: 24px;
+	padding-left: 8px;
+}
+
 .BMWidgetConfigurationWindowNavigationSidebarLinkSelected {
 	background-color: rgba(0, 0, 0, .1);
+}
+
+@media (prefers-color-scheme: dark) {
+	.BMWidgetConfigurationWindowNavigationSidebarLink {
+		color: rgba(255, 255, 255, .9);
+	}
+
+	.BMWidgetConfigurationWindowNavigationSidebarLinkSelected {
+		background-color: rgba(255, 255, 255, .1);
+	}
 }
 
 .BMWidgetConfigurationWindowContent {
@@ -175,6 +211,18 @@
 
     position: absolute;
     overflow: auto;
+}
+
+.BMWidgetConfigurationWindowMini .BMWidgetConfigurationWindowContent {
+	width: calc(100% - 157px);
+	left: 157px;
+}
+
+@media (prefers-color-scheme: dark) {
+	.BMWidgetConfigurationWindowContent {
+		background: #1e1e1e;
+		color: rgba(255, 255, 255, .9);
+	}
 }
 
 .BMWidgetConfigurationWindowDocumentation {
@@ -224,6 +272,23 @@
 	padding-right: 22px;
 }
 
+@media (prefers-color-scheme: dark) {
+	.BMWidgetConfigurationWindowDocumentation {
+		background-color: rgb(40, 40, 40);
+		color: rgba(255, 255, 255, .9);
+	}
+
+	.BMWidgetConfigurationWindowProperty {
+		background-color: rgb(40, 40, 40);
+		border-bottom: 1px solid rgba(255, 255, 255, .1);
+	}
+
+	.BMWidgetConfigurationWindowPropertyHeader {
+		color: rgba(255, 255, 255, .75);
+		border-bottom: 1px solid rgba(255, 255, 255, .1);
+	}
+}
+
 /**************************************** HELP WINDOW *********************************/
 
 			
@@ -241,6 +306,20 @@
 	color: rgba(0, 0, 0, .8);
 }
 
+
+.BMWidgetConfigurationWindowMini .BMCollectionViewWindowHeading {
+	padding-top: 24px;
+	padding-bottom: 24px;
+
+	font-size: 24px;
+}
+
+@media (prefers-color-scheme: dark) {
+	.BMCollectionViewWindowHeading {
+		color: rgba(255, 255, 255, .9);
+	}
+}
+
 .BMCollectionViewVerticalTable {
 	display: flex;
 	flex-direction: column;
@@ -255,10 +334,29 @@
 	margin-bottom: 32px;
 }
 
+
+.BMWidgetConfigurationWindowMini .BMCollectionViewVerticalTable {
+	margin-bottom: 16px;
+}
+
 .BMCollectionViewVerticalTableDivider {
 	width: 100%;
 	height: 1px;
 	background-color: rgba(0, 0, 0, .1);
+}
+
+@media (prefers-color-scheme: dark) {
+
+	.BMCollectionViewVerticalTable {
+		background: rgb(40, 40, 40);
+		
+		border-top: 1px solid rgba(255, 255, 255, .1);
+		border-bottom: 1px solid rgba(255, 255, 255, .1);
+	}
+	
+	.BMCollectionViewVerticalTableDivider {
+		background-color: rgba(255, 255, 255, .1);
+	}
 }
 
 .BMCollectionViewVerticalTableEntry {
@@ -270,6 +368,12 @@
 	max-width: 800px;
 	
 	margin: 0 auto;
+}
+
+.BMWidgetConfigurationWindowMini .BMCollectionViewVerticalTableEntry {
+	box-sizing: border-box;
+	padding-left: 8px;
+	padding-right: 8px;
 }
 
 .BMCollectionViewVerticalTableEntryChoice {
@@ -316,6 +420,42 @@
 	margin-bottom: 8px;
 }
 
+
+.BMWidgetConfigurationWindowMini .BMCollectionViewVerticalTableSectionHeading {
+	font-size: 12px;
+	padding-left: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+
+	.BMCollectionViewVerticalTableSectionHeading {
+		color: rgba(255, 255, 255, .66);
+	}
+
+	.BMCollectionViewVerticalTableEntryChoice:hover {
+		background-color: rgba(255, 255, 255, .05);
+	}
+	
+	.BMCollectionViewVerticalTableEntryChoice:active {
+		background-color: rgba(255, 255, 255, .1);
+	}
+
+	.BMCollectionViewVerticalTableEntryChoiceSelected {
+		background-color: rgba(0, 80, 128, .25);
+		box-shadow: 0px 0px 1px 1px rgba(255, 255, 255, .05) inset;
+	}
+	
+	.BMCollectionViewVerticalTableEntryChoiceSelected:hover {
+		background-color: rgba(0, 80, 128, .33);
+		box-shadow: 0px 0px 1px 1px rgba(255, 255, 255, .05) inset;
+	}
+	
+	.BMCollectionViewVerticalTableEntryChoiceSelected:active {
+		background-color: rgba(0, 80, 128, .5);
+		box-shadow: 0px 0px 1px 1px rgba(255, 255, 255, .05) inset;
+	}
+}
+
 .BMCollectionViewVerticalTableImage {
 	display: block;
 	margin: 32px;
@@ -333,6 +473,19 @@
 	margin-bottom: 16px;
 }
 
+
+.BMWidgetConfigurationWindowMini .BMCollectionViewVerticalTableImage {
+	display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+	.BMCollectionViewVerticalTableImage {
+		filter: invert(100%);
+		transform: translateZ(0);
+		-webkit-transform: translateZ(0);
+	}
+}
+
 .BMCollectionViewPropertyHeading {
 	font-size: 24px;
 	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Segoe UI', sans-serif;
@@ -341,9 +494,27 @@
 	color: rgba(0, 0, 0, .66);
 }
 
+
+.BMWidgetConfigurationWindowMini .BMCollectionViewPropertyHeading {
+	font-size: 14px;
+	font-weight: normal;
+}
+
+@media (prefers-color-scheme: dark) {
+
+	.BMCollectionViewPropertyHeading {
+		color: rgba(255, 255, 255, .75);
+	}
+}
+
 .BMCollectionViewVerticalTableHeading {
 	margin-top: 16px;
 	margin-bottom: 32px;
+}
+
+.BMWidgetConfigurationWindowMini .BMCollectionViewPropertyHeading {
+	margin-top: 8px;
+	margin-bottom: 8px;
 }
 
 .BMCollectionViewPropertyDescription, .BMCollectionViewVerticalTableSwitch {
@@ -352,6 +523,18 @@
 	font-weight: normal;
 	
 	color: rgba(0, 0, 0, .8);
+}
+
+
+.BMWidgetConfigurationWindowMini .BMCollectionViewPropertyDescription {
+	display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+
+	.BMCollectionViewPropertyDescription, .BMCollectionViewVerticalTableSwitch  {
+		color: rgba(255, 255, 255, .9);
+	}
 }
 
 .BMCollectionViewVerticalTablePropertyDescription {
@@ -364,8 +547,23 @@
 	display: flex;
 	flex-direction: row;
 	align-items: center;
+
+	flex-wrap: wrap;
 	
 	margin-bottom: 16px;
+}
+
+.BMWidgetConfigurationWindowMini .BMCollectionViewVerticalTablePropertyList {
+	margin-bottom: 8px !important;
+	margin-top: -8px !important;
+}
+
+.BMWidgetConfigurationWindowMini .BMCollectionViewVerticalTablePropertyList > * {
+	margin-top: 8px !important;
+}
+
+.BMWidgetConfigurationWindowMini .BMCollectionViewVerticalTablePropertyList:nth-child(2) {
+	margin-top: 0px !important;
 }
 
 .BMCollectionViewVerticalTablePropertyListName {
@@ -374,6 +572,17 @@
 	font-weight: normal;
 	
 	color: rgba(0, 0, 0, .33);
+}
+
+.BMWidgetConfigurationWindowMini .BMCollectionViewVerticalTablePropertyListName {
+	font-size: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+
+	.BMCollectionViewVerticalTablePropertyListName {
+		color: rgba(255, 255, 255, .5);
+	}
 }
 
 .BMCollectionViewVerticalTablePropertyListValue {
@@ -400,14 +609,37 @@
 	outline: none;
 }
 
+.BMWidgetConfigurationWindowMini .BMCollectionViewVerticalTablePropertyListValue {
+	width: 32px;
+}
+
 .BMCollectionViewVerticalTablePropertyListValue:focus {
 	box-shadow: 0px 0px 5px 2px rgba(0, 160, 255, .33);
 	border-color: rgba(0, 100, 200, .5);
 	outline: none;
 }
 
+@media (prefers-color-scheme: dark) {
+
+	.BMCollectionViewVerticalTablePropertyListValue {
+		background-color: rgb(40, 40, 40);
+		color: rgba(255, 255, 255, .9);
+		border-color: rgba(255, 255, 255, .1);
+		transition: box-shadow .2s ease, border-color .2s ease, background-color .2s ease;
+	}
+
+	.BMCollectionViewVerticalTablePropertyListValue:focus {
+		color: rgba(0, 0, 0, .8);
+		background: white;
+	}
+}
+
 .BMCollectionViewVerticalTablePropertyListString {
 	width: 256px;
+}
+
+.BMWidgetConfigurationWindowMini .BMCollectionViewVerticalTablePropertyListString {
+	width: 128px;
 }
 
 .BMCollectionViewVerticalTableSwitch {
@@ -430,6 +662,18 @@
 	margin-right: 32px;
 	
 	cursor: pointer;
+}
+
+.BMWidgetConfigurationWindowMini .BMCollectionViewVerticalTableSwitch {
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+@media (prefers-color-scheme: dark) {
+
+	.BMCollectionViewVerticalTableSwitch {
+		color: rgba(255, 255, 255, .33);
+	}
 }
 
 .BMCollectionViewVerticalTableSwitch > input {
@@ -474,6 +718,21 @@ input:not(:checked) + .BMCollectionViewVerticalTableSwitchGutter > .BMCollection
 	margin-bottom: 32px;
 	color: rgba(0, 0, 0, .25);
 	line-height: 1.8em;
+}
+
+@media (prefers-color-scheme: dark) {
+	.BMCollectionViewPropertyNotice {
+		color: rgba(255, 255, 255, .33);
+	}
+
+	.BMCollectionViewVerticalTableSwitchKnob {
+		background-color: rgb(80, 80, 80);
+		box-shadow: 0px 2px 8px rgba(0, 0, 0, .6), 0px -4px 8px rgba(0, 0, 0, .2) inset;
+	}
+
+	.BMCollectionViewVerticalTableSwitchGutter {
+		border-color: rgba(0, 0, 0, .33);
+	}
 }
 
 .BMCollectionViewPropertyNoticeInline {
@@ -554,6 +813,17 @@ input:not(:checked) + .BMCollectionViewVerticalTableSwitchGutter > .BMCollection
 	background: rgba(0, 0, 0, .1);
 }
 
+@media (prefers-color-scheme: dark) {
+
+	.BMCollectionViewConfigurationButton:hover, .BMCollectionViewConfigurationDoubleBindingDeleteButton:hover {
+		background: rgba(255, 255, 255, .05);
+	}
+	
+	.BMCollectionViewConfigurationButton:active, .BMCollectionViewConfigurationDoubleBindingDeleteButton:active {
+		background: rgba(255, 255, 255, .1);
+	}
+}
+
 .BMCollectionViewConfigurationDoubleBindingKey, .BMCollectionViewConfigurationDoubleBindingValue {
 	height: calc(100% - 16px);
 	flex-grow: 1;
@@ -567,6 +837,14 @@ input:not(:checked) + .BMCollectionViewVerticalTableSwitchGutter > .BMCollection
 	border-color: transparent transparent transparent rgba(0, 0, 0, .33);
 	
 	margin: 8px;
+	
+}
+
+@media (prefers-color-scheme: dark) {
+
+	.BMCollectionViewConfigurationDoubleBindingArrow{
+		border-color: transparent transparent transparent rgba(255, 255, 255, .5);
+	}
 	
 }
 
@@ -610,6 +888,23 @@ input:not(:checked) + .BMCollectionViewVerticalTableSwitchGutter > .BMCollection
 	transition: background .2s ease;
 }
 
+.BMWidgetConfigurationWindowMini input.span6 {
+	width: 128px;
+}
+
+@media (prefers-color-scheme: dark) {
+
+	.BMCollectionViewConfigurationDropdown {
+		background: rgb(60, 60, 60);
+		box-shadow: 0px 4px 8px rgba(0, 0, 0, .33), 0px 0px 1px 1px rgba(0, 0, 0, .33);
+	}
+
+	.BMCollectionViewConfigurationDropdownEntry {
+		color: rgba(255, 255, 255, .9);
+	}
+	
+}
+
 .BMCollectionViewConfigurationDropdownEntry:active {
 	background: rgba(0, 160, 255, .2);
 }
@@ -649,4 +944,67 @@ input:not(:checked) + .BMCollectionViewVerticalTableSwitchGutter > .BMCollection
 
 	background-image: url(../images/SelectionControllerImage@2x.png);
 	
+}
+
+
+
+.BMWidgetConfigurationWindowToolbarButton {
+
+	position: relative;
+
+    font-weight: bold;
+
+	width: 44px;
+	height: 44px;
+	top: 10px;
+	
+	border-radius: 50%;
+
+	margin-left: 8px;
+	margin-right: 8px;
+
+    line-height: 44px;
+    vertical-align: middle;
+    text-align: center;
+
+    pointer: default;
+    cursor: default;
+
+}
+
+.BMWidgetConfigurationWindowToolbarButton:active {
+	background-color: rgba(0, 0, 0, .1);
+}
+
+.BMCHToolbarButtonSelected {
+
+}
+
+.BMWidgetConfigurationWindowToolbarButton:active {
+	background-color: rgba(0, 0, 0, .1);
+}
+
+.BMWidgetConfigurationWindowToolbarButton > i {
+	font-size: 16px;
+	line-height: 44px;
+	vertical-align: middle;
+}
+
+.BMWidgetConfigurationWindowCloseButton {
+	position: absolute;
+	
+	left: 8px;
+	opacity: 1;
+	
+	pointer-events: inherit;
+	
+	transition: opacity .3s ease;
+}
+
+
+
+.BMWidgetConfigurationWindowMinimizeButton {
+	position: absolute;
+
+	left: 72px;
 }

@@ -248,9 +248,7 @@ export function ThingworxRuntimeWidget(widget) {
     // Thingworx attempts to change the prototype of the custom widget constructor
     // which in addition to being a bad practice, prevents the usual prototype-based inheritance
     // and prevents using the class-based syntax
-    Object.defineProperty(widget, 'prototype', { writable: false });
-
-    TW.Runtime.Widgets[widget.name] = widget;
+    TW.Runtime.Widgets[widget.name] = () => new widget;
 }
 
 /**
@@ -258,9 +256,7 @@ export function ThingworxRuntimeWidget(widget) {
  * @param widget        The widget class to export.
  */
 export function ThingworxComposerWidget(widget) {
-    Object.defineProperty(widget, 'prototype', { writable: false });
-
-    TW.IDE.Widgets[widget.name] = widget;
+    TW.IDE.Widgets[widget.name] = () => new widget;
 }
 
 /**
@@ -269,12 +265,7 @@ export function ThingworxComposerWidget(widget) {
  */
 export function TWNamedComposerWidget(name) {
     return function (widget) {
-        // Thingworx attempts to change the prototype of the custom widget constructor
-        // which in addition to being a bad practice, prevents the usual prototype-based inheritance
-        // and prevents using the class-based syntax
-        Object.defineProperty(widget, 'prototype', { writable: false });
-
-        TW.IDE.Widgets[name] = widget;
+        TW.IDE.Widgets[name] = () => new widget;
     }
 }
 
@@ -284,11 +275,6 @@ export function TWNamedComposerWidget(name) {
  */
 export function TWNamedRuntimeWidget(name) {
     return function (widget) {
-        // Thingworx attempts to change the prototype of the custom widget constructor
-        // which in addition to being a bad practice, prevents the usual prototype-based inheritance
-        // and prevents using the class-based syntax
-        Object.defineProperty(widget, 'prototype', { writable: false });
-
-        TW.Runtime.Widgets[name] = widget;
+        TW.Runtime.Widgets[name] = () => new widget;
     }
 }

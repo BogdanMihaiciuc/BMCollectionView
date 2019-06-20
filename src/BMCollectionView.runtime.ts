@@ -9,11 +9,21 @@ declare class DataManager extends TWDataManager {};
 
 declare var Encoder: any;
 
+// This flag controls whether the new features that require BMCollectionViewCell to subclass BMView should be enabled
+const USE_BMVIEW_SUBCLASS: boolean = YES;
+
 /**
  * Represents the serial number for each mashup created for this collection view.
  * This number is used to guarantee a unique ID for these mashups.
  */
 let BMCollectionViewWidgetSerialVersion: number = 0;
+
+declare global {
+	interface Window {
+		BMCollectionViewMashupDefinitionCacheWipe(): void;
+		BMCollectionViewMashupDefinitionCache: Dictionary<BMCollectionViewDeserializedMashupEntityDefinition>;
+	}
+}
 
 /**
  * The mashup definition cache holds the JSON representation of each mashup type after they are loaded into a collection view for the first time.
@@ -21,6 +31,7 @@ let BMCollectionViewWidgetSerialVersion: number = 0;
  * and avoid sending another HTTP request to retrieve it.
  */
 var BMCollectionViewMashupDefinitionCache: Dictionary<BMCollectionViewDeserializedMashupEntityDefinition> = {};
+window.BMCollectionViewMashupDefinitionCache = BMCollectionViewMashupDefinitionCache;
 
 /**
  * A dictionary containing pending requests for mashup definitions.
@@ -121,7 +132,12 @@ export declare interface BMCollectionViewMashup extends TWMashup {
     /**
      * The menu controller widget within this mashup, if it exists.
      */
-    _BMCollectionViewMenuController?: BMCollectionViewMenuController;
+	_BMCollectionViewMenuController?: BMCollectionViewMenuController;
+	
+	/**
+	 * A view which is created for the mashup when its root widget is a `BMView` widget.
+	 */
+	_BMView?: BMMashupView;
 
     /**
      * An optional delegate object that may receive various callbacks related to the
@@ -181,7 +197,15 @@ export interface TWRuntimeWidgetPrivate extends TWRuntimeWidget {
 
 // #region Mashup Cell
 
+/**
+ * Wipes the mashup definition cache, requiring collection view to reload the mashup definitions when rendering cells.
+ */
+export function BMCollectionViewMashupDefinitionCacheWipe() {
+	BMCollectionViewMashupDefinitionCache = {};
+}
 
+
+window.BMCollectionViewMashupDefinitionCacheWipe = BMCollectionViewMashupDefinitionCacheWipe;
 
 /**
  * Retrieves and caches the definition for the given mashup.
@@ -304,6 +328,35 @@ function BMCollectionViewDefinitionForMashupNamed(name: string, args?: {atomic?:
 }
 
 /**
+ * A view subclass that manages the DOMNode associated with a mashup root widget
+ */
+export class BMMashupView extends BMView {
+
+	protected _contentNode!: DOMNode;
+
+	get _supportsAutomaticIntrinsicSize(): boolean {return NO}
+
+	// @override - BMView
+	get contentNode() {
+		return this._contentNode || this.node;
+	}
+
+	/**
+	 * Constructs and returns a mashup view for the given mashup.
+	 * @param mashup		The mashup.
+	 * @return				A mashup view.
+	 */
+	static viewForMashup(mashup: TWMashup): BMMashupView {
+		let view: BMMashupView = BMView.viewForNode.call(this, mashup.rootWidget.boundingBox[0]) as BMMashupView;
+
+		view._contentNode = mashup.rootWidget.jqElement[0];
+
+		return view;
+	}
+
+}
+
+/**
  * This class implements a collection view cell that creates and manages a mashup.
  * It manages the lifecycle of the mashup, destroying and creating mashups as needed and controlling its parameters.
  */
@@ -322,7 +375,13 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
     /**
      * Set to `YES` while this cell is hosting the collection view menu.
      */
-    BM_hasMenu: boolean = NO;
+	BM_hasMenu: boolean = NO;
+	
+	private _contentNode?: DOMNode;
+
+	get contentNode() {
+		return this._contentNode || this.node;
+	}
 
     /**
      * The collection view managing this mashup cell's lifecycle.
@@ -360,6 +419,11 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 	 * The mashup definition for the currently loaded mashup.
 	 */
 	private _mashupDefinition?: TWMashupEntityDefinition;
+
+	/**
+	 * A property that temporarily holds an old mashup instance during an animated mashup change.
+	 */
+	private _previousMashupInstance?: BMCollectionViewMashup;
 
 	/**
 	 * The mashup instance managed by this mashup cell.
@@ -502,9 +566,20 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 	_setParametersInternal(): void {
 
 		var mashup = this._mashupInstance;
-		if (mashup && this._parameters) for (var parameter in this._parameterMap) {
-            mashup.BM_setParameterInternal(this._parameterMap[parameter], this._parameters[parameter]);
-        }
+		if (mashup && this._parameters) {
+			for (var parameter in this._parameterMap) {
+				mashup.BM_setParameterInternal(this._parameterMap[parameter], this._parameters[parameter]);
+			}
+			
+			
+			// Run a layout pass if the root widget is a BMView
+			let rootWidget = mashup.rootWidget.getWidgets()[0] as any;
+
+			// Trigger a blocking layout pass
+			if (rootWidget && rootWidget.coreUIView) {
+				//rootWidget.coreUIView.layout();
+			}
+		}
 	}
 
 	/**
@@ -644,7 +719,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 
 	// @override - BMCollectionViewCell
 	initWithCollectionView(collectionView: BMCollectionView, args: {reuseIdentifier: string, node: DOMNode}): BMCollectionViewMashupCell {
-		BMCollectionViewCell.prototype.initWithCollectionView.call(this, collectionView, args);
+		super.initWithCollectionView(collectionView, args);
 
 		this.node.classList.add('BMCollectionViewCellWrapper');
 
@@ -688,6 +763,8 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 				this._renderMashupNamed(this._mashup!, {withDefinition: this._mashupDefinition});
 			}
 		}
+
+
 	}
 
 	/**
@@ -720,6 +797,33 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
         super.destroy();
 	}
 
+	// @override - BMCollectionViewCell
+	boundsWillChangeToBounds(bounds: BMRect): void {
+		/*
+		// When the change is animated and the mashup's root widget is a BMView, run an animated layout update
+		if (BMAnimationContextGetCurrent()) {
+			if (this._mashupInstance && this._mashupInstance.rootWidget.getWidgets().length) {
+				let rootWidget = this._mashupInstance.rootWidget.getWidgets()[0] as any;
+
+				// Trigger a blocking layout pass
+				if (rootWidget.coreUIView) {
+					this._mashupInstance.rootWidget.jqElement.css({width: bounds.size.width + 'px', height: bounds.size.height + 'px'});
+					rootWidget.coreUIView.layout();
+					this._mashupInstance.rootWidget.jqElement.css({width: '100%', height: '100%'});
+				}
+			}
+		}
+		*/
+	}
+
+	// @override - BMCollectionViewCell
+	boundsDidTransitionToBounds(bounds: BMRect): void {
+		if (this._mashupInstance && this.controller.getProperty('HandlesResponsiveWidgetsImmediately')) {
+			this._mashupInstance.rootWidget.handleResponsiveWidgets(YES);
+		}
+	}
+
+	// @override - BMCollectionViewCell
 	boundsDidChangeFromBounds(bounds: BMRect): void{
 		if (this._mashupInstance && this.controller.getProperty('HandlesResponsiveWidgets')) {
 			this._mashupInstance.rootWidget.handleResponsiveWidgets(YES);
@@ -731,7 +835,12 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
     /**
      * Set to `YES` while this cell is awaiting for a request in order to render a mashup.
      */
-    private _awaitsRendering: boolean = NO;
+	private _awaitsRendering: boolean = NO;
+	
+	/**
+	 * Set to `YES` when this cell is about to run an animated mashup update.
+	 */
+	private _awaitsMashupUpdate: boolean = NO;
 
 	/**
 	 * Causes this cell to render and display the given mashup, if it corresponds to the mashup that this cell manages,
@@ -752,7 +861,8 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 
 		// Destroy the current mashup if there is one
 		if (this._mashupInstance) {
-			this._mashupInstance.destroyMashup();
+			this._previousMashupInstance = this._mashupInstance;
+			//this._mashupInstance.destroyMashup();
 		}
 
 		// If the cell is not visible, wait until it becomes bound to an object before
@@ -775,6 +885,14 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 		containerNode.classList.add('BMCollectionViewCell', 'BMCollectionViewCellHoverable');
 		this.node.appendChild(containerNode);
 		var container: $ = $(containerNode);
+
+		this._contentNode = containerNode;
+
+		// If there was a previous mashup that should be destroyed,
+		// the new mashup starts out transparent
+		if (this._previousMashupInstance) {
+			containerNode.style.opacity = '.0000';
+		}
 		
 		// Increment the mashup serial version to generate a unique ID for this mashup
 		BMCollectionViewWidgetSerialVersion++;
@@ -803,15 +921,73 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 		mashup.dataMgr.migrateAnyBindings(mashup);
 		TW.Runtime.Workspace.Mashups.Current = mashup;
 		
+		if (USE_BMVIEW_SUBCLASS) {
+
+			// If the root widget of the new mashup is a view, attach it as a subview of the cell
+			let rootWidget = this._mashupInstance.rootWidget.getWidgets()[0] as any;
+
+			// Prevent the root view from initiating a layout pass before this cell is ready for display
+			if (rootWidget && rootWidget.coreUIView) {
+				rootWidget._skipInitialLayoutPass = YES;
+			}
+
+		}
+		
 		// Use fast widget append if enabled
 		if (self.controller.getProperty('[Experimental] Fast widget append')) {
-			self._fastWidgetAppend.call(mashup.rootWidget, container);
+			self._fastWidgetAppend.call(mashup.rootWidget as TWRuntimeWidgetPrivate, container, mashup);
 		}
 		else {		
 			// Otherwise draw the mashup into the container using the standard Thingworx method
 			mashup.rootWidget.appendTo(container, mashup);
 		}
+
+		// Create the data manager
 		mashup.dataMgr.loadFromMashup(mashup);
+
+		// Set to YES if this mashup update is part of an animated transition
+		let performsMashupTransition = NO;
+		let mashupRootView: BMView | undefined;
+
+		// #FLAG
+		if (USE_BMVIEW_SUBCLASS) {
+
+			// If the root widget of the new mashup is a view, attach it as a subview of the cell
+			let rootWidget = this._mashupInstance.rootWidget.getWidgets()[0] as any;
+
+			// Create a view for the mashup widget and add the root view as a sub-widget
+			if (rootWidget && rootWidget.coreUIView) {
+				let mashupView: BMMashupView = BMMashupView.viewForMashup(mashup);
+				mashup._BMView = mashupView;
+				this.addSubview(mashupView, {toPosition: 0});
+
+				let rootView: BMView = rootWidget.coreUIView;
+				mashupView.addSubview(rootView);
+
+				// Additionally, the root widget is to be added a subview to the mashup view with a set of constraints
+				BMLayoutConstraint.constraintWithView(rootView, {attribute: BMLayoutAttribute.Left}).isActive = YES;
+				BMLayoutConstraint.constraintWithView(rootView, {attribute: BMLayoutAttribute.Top}).isActive = YES;
+				BMLayoutConstraint.constraintWithView(rootView, {attribute: BMLayoutAttribute.Width, toView: mashupView, relatedBy: BMLayoutConstraintRelation.Equals, secondAttribute: BMLayoutAttribute.Width}).isActive = YES;
+				BMLayoutConstraint.constraintWithView(rootView, {attribute: BMLayoutAttribute.Height, toView: mashupView, relatedBy: BMLayoutConstraintRelation.Equals, secondAttribute: BMLayoutAttribute.Height}).isActive = YES;
+
+				// Similarly, the mashup root widget has to be linked to the cell
+				BMLayoutConstraint.constraintWithView(mashupView, {attribute: BMLayoutAttribute.Left}).isActive = YES;
+				BMLayoutConstraint.constraintWithView(mashupView, {attribute: BMLayoutAttribute.Top}).isActive = YES;
+				BMLayoutConstraint.constraintWithView(mashupView, {attribute: BMLayoutAttribute.Width, toView: this, relatedBy: BMLayoutConstraintRelation.Equals, secondAttribute: BMLayoutAttribute.Width}).isActive = YES;
+				BMLayoutConstraint.constraintWithView(mashupView, {attribute: BMLayoutAttribute.Height, toView: this, relatedBy: BMLayoutConstraintRelation.Equals, secondAttribute: BMLayoutAttribute.Height}).isActive = YES;
+
+	
+				if (this._previousMashupInstance && this._previousMashupInstance._BMView) {
+					// If this mashup switch happens during a data update, run a smooth transition between individual subviews
+					if (this.collectionView.isUpdatingData) {
+						performsMashupTransition = YES;
+						mashupRootView = rootView;
+					}
+				}
+
+			}
+
+		}
 
 		// Bring ripple back to front
 		if (this._ripple) this.element.append(this._ripple);
@@ -868,6 +1044,28 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 		
 		// Fire the MashupLoaded event to signal that loading is complete
         mashup.fireMashupLoadedEvent();
+
+		if (performsMashupTransition && mashupRootView) {
+			// Layout the mashup contents prior to rendering
+			if (this.attributes) {
+				(this.layoutQueue as any)._views.delete(this);
+				this.layoutSubviews();
+			}
+
+			this._awaitsMashupUpdate = YES;
+			
+			mashupRootView.allSubviews.forEach(subview => {
+				// For each subview, try to find a matching subview from the previous mashup instance with the same displayName
+				let debuggingName = subview.debuggingName;
+
+				this._previousMashupInstance!._BMView!.allSubviews.forEach(previousSubview => {
+					// When one is found, set the new subview's frame relative to the root view to the previous subview's frame
+					if (previousSubview.debuggingName == debuggingName) {
+						subview.frameRelativeToRootView = previousSubview.frameRelativeToRootView;
+					}
+				});
+			});
+		}
 		
 		// Let the delegate know that the mashup was rendered if needed				
 		if (mashup.BMCellDelegate && mashup.BMCellDelegate.collectionViewDidRenderCell) {
@@ -876,7 +1074,58 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
         
         // Restore the previous mashup ID and object
         TW.Runtime.HtmlIdOfCurrentlyLoadedMashup = currentHTMLID;
-        TW.Runtime.Workspace.Mashups.Current = currentMashup;
+		TW.Runtime.Workspace.Mashups.Current = currentMashup;
+		
+		// If there was a previous mashup that should be destroyed, run an animation and then destroy it
+		if (this._previousMashupInstance) {
+			let previousMashupInstance = this._previousMashupInstance;
+			$.Velocity.animate(this._previousMashupInstance.rootWidget.boundingBox[0], {opacity: 0}, {duration: 500, easing: 'easeInOutQuad'});
+			$.Velocity.animate(containerNode, {opacity: 1}, {duration: 500, easing: 'easeInOutQuad', complete: () => {
+				this._previousMashupInstance = undefined;
+				previousMashupInstance.destroyMashup();
+				if (previousMashupInstance._BMView) {
+					previousMashupInstance._BMView.release();
+				}
+			}});
+		}
+	}
+
+	// @override - BMCollectionViewCell
+	prepareForAnimatedUpdate() {
+		if (this._awaitsMashupUpdate) {
+			this.needsLayout = YES;
+			this._awaitsMashupUpdate = NO;
+		}
+	}
+
+	frameForDescendant(descendant: BMView): BMRect {
+		// If the frame is requested during an animated mashup change and this view is a descendant of the old mashup, assign it, if possible,
+		// the frame of the matching new view
+		if (this._previousMashupInstance && this._previousMashupInstance._BMView) {
+			if (this._mashupInstance && this._mashupInstance._BMView) {
+				if (BMAnimationContextGetCurrent()) {
+					//Try to find a matching subview from the new mashup instance with the same displayName
+					let debuggingName = descendant.debuggingName;
+
+					if (descendant.isDescendantOfView(this._previousMashupInstance._BMView)) for (let newSubview of this._mashupInstance._BMView.allSubviews) {
+						// When one is found, set the new subview's frame relative to the root view to the previous subview's frame
+						if (newSubview.debuggingName == debuggingName) {
+							let offset = BMPointMake();
+							let localFrame = descendant.frame;
+							let offsetFrame = descendant.frameRelativeToRootView;
+							offset.x = offsetFrame.origin.x - localFrame.origin.x;
+							offset.y = offsetFrame.origin.y - localFrame.origin.y;
+
+							let frame = newSubview.frameRelativeToRootView.copy();
+							frame.origin.x -= offset.x;
+							frame.origin.y -= offset.y;
+							return frame;
+						}
+					}
+				}
+			}
+		}
+		return super.frameForDescendant(descendant);
 	}
 	
 	/**
@@ -1017,7 +1266,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 						widgets[i].appendTo(widgetContainer, mashup, YES);
 					}
 					else {
-						BMCollectionViewMashupCell.prototype._fastWidgetAppend.call(widgets[i], widgetContainer);
+						BMCollectionViewMashupCell.prototype._fastWidgetAppend.call(widgets[i], widgetContainer, mashup);
 					}
 	            } 
 	            else {
@@ -1026,7 +1275,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 						widgets[i].appendTo(widgetElement, mashup, YES);
 					}
 					else {
-						BMCollectionViewMashupCell.prototype._fastWidgetAppend.call(widgets[i], widgetElement);
+						BMCollectionViewMashupCell.prototype._fastWidgetAppend.call(widgets[i], widgetElement, mashup);
 					}
 	            }
 			}
@@ -1039,7 +1288,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 					widgets[i].appendTo(widgetElement, mashup, YES);
 				}
 				else {
-					BMCollectionViewMashupCell.prototype._fastWidgetAppend.call(widgets[i], widgetElement);
+					BMCollectionViewMashupCell.prototype._fastWidgetAppend.call(widgets[i], widgetElement, mashup);
 				}
 			}
 		}
@@ -1122,7 +1371,53 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
     // #region Properties
     
-    collectionView!: BMManagedCollectionView;
+	collectionView!: BMManagedCollectionView;
+
+	subviewMap: Dictionary<BMView> = {};
+
+    /**
+     * The CoreUI view managing this widget.
+     */
+    protected _coreUIView!: BMManagedCollectionView;
+    get coreUIView(): BMManagedCollectionView {
+        if (!this._coreUIView) {
+			var useCustomScrollbar: boolean | undefined;
+		
+			if (this.getProperty('UseCustomScrollerOnWindowsDesktops')) {
+				useCustomScrollbar = !navigator.platform.match(/(Mac|iPhone|iPod|iPad|Windows Phone|Android)/i) || (window.navigator as any).standalone;
+			}
+			if (this.getProperty('AlwaysUseCustomScrollerOniOS')) {
+				useCustomScrollbar = useCustomScrollbar! || navigator.platform.match(/(iPhone|iPod|iPad)/i) || (window.navigator as any).standalone;
+			}
+			
+			// Custom scrollbars are required for the masonry layout
+			var layout = this.getProperty('Layout');
+			if (layout === 'masonry') {
+				useCustomScrollbar = YES;
+			}
+			if (layout.indexOf('calendar') == 0) {
+				useCustomScrollbar = YES;
+			}
+			
+			// Custom scrollbars are required when pinning headers or footers to the content edge
+			if (this.getProperty('TableLayoutPinsHeadersToContentEdge') || this.getProperty('TableLayoutPinsFootersToContentEdge') || this.getProperty('TileLayoutPinsFootersToContentEdge') ||
+				this.getProperty('FlowLayoutPinsHeadersToContentEdge') || this.getProperty('FlowLayoutPinsFootersToContentEdge') || this.getProperty('TileLayoutPinsFootersToContentEdge')) {
+				useCustomScrollbar = YES;
+			}
+	
+			// Custom scrollbars are also required when using ScrollbarStyle
+			if (this.getProperty('ScrollbarStyle')) {
+				useCustomScrollbar = YES;
+			}
+
+			let view = (<any>BMCollectionView).collectionViewForNode((this.jqElement ? this.jqElement[0] : document.createElement('div')), {customScroll: useCustomScrollbar});
+			view.node.classList.add('widget-content');
+			view.node.classList.add('widget-bounding-box');
+            view.debuggingName = this.getProperty('DisplayName');
+            this._coreUIView = view;
+        }
+        return this._coreUIView;
+    };
 	
 	/**
 	 * The raw infotable data set.
@@ -1458,6 +1753,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 */
 	createFlowLayout(): BMCollectionViewFlowLayout {
 		var layout = new BMCollectionViewFlowLayout();
+		layout.orientation = BMCollectionViewFlowLayoutOrientation[this.getProperty('FlowLayoutOrientation', 'Vertical')];
 		layout.rowSpacing = this.getProperty('FlowLayoutRowSpacing');
 		layout.minimumSpacing = this.getProperty('FlowLayoutMinimumSpacing');
 		layout.gravity = BMCollectionViewFlowLayoutGravity[this.getProperty('FlowLayoutGravity')];
@@ -1465,12 +1761,18 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		layout.leftAlignFinalRow = this.getProperty('FlowLayoutLeftAlignFinalRow');
 
 		
-		if ((this.getProperty('CellMashupHasIntrinsicSize') && this.cellMashupNameField) || this.cellWidthField || this.cellHeightField) {
+		if (this.getProperty('CellMashupHasIntrinsicSize') || this.cellWidthField || this.cellHeightField) {
 			layout.cellSize = undefined;
 		}
 		else {
 			layout.cellSize = BMSizeMake(this.getProperty('CellWidth'), this.getProperty('CellHeight'));
 		}
+
+		if (this.getProperty('AutomaticCellSize')) {
+			(layout as any).expectedCellSize = BMSizeMake(this.getProperty('CellWidth'), this.getProperty('CellHeight'));
+		}
+
+		(layout as any).maximumCellsPerRow = this.getProperty('FlowLayoutMaximumCellsPerRow');
 		
 		layout.topPadding = this.getProperty('FlowLayoutTopPadding');
 		layout.bottomPadding = this.getProperty('FlowLayoutBottomPadding');
@@ -1624,8 +1926,6 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
     // #region Widget Lifecycle
 
     renderHtml(): string {
-        require('./styles/runtime.css');
-		this.UIDField = this.getProperty("UIDField");
 
 		var html = '<div class="widget-content BMCollectionViewWidget' + (BMIsTouchDevice ? '' : ' BMCollectionViewDesktop') + '" style="overflow: auto; -webkit-overflow-scrolling: touch;"></div>';
 		return html;
@@ -1637,6 +1937,9 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
     afterRendered?: Promise<void>;
 
     async afterRender(): Promise<void> {
+        require('./styles/runtime.css');
+		this.UIDField = this.getProperty("UIDField");
+
 		// This promise is used to asynchronously preload the mashups for CellMashupName, CellMashupNameSelected and CellMashupNameEditing if they are set
 		// to avoid blocking user interaction of atomic requests if they are needed when rendering cells
 		var afterRenderedResolve;
@@ -1794,7 +2097,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 			if (scrollbarTrackStyle) {
 				let trackCSSRule = {
-					'box-sizing': 'border-box',
+					'box-sizing': 'content-box',
 					'background-color': scrollbarTrackStyle.backgroundColor,
 					'border-radius': this.getProperty('ScrollbarBorderRadius') + 'px'
 				};
@@ -1818,8 +2121,14 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			}
 		}
 		
-		this.collectionView = BMCollectionViewMakeWithContainer(this.jqElement, {customScroll: useCustomScrollbar}) as BMManagedCollectionView;
-		this.collectionView.offscreenBufferFactor = this.getProperty('OffScreenBufferFactor');
+		if (!this._coreUIView) {
+			this.collectionView = BMCollectionViewMakeWithContainer(this.jqElement, {customScroll: useCustomScrollbar}) as BMManagedCollectionView;
+		}
+		else {
+			this.collectionView = this.coreUIView;
+		}
+
+		(<any>this.collectionView.offscreenBufferFactor) = this.getProperty('OffScreenBufferFactor');
 		this.collectionView.controller = this;
 
 		this.collectionView.cellClass = BMCollectionViewMashupCell;
@@ -1898,6 +2207,19 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 			this.collectionViewHeightForCellAtIndexPath = (collectionView, indexPath, args) => {
 				return (this.cellHeightField && indexPath.object[this.cellHeightField]) || cellHeight;
+			}
+		}
+		else if (this.getProperty('CellMashupHasIntrinsicSize')) {
+			this.collectionViewSizeForCellAtIndexPath = (collectionView, indexPath) => {
+				return collectionView.measuredSizeOfCellAtIndexPath(indexPath);
+			}
+
+			this.collectionViewRowHeightForCellAtIndexPath = (collectionView, indexPath) => {
+				return collectionView.measuredSizeOfCellAtIndexPath(indexPath).height;
+			}
+
+			this.collectionViewHeightForCellAtIndexPath = (collectionView, indexPath, args) => {
+				return collectionView.measuredSizeOfCellAtIndexPath(indexPath).height;
 			}
 		}
 		
@@ -2022,7 +2344,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		if (hoverStyleBlockText) {		
 			hoverStyleBlockText += '</style>';
 			this.hoverStyleBlock = $(hoverStyleBlockText);
-			$(document.head).append(this.hoverStyleBlock);
+			$(document.head as HTMLElement).append(this.hoverStyleBlock);
 		}
 
 		if (this.getProperty('DirectLink')) {
@@ -2032,6 +2354,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		afterRenderedResolve();
     }
 
+	// @deprecated Superseded by handleResponsiveWidgets
     resize(width: number, height: number): void {
         this.collectionView && this.collectionView.resized();
     }
@@ -2076,6 +2399,9 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			// Await for collection view to finish its current update operation
 			await (this.collectionView as any)._dataUpdatePromise;
 
+			// Stop if a newer data update is pending
+			if (this.pendingDataUpdate != updatePropertyInfo) return;
+
 			var currentDataUpdateResolve;
 			this.currentDataUpdate = new Promise(function (resolve, reject) {
 				currentDataUpdateResolve = resolve;
@@ -2096,8 +2422,6 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			// Await for the current drag operation to finish
 			if (!updatePropertyInfo.ForceUpdateLayout) await this.collectionView.interactiveMovement;
 
-			// Stop if a newer data update is pending
-			if (this.pendingDataUpdate != updatePropertyInfo) return;
 
 			// Retain a reference to the data shape to allow the collection view to create data
 			if (updatePropertyInfo.RawSinglePropertyValue || updatePropertyInfo.SinglePropertyValue) {
@@ -2319,7 +2643,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		else if (property == 'SortField') {
 			this.sortField = updatePropertyInfo.SinglePropertyValue;
 
-			if (!this.data) return;
+			if (!this.collectionView.dataSet) return;
 			
 			this.updateProperty({TargetProperty: 'Data', ActualDataRows: this.data, SinglePropertyValue: this.getProperty('Data')});
 		}
@@ -2327,7 +2651,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			let value = (updatePropertyInfo.SinglePropertyValue === 'false' ? false : updatePropertyInfo.SinglePropertyValue);
 			this.sortAscending = value;
 
-			if (!this.data) return;
+			if (!this.collectionView.dataSet) return;
 			
 			if (!this.sortField) return;
 			this.updateProperty({TargetProperty: 'Data', ActualDataRows: this.data, SinglePropertyValue: this.getProperty('Data')});
@@ -2541,7 +2865,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	};
 	
 	// @override - BMCollectionViewDataSet
-	indexPathForObject(object: any): BMIndexPath {
+	indexPathForObject(object: any): any {
 		if (this.sectionField) {
 			// First attempt a fast look up
 			let sectionObject = this.sections![object._BMCollectionViewSectionIndex];
@@ -2571,8 +2895,13 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			
 		}
 
-		throw new Error('Unexpected indexPath requested for object ' + object);
+		//throw new Error('Unexpected indexPath requested for object ' + object);
 	};
+
+	// @override - BMCollectionViewDataSet
+	identifierForIndexPath(indexPath: BMIndexPath): string {
+		return indexPath.object[this.UIDField];
+	}
 	
 	/**
 	 * Invoked internally to retrieve the mashup name for the cell at the given index path.
@@ -2589,7 +2918,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		args = args || {};
 
 		// CellMashupNameField has priority over all other mashup names and disables the selection and editing mashups.
-		if (this.cellMashupNameField) return this.mashupNameForCellAtIndexPath!(indexPath) || this.cellMashupNameField;
+		if (this.cellMashupNameField) return this.mashupNameForCellAtIndexPath!(indexPath) || this.cellMashupName!;
 
 		if (args.selected === undefined) args.selected = this.collectionView.isCellAtIndexPathSelected(indexPath);
 		if (args.editing === undefined) args.editing = this.isCellAtIndexPathEditing(indexPath);
@@ -2662,9 +2991,17 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	
 	// @override - BMCollectionViewDataSet
 	updateCell(cell: BMCollectionViewMashupCell, options: {atIndexPath: BMIndexPath}): void {
-        var indexPath = options.atIndexPath;
-        
-        cell.parameters = this.sectionField ? this.sections![indexPath.section].rows[indexPath.row].data : this.data[indexPath.row];
+		var indexPath = options.atIndexPath;
+		
+		if (this.cellMashupNameField && this._mashupNameForCellAtIndexPath(indexPath) != cell.mashup) {
+			// Update the mashup instance if it has changed
+			(<any>cell)._parameters = this.sectionField ? this.sections![indexPath.section].rows[indexPath.row].data : this.data[indexPath.row];
+			cell.mashup = this._mashupNameForCellAtIndexPath(indexPath);
+		}
+        else {
+			// Otherwise just update the parameters
+			cell.parameters = this.sectionField ? this.sections![indexPath.section].rows[indexPath.row].data : this.data[indexPath.row];
+		}
 
         // updateCell is not invoked in cases where the cell's selection or editing state changes - these are handled elsewhere
 	};
@@ -2879,7 +3216,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		newDataInfotable.rows = newData;
 
 		this.updateProperty({TargetProperty: 'Data', SinglePropertyValue: newDataInfotable, ActualDataRows: newData, ForceUpdateLayout: YES}, {completionHandler: _ => {	
-			this.jqElement.triggerHandler('CollectionViewDidRemoveItems');
+			this.jqElement.triggerHandler('CollectionViewDidMoveItems');
 		}});
 
 		return YES;
@@ -2984,7 +3321,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		newDataInfotable.rows = newData;
 
 		this.updateProperty({TargetProperty: 'Data', SinglePropertyValue: newDataInfotable, ActualDataRows: newData, ForceUpdateLayout: YES}, {completionHandler: _ => {	
-			this.jqElement.triggerHandler('CollectionViewDidRemoveItems');
+			this.jqElement.triggerHandler('CollectionViewDidMoveItems');
 		}});
 
 		return finalIndexPaths;
@@ -3051,9 +3388,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	collectionViewCanAcceptItems(collectionView: BMCollectionView, items: any[]) {
 		if (!this.getProperty('CanAcceptCells')) return NO;
 
+		// Disallow receiving items before the collection view is initialized 
+		if (!this.collectionView) return NO;
+
 		// If this collection view becomes a possible drop target before data loads
 		// create a dummy infotable from the data shape property and initialize it
-		if (!this.data) {
+		if (!this.data || !this.collectionView.dataSet) {
 			this.setProperty('PlaysIntroAnimation', NO);
 
 			let newDataInfotable = {dataShape: this.dataShape, rows: []};
@@ -3187,12 +3527,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	};
 	
 	// @override - BMCollectionViewDelegate
-	collectionViewCanDoubleClickCell(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {atIndexPath: BMIndexPath, withEvent: MouseEvent}): boolean {
+	collectionViewCanDoubleClickCell(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {withEvent: $event}): boolean {
 		return this.getProperty('_CanDoubleClick');
 	}
 	
 	// @override - BMCollectionViewDelegate
-	collectionViewCellWasClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, args: {atIndexPath: BMIndexPath, withEvent: MouseEvent}): boolean {
+	collectionViewCellWasClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, args: {withEvent: $event}): boolean {
 		if (this.currentMenuCell) {
 			this.collapseMenuInCell(this.currentMenuCell, {animated: YES});
 			this.currentMenuCell = undefined;
@@ -3223,7 +3563,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	};
 	
 	// @override - BMCollectionViewDelegate
-	collectionViewCellWasDoubleClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {atIndexPath: BMIndexPath, withEvent: MouseEvent}): boolean {
+	collectionViewCellWasDoubleClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {atIndexPath: BMIndexPath, withEvent: $event}): boolean {
 		if (this.currentMenuCell) {
 			this.collapseMenuInCell(this.currentMenuCell, {animated: YES});
 			this.currentMenuCell = undefined;
@@ -3235,7 +3575,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	};
 	
 	// @override - BMCollectionViewDelegate
-	collectionViewCellWasLongClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {atIndexPath: BMIndexPath, withEvent: MouseEvent}): boolean {
+	collectionViewCellWasLongClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {atIndexPath: BMIndexPath, withEvent: $event}): boolean {
 		if (this.currentMenuCell) {
 			this.collapseMenuInCell(this.currentMenuCell, {animated: YES});
 			this.currentMenuCell = undefined;
@@ -3257,7 +3597,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	
 	
 	// @override - BMCollectionViewDelegate
-	collectionViewCellWasRightClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {atIndexPath: BMIndexPath, withEvent: MouseEvent}): boolean {
+	collectionViewCellWasRightClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {atIndexPath: BMIndexPath, withEvent: $event}): boolean {
 		
 		this.triggerEvent('CellWasRightClicked', {withCell: cell});
 		
@@ -3880,7 +4220,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				var cell = this.collectionView.cellAtIndexPath(indexPath) as BMCollectionViewMashupCell;
 
                 if (cell && cell.isEditing) {
-                    cell.isEditing = NO;
+					cell.isEditing = NO;
+					if (this.cellMashupEditingParameter) {
+						
+					}
                     cell.release();
                     cell.mashup = this._mashupNameForCellAtIndexPath(indexPath, {editing: NO});
                 }
@@ -3908,13 +4251,15 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 * Creates a new item and inserts it into the data set at the specified index, then updates the collection view.
 	 * @param index <Integer>				The data integer at which to insert the new item.
 	 */
-	insertItemAtIndex(index: number): void {
+	async insertItemAtIndex(index: number): Promise<void> {
 		// Cannot create items without a predefined data shape
 		if (!this.dataShape) return;
+
+		if (!this.collectionView) await this.afterRendered;
 		
 		// If the data has not been set yet, create it now
 		var newData;
-		if (!this.data) {
+		if (!this.data || !this.collectionView.dataSet) {
 			newData = {
 				dataShape: this.dataShape,
 				rows: []
@@ -4019,11 +4364,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 * @param doItNow <Boolean, nullable>			Defaults to NO. Ignored by this implementation.
 	 */
     handleResponsiveWidgets(doItNow: boolean): void {
-        this.collectionView.resized();
+		if (this._coreUIView) return;
+        if (this.collectionView) this.collectionView.resized();
 
-        this.getWidgets().forEach(function(widget: TWRuntimeWidget) {
+        /*this.getWidgets().forEach(function(widget: TWRuntimeWidget) {
             widget.handleResponsiveWidgets(YES);
-        });
+        });*/
     };
 	
 	/**
@@ -4082,15 +4428,23 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				width: self.properties.Width + 'px',
 				height: self.properties.Height + 'px',
 				position: 'absolute',
-				left: self.properties.Left + 'px',
-				top: self.properties.Top + 'px'	
+				left: (this._coreUIView && this._coreUIView.superview) ? '0px' : self.properties.Left + 'px',
+				top: (this._coreUIView && this._coreUIView.superview) ? '0px' : self.properties.Top + 'px'	
 			};
 		}
 		
 		// NOTE: Labels are not supported by the collection view.
 		
 		// Obtain the HTML representation of this widget
-		var widgetElement = $(self.renderHtml());
+		var widgetElement;
+		if (this._coreUIView) {
+			widgetElement = $((<any>this._coreUIView).node);
+
+			this.subviewMap[self.properties.Id] = <any>this._coreUIView;
+		}
+		else {
+			widgetElement = $(self.renderHtml())
+		}
 		
 		// Set up the ID and layout of the element
 		widgetElement.attr('id', ID);
@@ -4242,6 +4596,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		this.beforeDestroy();
 		
 		this.jqElement.remove();
+		this.jqElement = <any>undefined;
     };
 
 	/**

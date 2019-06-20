@@ -1,7 +1,9 @@
-///<reference path="../../BMCoreUI/ui/BMCoreUI/BMCoreUI.d.ts"/>
+///<reference path="/Users/bmihaiciuc/OneDrive - PTC/BMCoreUI/ui/BMCoreUI/BMCoreUI.d.ts"/>
 ///<reference types="velocity-animate"/>
 
 import { TWNamedComposerWidget } from './support/widgetRuntimeSupport'
+
+const EXTENSION_MODE = NO;
 
 // Used to catch bugs related to the previously predefined self variable
 declare var self: null;
@@ -54,7 +56,12 @@ class BMWidgetConfigurationWindow extends BMWindow {
     /**
      * The jQuery element representing this window's content.
      */
-    private _content!: $;
+	private _content!: $;
+	
+	/**
+	 * Set to `YES` if this window is in mini mode.
+	 */
+	private isMini: boolean = NO;
 	
 	/**
 	 * Must be invoked after creation to initialize this widget configuration window.
@@ -69,7 +76,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 	 */
 	initWithURL(URL: string, args: {widget: TWComposerWidget, sections: {name: string, label: string}[], frame: BMRect, completionHandler: () => void}): this {
 		// Run the super constructor
-		BMWindow.prototype.initWithFrame.call(this, args.frame, {toolbar: NO});
+		BMWindow.prototype.initWithFrame.call(this, args.frame, {toolbar: YES, modal: NO});
 		
 		// Prepare the property observer object
 		this._propertyObservers = {};
@@ -90,6 +97,21 @@ class BMWidgetConfigurationWindow extends BMWindow {
 		var windowContent = $(this.content.querySelectorAll('.BMWidgetConfigurationWindowContent'));
 		
 		self._createCollectionView();
+		
+		// Minimize button
+		this.createToolbarButtonWithClass('BMWidgetConfigurationWindowMinimizeButton', {content: '<i class="material-icons">remove</i>', action: (event: KeyboardEvent) => {
+			if (event.altKey) {
+				BMWindow.minimizeAllAnimated(YES);
+			}
+			else {
+				this.minimizeAnimated(YES);
+			}
+		}});
+		
+		// Close button
+		self.createToolbarButtonWithClass('BMWidgetConfigurationWindowCloseButton', {content: '<i class="material-icons">&#xE5CD;</i>', action: () => {
+			this.dismissAnimated(YES, {toNode: args.widget.jqElement[0]});
+		}});
 		
 		// Execute a GET to obtain the window contents
 		var request = new XMLHttpRequest();
@@ -581,7 +603,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 		
 		// Set up its layout
 		this._groupCollectionView.layout = new BMCollectionViewTableLayout();
-		(this._groupCollectionView.layout as BMCollectionViewTableLayout).sectionInsets = BMInsetMake(0, 22, 0, 22);
+		(this._groupCollectionView.layout as BMCollectionViewTableLayout).sectionInsets = BMInsetMake(0, 64, 0, 22);
 		
 		var sectionKeys = this._sections;
 		
@@ -738,6 +760,52 @@ class BMWidgetConfigurationWindow extends BMWindow {
 		// And udpate the widget properties sidebar
 		this._widget.updatedProperties();
 	}
+
+	// @override - BMWindowDelegate
+	windowDidResize() {
+		if ((<any>this).frame.size.width > 960) {
+			if (this.isMini) {
+				this.isMini = NO;
+				(this as any).node.classList.remove('BMWidgetConfigurationWindowMini');
+				(this._groupCollectionView.layout as BMCollectionViewTableLayout).rowHeight = 44;
+			}
+		}
+		else {
+			if (!this.isMini) {
+				this.isMini = YES;
+				(this as any).node.classList.add('BMWidgetConfigurationWindowMini');
+				(this._groupCollectionView.layout as BMCollectionViewTableLayout).rowHeight = 24;
+			}
+		}
+
+		this._groupCollectionView.resized();
+	}
+
+	/**
+	 * Constructs and returns a toolbar button DOM node. This node will not be added to the document automatically.
+	 * @param className <String>			A list of class names that should be assigned to the button.
+	 * {
+	 * 	@param content <String>				The HTML content that this button should contain.
+	 * 	@param action <void ^ (Event)>		An callback function that will be invoked whenever this button is clicked.
+	 * 	@param tooltip <String, nullable>	If specified, this represent a tooltip text that appears when hovering over the button.
+	 * }
+	 * @return <DOMNode>					The button that was created.
+	 */
+	createToolbarButtonWithClass(className, args) {
+		var button = document.createElement('div');
+		button.className = 'BMWidgetConfigurationWindowToolbarButton ' + className;
+		button.innerHTML = args.content;
+		this.toolbar.appendChild(button);
+		button.addEventListener('click', args.action);
+
+		if (args.tooltip) {
+			button.classList.add('BMHasTooltip');
+			button.classList.add('BMTooltipPositionBottom');
+			button.setAttribute('data-bm-tooltip', args.tooltip);
+		}
+
+		return button;
+	}
 	
 }
 
@@ -841,7 +909,9 @@ export function BMWidgetConfigurationWindowGetBindingFieldsForProperty(property:
  */
 export interface BMCollectionViewWidgetProperties extends TWWidgetProperties {
 
-    properties: Dictionary<BMCollectionViewWidgetProperty>;
+	properties: Dictionary<BMCollectionViewWidgetProperty>;
+	
+	isVisible?: boolean;
 }
 
 /**
@@ -1006,6 +1076,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 */
 	createFlowLayout(): BMCollectionViewFlowLayout {
 		var layout = new BMCollectionViewFlowLayout();
+		layout.orientation = BMCollectionViewFlowLayoutOrientation[this.getProperty('FlowLayoutOrientation', 'Vertical')];
 		layout.rowSpacing = this.getProperty('FlowLayoutRowSpacing');
 		layout.minimumSpacing = this.getProperty('FlowLayoutMinimumSpacing');
 		layout.cellSize = BMSizeMake(this.getProperty('CellWidth'), this.getProperty('CellHeight'));
@@ -1016,6 +1087,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		layout.bottomPadding = this.getProperty('FlowLayoutBottomPadding');
 
 		layout.contentGravity = BMCollectionViewFlowLayoutAlignment[this.getProperty('FlowLayoutContentGravity')];
+		(layout as any).maximumCellsPerRow = this.getProperty('FlowLayoutMaximumCellsPerRow');
 		
 		if (this.getProperty('SectionField')) {
 		
@@ -1194,6 +1266,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			category: ['Common'],
 			supportsAutoResize: YES,
 			needsDataLoadingAndError: NO,
+			isVisible: !EXTENSION_MODE,
 			properties: {
 				// ******************************************** STANDARD PROPERTIES ********************************************
 				Width: {
@@ -1223,7 +1296,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 						{text: 'All', value: 'all'},
 						{text: 'Data Configuration', value: 'data'},
 						{text: 'Layout', value: 'layout'},
-						{text: 'Table Layout', value: 'table'},
+						//{text: 'Table Layout', value: 'table'},
 						{text: 'Flow Layout', value: 'flow'},
 						{text: 'Masonry Layout', value: 'masonry'},
 						{text: 'Stack Layout', value: 'stack'},
@@ -1308,7 +1381,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					defaultValue: 'flow',
 					description: 'The type of layout to use.',
 					selectOptions: [
-						{text: 'Table', value: 'table'},
+						//{text: 'Table', value: 'table'},
 						{text: 'Flow', value: 'flow'},
 						{text: 'Masonry', value: 'masonry'},
 						{text: 'Stack', value: 'stack'},
@@ -1351,6 +1424,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					baseType: 'BOOLEAN',
 					defaultValue: false,
 					description: 'Must be used with Table layout. If enabled, the currently visible section\'s header will be stuck to the top edge of the collection view.',
+					isVisible: NO,
 					_BMSection: 'Table Layout',
 					_BMFriendlyName: 'Pin Headers',
 					_BMCategories: ['all', 'table']
@@ -1359,6 +1433,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					baseType: 'BOOLEAN',
 					defaultValue: false,
 					description: 'Must be used with Table layout. If enabled, the currently visible section\'s footer will be stuck to the bottom edge of the collection view.',
+					isVisible: NO,
 					_BMSection: 'Table Layout',
 					_BMFriendlyName: 'Pin Footers',
 					_BMCategories: ['all', 'table']
@@ -1367,6 +1442,26 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				
 				
 				// ******************************************** FLOW LAYOUT PROPERTIES ********************************************
+				FlowLayoutMaximumCellsPerRow: {
+					baseType: 'INTEGER',
+					defaultValue: 0,
+					description: 'Must be used with Flow layout. Controls how many cells each row is allowed to have.',
+					_BMSection: 'Flow Layout',
+					_BMFriendlyName: 'Maximum cells per row',
+					_BMCategories: ['all', 'flow']
+				},
+				FlowLayoutOrientation: {
+					baseType: 'STRING',
+					defaultValue: 'Vertical',
+					description: 'Must be used with Flow layout. Controls the axis along which rows are created.',
+					selectOptions: [
+						{text: 'Vertical', value: 'Vertical'},
+						{text: 'Horizontal', value: 'Horizontal'}
+					],
+					_BMSection: 'Flow Layout',
+					_BMFriendlyName: 'Orientation',
+					_BMCategories: ['all', 'flow']
+				},
 				FlowLayoutLeftAlignFinalRow: {
 					baseType: 'BOOLEAN',
 					defaultValue: false,
@@ -1383,6 +1478,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 						{text: 'Edge', value: 'Edge'},
 						{text: 'Spaced', value: 'Spaced'},
 						{text: 'Center', value: 'Center'},
+						{text: 'Left', value: 'Left'},
+						{text: 'Right', value: 'Right'},
 						{text: 'Expand', value: 'Expand'}
 					],
 					_BMSection: 'Flow Layout',
@@ -1707,6 +1804,13 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					defaultValue: NO,
 					description: 'Must be used with CellMashupNameField and static cell mashups. When this property is enabled, the collection view will use each mashup type\'s size as the cell size.',
 					_BMCategories: ['all', 'table', 'flow', 'cell', 'tile']
+				},
+				AutomaticCellSize: {
+					baseType: 'BOOLEAN',
+					defaultValue: NO,
+					description: 'BETA. Must be used with flow layout and a cell mashup whose root widget is a BMView widget. If enabled, the size of the cells will be determined from the intrinsic size of the cell\'s contents.\
+					When this property is enabled, the CellWidth and CellHeight property should be set to the average expected cell size.',
+					_BMCategories: ['all', 'flow', 'cell']
 				},
 				
 				
@@ -2192,6 +2296,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					description: 'If enabled, the collection view will invoke resize on responsive widgets.',
 					_BMCategories: ['all', 'performance']
 				},
+				HandlesResponsiveWidgetsImmediately: {
+					baseType: 'BOOLEAN',
+					defaultValue: NO,
+					description: 'If enabled, the collection view will invoke resize on responsive widgets during animations.',
+					_BMCategories: ['all', 'performance']
+				},
 				DirectLink: {
 					baseType: 'BOOLEAN',
 					defaultValue: NO,
@@ -2551,7 +2661,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	}
 
     resize(width: number, height: number): void {
-        this.collectionView.resized();
+        //this.collectionView.resized();
     }
 
 	/**
@@ -2578,11 +2688,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	};
 
     renderHtml(): string {
-        return '<div class="widget-content BMCollectionViewWidget"><div class="BMCollectionViewWidgetBorder"></div><button class="BMCollectionViewWidgetConfigurationButton">CONFIGURE</button></div>';
+        return '<div class="widget-content BMCollectionViewWidget"><div class="BMCollectionViewWidgetBorder"></div><button class="BMCollectionViewWidgetConfigurationButton" style="' + (EXTENSION_MODE ? 'display: none;' : '') + '">CONFIGURE</button></div>';
     };
 
     afterRender(): void {
-		if (('BMCoreCompoer' in window) && !this.getProperty('DirectLinkUUID')) {
+		if (('BMCoreComposer' in window) && !this.getProperty('DirectLinkUUID')) {
 			this.setProperty('DirectLinkUUID', BMUUIDMake());
 		}
 		
@@ -2593,7 +2703,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			var sections = [
 				{name: 'data', label: 'Data Configuration'}, 
 				{name: 'layout', label: 'Layout Type'}, 
-				{name: 'tableLayout', label: 'Table Layout'}, 
+				//{name: 'tableLayout', label: 'Table Layout'}, 
 				{name: 'flowLayout', label: 'Flow Layout'}, 
 				{name: 'masonryLayout', label: 'Masonry Layout'}, 
 				{name: 'stackLayout', label: 'Stack Layout'}, 
@@ -2642,7 +2752,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					window.innerHeight * .9 | 0
 				)});
 				
-				configurationWindow.frame = frame;
+				(<any>configurationWindow).frame = frame;
 		
             });
             
@@ -2662,7 +2772,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		});
 		
 		// Construct the preview collection view
-		self.collectionView = BMCollectionViewMakeWithContainer(this.jqElement.find('.BMCollectionViewWidgetBorder'), {customScroll: NO});
+		if (self.collectionView) self.collectionView.release();
+		self.collectionView = BMCollectionView.collectionViewForNode(this.jqElement.find('.BMCollectionViewWidgetBorder')[0]);//BMCollectionViewMakeWithContainer(this.jqElement.find('.BMCollectionViewWidgetBorder'), {customScroll: NO});
 		
 		self.collectionView.layout = this.createLayout();
 		self.collectionView.delegate = this;
@@ -2691,10 +2802,11 @@ export class BMCollectionViewMenuController extends TWComposerWidget {
     }
 
     widgetProperties(): TWWidgetProperties {
-        return {
+        return <any>{
             name: 'Collection View Menu Controller',
             description: 'When added to a collection view cell mash-up, this widget makes it possible to control the cell menu.',
             category: ['Common'],
+			isVisible: !EXTENSION_MODE,
             properties: {
                 Width: {
                     defaultValue: 172,
@@ -2869,10 +2981,11 @@ export class BMCollectionViewSelectionController extends TWComposerWidget {
     }
 
     widgetProperties(): TWWidgetProperties {
-        return {
+        return <any>{
             name: 'Collection View Selection Controller',
             description: 'When added to a collection view cell mash-up, this widget makes it possible to control the cell\'s selection.',
-            category: ['Common'],
+			category: ['Common'],
+			isVisible: !EXTENSION_MODE,
             properties: {
                 Width: {
                     defaultValue: 184,
@@ -2925,10 +3038,11 @@ export class BMCollectionViewEditingController extends TWComposerWidget {
     }
 
     widgetProperties(): TWWidgetProperties {
-        return {
+        return <any>{
             name: 'Collection View Editing Controller',
             description: 'When added to a collection view cell mash-up, this widget makes it possible to control the cell\'s editing state.',
             category: ['Common'],
+			isVisible: !EXTENSION_MODE,
             properties: {
                 Width: {
                     defaultValue: 184,
