@@ -97,6 +97,12 @@ class BMWidgetConfigurationWindow extends BMWindow {
 		var windowContent = $(this.content.querySelectorAll('.BMWidgetConfigurationWindowContent'));
 		
 		self._createCollectionView();
+
+		if (args.frame.size.width <= 960) {
+			this.isMini = YES;
+			(this as any).node.classList.add('BMWidgetConfigurationWindowMini');
+			(this._groupCollectionView.layout as BMCollectionViewTableLayout).rowHeight = 24;
+		}
 		
 		// Minimize button
 		this.createToolbarButtonWithClass('BMWidgetConfigurationWindowMinimizeButton', {content: '<i class="material-icons">remove</i>', action: (event: KeyboardEvent) => {
@@ -110,7 +116,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 		
 		// Close button
 		self.createToolbarButtonWithClass('BMWidgetConfigurationWindowCloseButton', {content: '<i class="material-icons">&#xE5CD;</i>', action: () => {
-			this.dismissAnimated(YES, {toNode: args.widget.jqElement[0]});
+			this.dismissAnimated(YES, {toNode: this.delegate!.DOMNodeForDismissedWindow!(this)});
 		}});
 		
 		// Execute a GET to obtain the window contents
@@ -2060,17 +2066,17 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					_BMFriendlyName: 'Orientation',
 					_BMCategories: ['all', 'menu']
 				},
-				// NOTE: CellSlideMenuType is not yet implemented
-				/*CellSlideMenuType: {
+				CellSlideMenuType: {
 					baseType: 'STRING',
 					description: 'Must be used with CellSlideMenu. Controls how the slide menu appears.',
 					selectOptions: [
 						{text: 'Auto', value: 'Auto'},
 						{text: 'Slide', value: 'Slide'},
-						{text: 'Popover', value: 'Popover'}
+						{text: 'Popup', value: 'Popup'}
 					],
-					defaultValue: 'Auto'
-				},*/
+					defaultValue: 'Auto',
+					_BMCategories: ['all', 'menu']
+				},
 				
 				
 				
@@ -2312,6 +2318,26 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				
 				
 				// ******************************************** INTERNAL PROPERTIES ********************************************
+				_Left: {
+					baseType: 'NUMBER',
+					isVisible: NO,
+					_BMCategories: []
+				},
+				_Top: {
+					baseType: 'NUMBER',
+					isVisible: NO,
+					_BMCategories: []
+				},
+				_Width: {
+					baseType: 'NUMBER',
+					isVisible: NO,
+					_BMCategories: []
+				},
+				_Height: {
+					baseType: 'NUMBER',
+					isVisible: NO,
+					_BMCategories: []
+				},
 				_EventDataShape: {
 					baseType: 'STRING',
 					isVisible: false,
@@ -2698,6 +2724,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		
 		var self = this;
 		this.jqElement.find('button').click(function () {
+			if (self.configurationWindow) {
+				return self.configurationWindow.becomeKeyWindow();
+			}
+
 			var button = this;
 			
 			var sections = [
@@ -2717,13 +2747,13 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				{name: 'events', label: 'Events'}, 
 				{name: 'advanced', label: 'Advanced'}
 			];
-					
-			var frame = BMRectMakeWithOrigin(BMPointMake(
-				window.innerWidth * .05 | 0,
-				window.innerHeight * .05 | 0
+		
+			const frame = BMRectMakeWithOrigin(BMPointMake(
+				self.getProperty('_Left') === undefined ? window.innerWidth * .05 | 0 : self.getProperty('_Left'),
+				self.getProperty('_Top') === undefined ? window.innerHeight * .05 | 0 : self.getProperty('_Top')
 			), {size: BMSizeMake(
-				window.innerWidth * .9 | 0,
-				window.innerHeight * .9 | 0
+				self.getProperty('_Width') === undefined ? window.innerWidth * .9 | 0 : self.getProperty('_Width'),
+				self.getProperty('_Height') === undefined ? window.innerHeight * .9 | 0 : self.getProperty('_Height')
 			)});
 			
 			var configurationWindow = (new BMWidgetConfigurationWindow()).initWithURL('../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/config.html?' + Math.random(), {widget: self, sections: sections, frame: frame, completionHandler: function () {
@@ -2761,9 +2791,14 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
                     return button;
                 },
 
-                windowWillClose() {
+                windowWillClose(window) {
                     self.configurationWindow = undefined;
-                    $(window).off('resize.BMCollectionView');
+					$(window).off('resize.BMCollectionView');
+								
+					self.setProperty('_Left', window.frame.origin.x);
+					self.setProperty('_Top', window.frame.origin.y);
+					self.setProperty('_Width', window.frame.size.width);
+					self.setProperty('_Height', window.frame.size.height);
                 }
             });
 

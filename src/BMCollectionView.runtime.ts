@@ -3,6 +3,12 @@
 
 import { TWNamedRuntimeWidget, TWService, TWProperty } from './support/widgetRuntimeSupport'
 
+enum BMCollectionViewWidgetSlideMenuType {
+	Auto = 'Auto',
+	Slide = 'Slide',
+	Popup = 'Popup'
+}
+
 declare var self: never;
 
 declare class DataManager extends TWDataManager {};
@@ -1673,7 +1679,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	/**
 	 * The type of slide menu to use.
 	 */
-	menuType: string = 'Auto';
+	private menuType: BMCollectionViewWidgetSlideMenuType = BMCollectionViewWidgetSlideMenuType.Auto;
 	
 	runtimeProperties() {
 		return {
@@ -1969,6 +1975,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		this.menuIconSize = this.getProperty('CellSlideMenuIconSize');
 		this.menuIconGravity = this.getProperty('CellSlideMenuIconGravity');
 		this.menuUseBuiltin = this.getProperty('CellSlideMenuUseBuiltin');
+		this.menuType = this.getProperty('CellSlideMenuType') || BMCollectionViewWidgetSlideMenuType.Auto;
 		
 		// Load the global data shape
 		try {
@@ -3617,9 +3624,14 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		}
 		
 		if (this.menuDefinition!.length) {
-			this.currentMenuCell = cell;
 		
-			this.expandMenuInCell(cell, {animated: YES});
+			if (this.menuType == BMCollectionViewWidgetSlideMenuType.Slide) {
+				this.currentMenuCell = cell;
+				this.expandMenuInCell(cell, {animated: YES, forEvent: options.withEvent});
+			}
+			else {
+				this.showPopupMenuForCell(cell, {forEvent: options.withEvent});
+			}
 			
 			options.withEvent.preventDefault();
 			options.withEvent.stopPropagation();
@@ -3806,6 +3818,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 */
 	collapseMenuInCell(cell: BMCollectionViewMashupCell, options: {animated?: boolean, duration?: number}): void {
 		if (!cell.BM_hasMenu) return;
+
+		if (this.currentMenuCell == cell) this.currentMenuCell = undefined;
 		
 		if (!options || !options.animated) {
 			// If the change isn't animated, just instantly remove the menu and move the mashup back to its original position
@@ -3845,7 +3859,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			queue: NO
 		});
 		
-		if (this.menuOrientation == 'Horizonta') {
+		if (this.menuOrientation == 'Horizontal') {
 			// Additionally, for horizontal menus, compact the menu entries on top of eachother
 			var menuEntries = menu.children();
 			var menuEntriesLength = menuEntries.length;
@@ -3874,9 +3888,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 *	@param duration <Number, nullable>		Defaults to 300. If specified, this is the duration of the animation.
 	 *	@param inPlace <Boolean, nullable>		Defaults to NO. If set to YES, the menu will not be constructed and the cell's currently existing menu 
 	 *											will be expanded instead.
+	 *	@param forEvent <$event, nullable>		If this is requested in response to an event, this represents the event that triggered this action.
 	 * }
 	 */
-	expandMenuInCell(cell: BMCollectionViewMashupCell, options: {animated?: boolean, duration?: number, inPlace?: boolean}): void {
+	expandMenuInCell(cell: BMCollectionViewMashupCell, options: {animated?: boolean, duration?: number, inPlace?: boolean, forEvent?: $event}): void {
 		var inPlace = options && options.inPlace;
 		
 		if (cell.BM_hasMenu && !inPlace) return;
@@ -3968,12 +3983,58 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	}
 	
 	/**
+	 * Should be invoked to show the popup menu for the given cell.
+	 * @param cell <BMCollectionViewMashupCell>		The cell for which to show the menu.
+	 * {
+	 *	@param forEvent <$event, nullable>			If this is requested in response to an event, this represents the event that triggered this action.
+	 * }
+	 */
+	showPopupMenuForCell(cell: BMCollectionViewMashupCell, {forEvent: event}: {forEvent?: $event} = {}) {
+		const items: BMMenuItem[] = [];
+
+		const action = (item: BMMenuItem) => {
+			// Fire the menu controller event if it was defined
+			if (cell._mashupInstance && cell._mashupInstance._BMCollectionViewMenuController) {
+				cell._mashupInstance._BMCollectionViewMenuController.jqElement.triggerHandler('Event:' + item.name);
+			}
+
+			// Then fire the global event and collapse the menu
+			this.triggerEvent('Menu:' + item.name, {withCell: cell});
+		};
+		
+		for (var i = 0; i < this.menuDefinition!.length; i++) {
+			items.push(BMMenuItem.menuItemWithName(this.menuDefinition![i], {action}));
+		}
+
+		const menu = BMMenu.menuWithItems(items);
+
+		let sourceEvent: MouseEvent | undefined;
+
+		if (event) {
+			sourceEvent = event.originalEvent as MouseEvent;
+		}
+		else {
+			sourceEvent = window.event! as MouseEvent;
+		}
+
+		if (sourceEvent) {
+			menu.openAtPoint(BMPointMake(sourceEvent.pageX, sourceEvent.pageY));
+		}
+		else {
+			menu.openAtPoint(BMRectMakeWithNodeFrame(cell.node).center);
+		}
+	}
+
+	/**
 	 * Should be invoked to set up the touch event handlers that implement the touch-based slide menu behaviours.
 	 * @param cell <BMCell>				The cell for which to initialize the touch event handlers.
 	 */
 	initializeMenuTouchEventHandlersForCell(cell: BMCollectionViewMashupCell): boolean { // TODO: return value type?
 		// Don't install event handlers if use builtin is disabled
 		if (!this.getProperty('CellSlideMenuUseBuiltin')) return NO;
+
+		// Don't install touch event handlers if menu type is not auto or slide
+		if (this.menuType == BMCollectionViewWidgetSlideMenuType.Popup) return NO;
 							
 		var startingX: number, startingY: number;
 		var lastX: number, lastY: number;
@@ -4125,9 +4186,24 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			if (this.currentMenuCell) this.collapseMenuInCell(this.currentMenuCell, {animated: YES});	
 		
 			if (this.menuDefinition!.length) {
-				this.currentMenuCell = cell;
-			
-				this.expandMenuInCell(cell, {animated: YES});
+				if (this.menuType == BMCollectionViewWidgetSlideMenuType.Popup) {
+					this.showPopupMenuForCell(cell);
+				}
+				else if (this.menuType == BMCollectionViewWidgetSlideMenuType.Slide) {
+					this.currentMenuCell = cell;
+				
+					this.expandMenuInCell(cell, {animated: YES});
+				}
+				else {
+					if (window.event && (window.event as MouseEvent).button == 2) {
+						this.showPopupMenuForCell(cell);
+					}
+					else {
+						this.currentMenuCell = cell;
+					
+						this.expandMenuInCell(cell, {animated: YES});
+					}
+				}
 			}	
 			
 		}

@@ -26,6 +26,8 @@ The `Left` and `Right` gravities are now available for flow layout.
 
 Resolved an issue that caused Collection View to incorrectly trigger the `CollectionViewDidRemoveItems` event when moving items instead of the expected `CollectionViewDidMoveItems` event.
 
+The configuration window can now be moved and resized. When the window is made small enough, additional descriptions will be hidden.
+
 On macOS Mojave, the configuration window now respects the system dark mode setting.
 
 # 2.2.4
