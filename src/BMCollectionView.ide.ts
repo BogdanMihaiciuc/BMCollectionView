@@ -880,6 +880,9 @@ export function BMWidgetConfigurationWindowGetBindingFieldsForProperty(property:
 					if (dataShape) {
 						array.push.apply(array, Object.keys(dataShape.fieldDefinitions || {}));
 					}
+
+					// Add the entire row entry
+					array.unshift('@row');
 					
 					if (args.completionHandler) {
 						args.completionHandler(array);
@@ -889,6 +892,9 @@ export function BMWidgetConfigurationWindowGetBindingFieldsForProperty(property:
 			else {
 				// Object data shapes may be resolved synchronously
 				array.push.apply(array, Object.keys(dataShape || {}));
+
+				// Add the entire row entry
+				array.unshift('@row');
 				
 				if (args.completionHandler) {
 					args.completionHandler(array);

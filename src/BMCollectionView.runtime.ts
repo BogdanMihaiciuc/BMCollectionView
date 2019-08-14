@@ -574,6 +574,13 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 		var mashup = this._mashupInstance;
 		if (mashup && this._parameters) {
 			for (var parameter in this._parameterMap) {
+				if (parameter == '@row') {
+					// The special '@row' parameter maps the entire infotable row
+					const dataShape = this.collectionView.controller.dataShape;
+					const table = {dataShape, rows: [this._parameters]};
+					mashup.BM_setParameterInternal(this._parameterMap[parameter], table);
+					continue;
+				}
 				mashup.BM_setParameterInternal(this._parameterMap[parameter], this._parameters[parameter]);
 			}
 			
@@ -1033,6 +1040,18 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 			var updatedParameters = BMKeysForValue(key, {inObject: self._parameterMap});
 			
 			updatedParameters.forEach(function (parameter) {
+				// If the updated parameter was the entire row, it needs to be handled separately
+				if (parameter == '@row') {
+					// Ignore setting the row to undefined
+					let row = value && value.rows && value.rows[0];
+					if (!row) return;
+
+					// Update each parameter from the mashup row into the parameters map
+					for (const key in row) {
+						self._parameters[key] = row[key];
+					}
+					return;
+				}
 				// Use the typecast value rather than the raw value
 				self._parameters[parameter] = mashup.rootWidget.getProperty(key);
 			});
