@@ -1,4 +1,4 @@
-///<reference path="../../BMCoreUI/ui/BMCoreUI/BMCoreUI.d.ts"/>
+///<reference path="../../BMCoreUI/build/ui/BMCoreUI/BMCoreUI.d.ts"/>
 ///<reference types="velocity-animate"/>
 
 import { TWNamedRuntimeWidget, TWService, TWProperty } from './support/widgetRuntimeSupport'
