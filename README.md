@@ -1,33 +1,31 @@
 ​
 # Collection Vie​w
 
-## What is Collection View?
-
 Collection View is a Thingworx widget that can display an arbitrary number of views in a scrolling container. The views can have arbitrary positions and sizes, defined by the type of layout selected. In practice, it handles most of the Repeater widget’s use cases, while offering improved performance and more functionality. Additionally, Collection View uses a lot of animations and almost any change in the data or layout will be animated.
 
-![repeater](https://share.ptc.com/sites/sales/ic/IoT%20Presales%20Enablement/blog/SiteAssets/Lists/Posts/EditPost/2017-04-20%2013_45_54.gif) ![collectionview](https://share.ptc.com/sites/sales/ic/IoT%20Presales%20Enablement/blog/SiteAssets/Lists/Posts/EditPost/2017-04-20%2013_45_02.gif)
-- scrolling with Repeater (left) vs Collection View (right) -
+![repeater](readme/Comparison_Repeater.gif) ![collectionview](readme/Comparison_CV.gif)
+- scrolling with Repeater (left) vs Collection View (right)
 
-### How does it work?
+## How it works
 
 Collection View will only create as many views as can be displayed on the screen and reuse them while scrolling. This way, scrolling performance is improved, as new views don’t need to be created while scrolling. Additionally, since only the visible views are created, the collection view can scale to hundreds and even millions of views with minimal impact on performance, even on mobile devices.
 
-### How to use it?
+## Usage
 
 The Collection View is used in a similar manner to the Repeater, with a couple of key differences. To make it easier to configure it, it includes a custom built configuration window containing detailed explanations of each setting.
 
-#### BINDING DATA
+### Binding Data
 
 To bind data, simply bind the **Data** infotable property. In addition to the actual infotable, the Collection View also requires that entries in your infotable have a unique identifier that may be used to tell the entries apart. This is used by Collection View to understand how the data updates when it does so it can set up the animations accordingly. To set this unique identifier, select the appropriate field in the **UIDField** property.
 
-#### CONFIGURING YOUR MASHUP
+### Configuring the mashup
 
 Once data is bound, the next step is selecting the layout and configuring the mashup. The layout may use selected by setting the Layout property. By default there are five layout options, but custom layouts may also be created:
- * Table: draws mashups in a list-like layout, with each mashup taking up the entire available width.
- * Flow: draws mashups in a grid-like layout
- * Masonry: draws mashups in a grid-like layout where each column may have a different scrolling speed.
- * Tile: draws mashup in a dashboard-like layout
- * Stack: draws mashups on top of each other
+ * `Table`: draws mashups in a list-like layout, with each mashup taking up the entire available width.
+ * `Flow`: draws mashups in a grid-like layout
+ * `Masonry`: draws mashups in a grid-like layout where each column may have a different scrolling speed.
+ * `Tile`: draws mashup in a dashboard-like layout
+ * `Stack`: draws mashups on top of each other
 
 Each layout has its own different configuration options. In this post, I’ll only detail the Table and Flow layouts.
 
@@ -42,48 +40,46 @@ The binding fields can be easily edited via the UI in the configuration window.
 
 That's all that's required to get started with Collection View. However, there are a lot of other features that may be configured to further customize its behavior. The next section will detail a few of them. The availability of some of these features may depend on your layout selection.
 
-
-### Additional Features
+## Additional Features
 
 Beyond the basic mashup and layout configuration detailed above, Collection View supports some more features:
 
-#### SECTIONS
+### Sections
 
 Collection View allows you to group your data by a section field. To do this, set the **SectionField** to a data field that represents the section name of each item in the infotable. When the section field is set, =collection will group the items so that items from the same section always appear grouped together, even if they are in different positions in the source data set.
 
 Further, choosing a section field allows you to use headers and footers to delimit each section and reinforce that grouping. Headers and footers are only available for the Table and Flow layouts.
 
-#### HEADERS AND FOOTERS
-
+### Headers and Footers
 Headers and footers are configured similarly and you may configure either one, both or none of them. Only the header configuration will be detailed here - the footer is configured exactly the same.
 
 To enable section headers, check the **ShowsHeaders** property. It is also required to select a mashup that represents the header by setting the **HeaderMashupName** property. Regardless of the selected layout, the headers will always stretch horizontally to fill the available area, however their height may be configured by setting the HeaderHeight property.
 
 Additionally, the headers may be pinned, so that wherever the scroll position is, the current section's header is always visible at the top of collection view. To enable this for the table layout, check the **TableLayoutPinsHeadersToContentEdge** property. To enable this when using the flow layout, check the **FlowLayoutPinsHeadersToContentEdge** property.
 
-![headers](https://share.ptc.com/sites/sales/ic/IoT%20Presales%20Enablement/blog/SiteAssets/Lists/Posts/EditPost/CollectionViewHeaders.png)
-- Collection View with headers -
+![headers](readme/CollectionViewHeaders.png)
+- Collection View with headers
 
 
-#### INSETS
+### Insets
 
 When using the Table or Flow layout with a section field, the sections may have an inset defined for them. The insets determine the spacing between each sections and Collection View's edges. The insets may be configured by setting the SectionInsets property. This property is a comma separated list of numbers specifying in order the left, top, right and bottom inset.
 
-#### FLOW LAYOUT OPTIONS
+### Flow Layout options
 
 When using the Flow layout, there are a couple of extra layout configuration options:
 **FlowLayoutGravity** controls how the cells are spaced from each other in each row. This property can take one of these four values:
- * Edge: the cells are positioned with equal spacing between them, with the first cell appearing on the left edge and the last cell appearing on the right edge.
- * Spaced: the cells are positioned with equal spacing between themselves and the Collection View's edges.
- * Center: the cells are positioned next to each other, with equal spacing between leftmost cell and the left edge and the rightmost cell and the right edge.
- * Expand: the cells are positioned next to each other, expanding in width to fill the available row area.
+ * `Edge`: the cells are positioned with equal spacing between them, with the first cell appearing on the left edge and the last cell appearing on the right edge.
+ * `Spaced`: the cells are positioned with equal spacing between themselves and the Collection View's edges.
+ * `Center`: the cells are positioned next to each other, with equal spacing between leftmost cell and the left edge and the rightmost cell and the right edge.
+ * `Expand`: the cells are positioned next to each other, expanding in width to fill the available row area.
 
 **FlowLayoutRowSpacing** controls the vertical spacing between each row.
 **FlowLayoutTopPadding** controls the vertical spacing between the Collection View's top edge and its content.
 **FlowLayoutBottomPadding** controls the vertical spacing between the Collection View's bottom edge and its content.
 **FlowLayoutLeftAlignFinalRow** may be enabled to cause the last row in each section to have its cells aligned towards the left, so they appear directly below the cells in all other rows, rather than have them centered using the selected gravity as default.
 
-#### SELECTION
+### Selection
 
 Collection View supports displaying and controlling selection, like other infotable widgets. To enable selecting and deselecting items using the Collection View, check the **CanSelectCells** property. When this property is enabled, clicking on a cell will select it and clicking it while selected will deselect it. The CanSelectMultipleCells property may be enabled to allow Collection View to select more than one cell. If that property is not enabled, clicking on a second cell will cause the currently selected to be deselected before the second cell is selected.
 
@@ -93,17 +89,17 @@ Whenever any cell is selected, the bindable **HasSelectedCells** property will b
 
 Finally, the selection status is also available to the cell mashups themselves so it may be used to control the contents in those mashups. To use it, set the **CellMashupSelectedField** to the name of the mashup parameter that will receive the selection status for that mashup. That parameter will be set to true if the cell is selected or false otherwise.
 
-#### EVENTS
+### Events
 
 Collection View supports responding to a number of events occurring on the cells:
- * CellWasClicked triggered whenever any cell is clicked or tapped.
- * CellWasLongClicked triggered whenever any cell is long clicked or long tapped.
- * CellWasDoubleClicked triggered whenever any cell is double clicked or double tapped. On mobile devices, binding this event will disable the native double tap to zoom behavior on cells.
- * CellWasRightClicked triggered whenever any cell is right clicked. This event is only available on desktop browsers.
+ * `CellWasClicked` triggered whenever any cell is clicked or tapped.
+ * `CellWasLongClicked` triggered whenever any cell is long clicked or long tapped.
+ * `CellWasDoubleClicked` triggered whenever any cell is double clicked or double tapped. On mobile devices, binding this event will disable the native double tap to zoom behavior on cells.
+ * `CellWasRightClicked` triggered whenever any cell is right clicked. This event is only available on desktop browsers.
 
 Unlike most other widgets, these events may occur independent of the current selection and will work even if selection is not enabled. To retrieve the event item's properties, Collection View creates a number of event attributes, based on the data set's fields. For example, if Data is bound to an infotable with the name and value fields, Collection View will generate the Event:name and Event:value properties. Whenever any event occurs, those two properties' values will be set to the event item's properties and may be different from the selected row's properties.
 
-#### SLIDE MENUS
+### Slide Menus
 
 Collection View supports defining a customizable action menu. The slide menu is initially hidden, but can be made temporarily visible in three ways:
 On desktop browsers, right clicking on a cell will cause its menu to expand.
@@ -116,10 +112,10 @@ To enable the slide menu, set the **CellSlideMenu** to a state definition. The e
 
 Whenever a slide menu is selected, Collection View will generate an event property for each state in that menu. For example, if the menu is set to state definition with the Delete and Modify states, Collection View will gain the Menu:Delete and Menu:Modify events. These events will be triggered whenever the relevant menu option is selected for any cell. Additionally, just like with the previous click events, the Event:… properties will be set to the triggering cell item's values.
 
-![slidemenu](https://share.ptc.com/sites/sales/ic/IoT%20Presales%20Enablement/blog/SiteAssets/Lists/Posts/EditPost/SlideMenu.gif)
-- a slide menu -
+![slidemenu](readme/SlideMenu.gif)
+- a slide menu
 
-#### ADDITIONAL STYLE PROPERTIES
+### Additional Style Properties
 
 The cells in the collection view may be further customized using any of the following style properties:
  * CellStyleSelected is a style whose background color will be applied to the selected cells. Note that the cell mashup's background must be transparent for this to have any effect.
@@ -130,7 +126,7 @@ The cells in the collection view may be further customized using any of the foll
  * UsesRipple may be enabled to cause the cells to have a ripple effect when clicked. The ripple will originate at the clicked point and gradually expand to fill the entire cell. When this property is enabled, the RippleStyle should be set to a style whose background color will be used as the ripple's color. Using this property will also cause the cell to have its overflow CSS property set to hidden.
 
 
-## Drag & Drop
+### Drag & Drop
 
 Collection View supports drag and drop as a way for end-users to manipulate data in an easy, familiar way. Drag and drop can be used with collection view to perform the following manipulations:
  * Reordering items within collection view
@@ -145,8 +141,11 @@ To enable drag & drop, check the **CanDragCells** property. Note that this prope
 
 In order to transfer or copy cells into another collection view, the second collection view must be configured to accept items. This is done by enabling the **CanAcceptCells** property. The requirement for a transfer to occur is that the two collection views must have compatible data shapes. The receiving collection view must have a data shape that is either identical or a subset of the transferring collection view.
 
+![drag](readme/Drag.gif)
 
-#### More Features
+ - Drag and drop
+
+### More Features
 
 By using scripting, the Collection View may be even further customized. Through scripting it is possible to achieve many advanced behaviors such as:
  * Customizing the size of each cell based on its contents.
