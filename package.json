@@ -9,13 +9,13 @@
     "thingworxPassword": "admin",
     "author": "Thingworx RoIcenter",
     "minimumThingWorxVersion": "6.0.0",
-    "homepage": "http://roicentersvn/BogdanMihaiciuc/BMCollectionView",
+    "homepage": "https://github.com/ptc-iot-sharing/BMCollectionView",
     "autoUpdate": {
-        "giteaURL": "http://roicentersvn/api/v1/repos/BogdanMihaiciuc/BMCollectionView/releases/latest"
+        "giteaURL": "https://api.github.com/repos/ptc-iot-sharing/BMCollectionView/releases/latest"
     },
     "repository": {
         "type": "git",
-        "url": "http://roicentersvn.ptcnet.ptc.com/BogdanMihaiciuc/BMCollectionView.git"
+        "url": "https://github.com/ptc-iot-sharing/BMCollectionView.git"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
@@ -26,7 +26,7 @@
         "uploadProduction": "webpack --mode production --env.upload",
         "init": "webpack --env.init"
     },
-    "license": "ISC",
+    "license": "MIT",
     "devDependencies": {
         "@babel/core": "^7.0.0-beta.46",
         "@babel/preset-env": "^7.0.0-beta.46",
