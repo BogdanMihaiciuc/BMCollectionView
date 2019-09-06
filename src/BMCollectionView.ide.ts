@@ -2413,6 +2413,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			CollectionViewDidAcceptDroppedItems: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view accepts items from another collection view.'},
 			CollectionViewDidMoveItems: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view moves items from a drag & drop operation.'},
 			CollectionViewDidRemoveItems: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view removes items from a drag & drop operation.'},
+			CollectionViewWillBeginInteractiveMovement: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view begins a drag & drop operation. The event fields will be populated with the value of the cell that was used to initiate this operation.'},
+			CollectionViewDidFinishInteractiveMovement: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view begins a drag & drop operation. The event fields will be populated with the value of the cell that was used to initiate this operation.'}
 			// NOTE: The hover event is currently unsupported
 			//CellWasHovered: {description: 'Triggered whenever any cell is hovered.'}
 		};

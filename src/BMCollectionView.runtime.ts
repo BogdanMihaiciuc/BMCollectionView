@@ -3396,6 +3396,15 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	};
 
 	// @override - BMCollectionViewDelegate
+	collectionViewWillBeginInteractiveMovementForCell(collectionView: BMManagedCollectionView, cell: BMCollectionViewMashupCell, {atIndexPath: indexPath}: {atIndexPath: BMIndexPath}) {
+		this.triggerEvent('CollectionViewWillBeginInteractiveMovement', {withCell: cell});
+	};
+
+	collectionViewDidFinishInteractiveMovementForCell(collectionView: BMManagedCollectionView, cell: BMCollectionViewMashupCell, {atIndexPath: indexPath}: {atIndexPath: BMIndexPath}) {
+		this.triggerEvent('CollectionViewDidFinishInteractiveMovement', {withCell: cell});
+	};
+
+	// @override - BMCollectionViewDelegate
 	collectionViewCanRemoveItemsAtIndexPaths(collectionView: BMManagedCollectionView, indexPaths: BMIndexPath[]): boolean {
 		return this.getProperty('CanRemoveCells');
 	};

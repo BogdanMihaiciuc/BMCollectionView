@@ -1,3 +1,7 @@
+# Beta 2
+
+Two new `CollectionViewWillBeginInteractiveMovement` and `CollectionViewDidFinishInteractiveMovement` events are now available and can be used to respond to drag & drop events starting and finishing.
+
 # 2.5
 
 Collection View is now compatible with Thingworx 8.4 and compiled in strict mode.
