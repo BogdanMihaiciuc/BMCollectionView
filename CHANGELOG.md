@@ -1,7 +1,3 @@
-# Beta 2
-
-Two new `CollectionViewWillBeginInteractiveMovement` and `CollectionViewDidFinishInteractiveMovement` events are now available and can be used to respond to drag & drop events starting and finishing.
-
 # 2.5
 
 Collection View is now compatible with Thingworx 8.4 and compiled in strict mode.
@@ -11,6 +7,8 @@ A new special `@row` property can now be used as a binding source and represents
 Table Layout has been deprecated and cannot be selected as a layout for newly created collection views. Old collection views using it will continue to function, but the option is no longer visible in the layout options - **changing the layout for one of these collection views will be irreversible**. Flow Layout with the `FlowLayoutMaximumCellsPerRow` property set to `1` can now be used instead of table layout to obtain the same behaviour with more options for configuration.
 
 Collection View widget will now behave as a view-based widget when part of a view hierarchy - in other cases it will behave as a regular widget. When part of a view hierarchy, the `coreUIView` property will return the collection view.
+
+Two new `CollectionViewWillBeginInteractiveMovement` and `CollectionViewDidFinishInteractiveMovement` events are now available and can be used to respond to drag & drop events starting and finishing.
 
 A new `FlowLayoutMaximumCellsPerRow` property can be set to control the maximum number of cells that can be placed in each row by flow layout.
 
