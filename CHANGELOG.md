@@ -1,3 +1,9 @@
+# 2.5.1
+
+Resolved an issue that prevented the configuration window from working properly.
+
+Resolved an issue that prevented the slide menu from working properly.
+
 # 2.5
 
 Collection View is now compatible with Thingworx 8.4 and compiled in strict mode.
