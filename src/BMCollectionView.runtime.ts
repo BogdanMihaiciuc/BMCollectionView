@@ -723,7 +723,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 		if (usesRipple) {
 			if (this._ripple) return;
 
-			this._ripple = BMRippleMakeForTarget(this.element, {withColor: this._rippleColor.RGBAString});
+			this._ripple = BMRippleMakeForTarget($(this.node), {withColor: this._rippleColor.RGBAString});
 		}
 		else {
 			if (this._ripple) this._ripple.remove() && (this._ripple = undefined);
@@ -1003,7 +1003,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 		}
 
 		// Bring ripple back to front
-		if (this._ripple) this.element.append(this._ripple);
+		if (this._ripple) this.node.appendChild(this._ripple[0]);
 		
 		(mashup as any).parameterDefinitions = (definition as any).parameterDefinitions;
 		
@@ -2148,7 +2148,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		}
 		
 		if (!this._coreUIView) {
-			this.collectionView = BMCollectionViewMakeWithContainer(this.jqElement, {customScroll: useCustomScrollbar}) as BMManagedCollectionView;
+			this.collectionView = BMCollectionView.collectionViewForNode(this.jqElement[0], {customScroll: useCustomScrollbar}) as BMManagedCollectionView;
 		}
 		else {
 			this.collectionView = this.coreUIView;
@@ -3848,16 +3848,18 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		if (!cell.BM_hasMenu) return;
 
 		if (this.currentMenuCell == cell) this.currentMenuCell = undefined;
+
+		const cellElement = $(cell.node);
 		
 		if (!options || !options.animated) {
 			// If the change isn't animated, just instantly remove the menu and move the mashup back to its original position
-			cell.element.children('.BMCollectionViewMenuWrapper').remove();
-			BMHook(cell.element.children().eq(0), {translateX: '0px'});
+			cellElement.children('.BMCollectionViewMenuWrapper').remove();
+			BMHook(cellElement.children().eq(0), {translateX: '0px'});
 			return;
 		}
 		
-		var mashup = cell.element.children().eq(0);
-		var oldMenuWrapper = cell.element.children('.BMCollectionViewMenuWrapper');
+		var mashup = cellElement.children().eq(0);
+		var oldMenuWrapper = cellElement.children('.BMCollectionViewMenuWrapper');
 		
 		var menu = oldMenuWrapper.children();
 		var menuWidth: number = menu.outerWidth() || 0;
@@ -3923,10 +3925,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		var inPlace = options && options.inPlace;
 		
 		if (cell.BM_hasMenu && !inPlace) return;
+
+		const cellElement = $(cell.node);
 		
 		if (inPlace) {
 			// If the expand is to be performed in place, it expected that the cell already has a menu and is retained
-			var menuWrapper = cell.element.find('.BMCollectionViewMenuWrapper') as $;
+			var menuWrapper = cellElement.find('.BMCollectionViewMenuWrapper') as $;
 		}
 		else {
 			// Retain the cell and add a property that indicates that it does have a menu associated with it
@@ -3946,13 +3950,13 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				self.triggerEvent('Menu:' + name, {withCell: cell});
 				if (self.currentMenuCell === cell) self.collapseMenuInCell(cell, {animated: YES});
 			});
-			cell.element.append(menuWrapper);
+			cellElement.append(menuWrapper);
 		}
 		
 		var menu = menuWrapper.children();
 		
 		var menuWidth = menu.outerWidth() || 0;
-		var mashup = cell.element.children().eq(0);
+		var mashup = cellElement.children().eq(0);
 		
 		if (!options || !options.animated) {
 			// If the change is not animated, it is sufficient to just slide the mashup towards the left
@@ -4075,9 +4079,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		var menuWrapper: $ | undefined, menu: $ | undefined, menuEntries: $ | undefined;
         var menuWidth: number;
         
-        let self = this;
+		let self = this;
 		
-		cell.element.on('touchstart.BMCollectionViewMenu', function (event) {
+		const cellElement = $(cell.node);
+		
+		cellElement.on('touchstart.BMCollectionViewMenu', function (event) {
 			if (cell == self.currentMenuCell) return;
 
 			startingX = (event.originalEvent as TouchEvent).touches[0].pageX;
@@ -4087,7 +4093,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			isTrackingMenuEvent = NO;
 		});
 		
-		cell.element.on('touchmove.BMCollectionViewMenu', function (event) {
+		cellElement.on('touchmove.BMCollectionViewMenu', function (event) {
 			if (cell == self.currentMenuCell) return;
 			
 			// Allow a few movement steps to make sure that this is a horizontal gesture rather than a vertical one
@@ -4119,7 +4125,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					menu = menuWrapper.children();
 					menuEntries = menu.children();
 					
-					cell.element.append(menuWrapper);
+					cellElement.append(menuWrapper);
 					
 					// The cell will be retained for the duration of this event tracking; if an update happens before this tracking is finalized,
 					// the collection will completely discard this cell
@@ -4153,7 +4159,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				BMHook(menuWrapper!, {translateX: Math.max(menuWidth - displacement, 0) + 'px'});
 				
 				// The mashup may slide past its final position, but it should generate greater resistance once it passes that position
-				BMHook(cell.element.children().eq(0), {translateX: -displacement + Math.max((displacement - menuWidth) / 2, 0) + 'px'});
+				BMHook(cellElement.children().eq(0), {translateX: -displacement + Math.max((displacement - menuWidth) / 2, 0) + 'px'});
 				
 				if (self.menuOrientation == 'Horizontal') {
 					// Additionally, for horizontal menus, the entries will first be on top of eachother and slide towards their usual positions
@@ -4175,7 +4181,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			}
 		});
 		
-		cell.element.on('touchend.BMCollectionViewMenu', function (event) {
+		cellElement.on('touchend.BMCollectionViewMenu', function (event) {
 			if (cell == self.currentMenuCell) return;
 			if (!isTrackingMenuEvent) return;
 			

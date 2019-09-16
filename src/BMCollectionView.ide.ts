@@ -605,7 +605,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 		var self = this;
 		
 		// Create the groups collection view
-		this._groupCollectionView = BMCollectionViewMakeWithContainer($(this.content.querySelectorAll('.BMWidgetConfigurationWindowNavigationSidebar')));
+		this._groupCollectionView = BMCollectionView.collectionViewForNode(this.content.querySelectorAll('.BMWidgetConfigurationWindowNavigationSidebar')[0] as HTMLElement);
 		
 		// Set up its layout
 		this._groupCollectionView.layout = new BMCollectionViewTableLayout();
@@ -636,16 +636,16 @@ class BMWidgetConfigurationWindow extends BMWindow {
 				
 				// Style the cell based on whether it's selected or not
 				if (self._groupCollectionView.isCellAtIndexPathSelected(indexPath)) {
-					cell.element.find('.BMWidgetConfigurationWindowNavigationSidebarLink').addClass('BMWidgetConfigurationWindowNavigationSidebarLinkSelected');
+					$(cell.node).find('.BMWidgetConfigurationWindowNavigationSidebarLink').addClass('BMWidgetConfigurationWindowNavigationSidebarLinkSelected');
 				}
 				else {
-					cell.element.find('.BMWidgetConfigurationWindowNavigationSidebarLink').removeClass('BMWidgetConfigurationWindowNavigationSidebarLinkSelected');
+					$(cell.node).find('.BMWidgetConfigurationWindowNavigationSidebarLink').removeClass('BMWidgetConfigurationWindowNavigationSidebarLinkSelected');
 				}
 				
 				// Update the cell's contents
 				var object = indexPath.object as any;
 				
-				cell.element.find('.BMWidgetConfigurationWindowNavigationSidebarLink').text(object.label);
+				$(cell.node).find('.BMWidgetConfigurationWindowNavigationSidebarLink').text(object.label);
 				
 				return cell;
 			},
@@ -660,7 +660,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 			updateCell: function (cell, options) {
 				var object = options.atIndexPath.object as any;
 				
-				cell.element.find('.BMWidgetConfigurationNavigationSidebarLink').text(object.label);
+				$(cell.node).find('.BMWidgetConfigurationNavigationSidebarLink').text(object.label);
 			},
 			updateSupplementaryView: function (view, options) {
 				// Supplementary views are not used, so it is not necessary to do anything in this method
@@ -685,7 +685,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 				// Style the selected cell
 				var cell = collectionView.cellAtIndexPath(indexPath, {ofType: BMCellAttributesType.Cell});
 				if (cell) {
-					cell.element.find('.BMWidgetConfigurationWindowNavigationSidebarLink').addClass('BMWidgetConfigurationWindowNavigationSidebarLinkSelected');
+					$(cell.node).find('.BMWidgetConfigurationWindowNavigationSidebarLink').addClass('BMWidgetConfigurationWindowNavigationSidebarLinkSelected');
 				}
 				
 				
@@ -701,7 +701,7 @@ class BMWidgetConfigurationWindow extends BMWindow {
 				// Style the deselected cell
 				var cell = collectionView.cellAtIndexPath(indexPath, {ofType: BMCellAttributesType.Cell});
 				if (cell) {
-					cell.element.find('.BMWidgetConfigurationWindowNavigationSidebarLink').removeClass('BMWidgetConfigurationWindowNavigationSidebarLinkSelected');
+					$(cell.node).find('.BMWidgetConfigurationWindowNavigationSidebarLink').removeClass('BMWidgetConfigurationWindowNavigationSidebarLinkSelected');
 				}
 			},
 			
@@ -1024,7 +1024,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		if (!(cell as any).initialized) {
 			(cell as any).initialized = YES;
 			
-			cell.element.addClass('BMCollectionViewPreviewCell');
+			cell.node.classList.add('BMCollectionViewPreviewCell');
 		}
 		
 		return cell;
@@ -1036,7 +1036,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		if (!(cell as any).initialized) {
 			(cell as any).initialized = YES;
 			
-			cell.element.addClass('BMCollectionViewPreviewCell');
+			cell.node.classList.add('BMCollectionViewPreviewCell');
 		}
 		
 		return cell;
