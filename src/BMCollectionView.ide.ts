@@ -1,4 +1,4 @@
-///<reference path="/Users/bmihaiciuc/OneDrive - PTC/BMCoreUI/ui/BMCoreUI/BMCoreUI.d.ts"/>
+///<reference path="../node_modules/bm-core-ui/lib/@types/BMCoreUI.min.d.ts"/>
 ///<reference types="velocity-animate"/>
 
 import { TWNamedComposerWidget } from './support/widgetRuntimeSupport'
