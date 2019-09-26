@@ -1,3 +1,7 @@
+# 2.5.2
+
+Long taps will now open the slide menu, if it has been defined and the `CellSlideMenuType` property is set to `Auto` or `Popup`.
+
 # 2.5.1
 
 Resolved an issue that prevented the configuration window from working properly.

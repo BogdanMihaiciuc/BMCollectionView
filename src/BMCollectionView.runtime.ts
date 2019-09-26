@@ -1698,7 +1698,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	/**
 	 * The type of slide menu to use.
 	 */
-	private menuType: BMCollectionViewWidgetSlideMenuType = BMCollectionViewWidgetSlideMenuType.Auto;
+	private menuKind: BMCollectionViewWidgetSlideMenuType = BMCollectionViewWidgetSlideMenuType.Auto;
 	
 	runtimeProperties() {
 		return {
@@ -1994,7 +1994,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		this.menuIconSize = this.getProperty('CellSlideMenuIconSize');
 		this.menuIconGravity = this.getProperty('CellSlideMenuIconGravity');
 		this.menuUseBuiltin = this.getProperty('CellSlideMenuUseBuiltin');
-		this.menuType = this.getProperty('CellSlideMenuType') || BMCollectionViewWidgetSlideMenuType.Auto;
+		this.menuKind = this.getProperty('CellSlideMenuType') || BMCollectionViewWidgetSlideMenuType.Auto;
 		
 		// Load the global data shape
 		try {
@@ -2057,6 +2057,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			}
 		}
 		this.setProperty('_CanDoubleClick', canDoubleClick);
+
+		// NOTE: longClickSelectsCell is disabled if menu type is set to popup and the menu is enabled
+		if (this.menuStateDefinition.length && this.menuKind === BMCollectionViewWidgetSlideMenuType.Popup) {
+			this.longClickSelectsCell = NO;
+		}
 		
 		// Set the HasSelectedCells property to NO by default, until data arrives and can be selected
 		this.setProperty('HasSelectedCells', NO);
@@ -3610,7 +3615,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	};
 	
 	// @override - BMCollectionViewDelegate
-	collectionViewCellWasLongClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {atIndexPath: BMIndexPath, withEvent: $event}): boolean {
+	collectionViewCellWasLongClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, {atIndexPath: indexPath, withEvent: event}: {atIndexPath: BMIndexPath, withEvent: $event}): boolean {
 		if (this.currentMenuCell) {
 			this.collapseMenuInCell(this.currentMenuCell, {animated: YES});
 			this.currentMenuCell = undefined;
@@ -3625,7 +3630,18 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			else {
 				collectionView.selectCellAtIndexPath(cell.indexPath);
 			}
-        }
+
+			return YES;
+		}
+		
+		// Long click events originate from mousedown or touchstart events so this event type can be used to differentiate between taps and clicks
+		if (event.type == 'touchstart') {
+			// On mobiles, the default action for long tapping is to bring up the menu
+			if (this.menuStateDefinition.length && this.menuUseBuiltin && this.menuKind != BMCollectionViewWidgetSlideMenuType.Slide) {
+				this.showPopupMenuForCell(cell, {forEvent: event});
+				return YES;
+			}
+		}
         
         return NO;
 	}
@@ -3636,7 +3652,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		
 		this.triggerEvent('CellWasRightClicked', {withCell: cell});
 		
-		if (!this.getProperty('CellSlideMenuUseBuiltin')) return this.canRightClick;
+		if (!this.menuUseBuiltin) return this.canRightClick;
 		
 		if (this.currentMenuCell) {
 			this.collapseMenuInCell(this.currentMenuCell, {animated: YES});		
@@ -3653,7 +3669,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		
 		if (this.menuDefinition!.length) {
 		
-			if (this.menuType == BMCollectionViewWidgetSlideMenuType.Slide) {
+			if (this.menuKind == BMCollectionViewWidgetSlideMenuType.Slide) {
 				this.currentMenuCell = cell;
 				this.expandMenuInCell(cell, {animated: YES, forEvent: options.withEvent});
 			}
@@ -4021,7 +4037,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 *	@param forEvent <$event, nullable>			If this is requested in response to an event, this represents the event that triggered this action.
 	 * }
 	 */
-	showPopupMenuForCell(cell: BMCollectionViewMashupCell, {forEvent: event}: {forEvent?: $event} = {}) {
+	showPopupMenuForCell(cell: BMCollectionViewMashupCell, {forEvent: event}: {forEvent?: $event | Event} = {}) {
 		const items: BMMenuItem[] = [];
 
 		const action = (item: BMMenuItem) => {
@@ -4035,14 +4051,18 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		};
 		
 		for (var i = 0; i < this.menuDefinition!.length; i++) {
-			items.push(BMMenuItem.menuItemWithName(this.menuDefinition![i], {action}));
+			let image: string | undefined = undefined;
+			if (this.menuStateDefinition[i].defaultStyleDefinition.image) {
+				image = `/Thingworx/MediaEntities/${this.menuStateDefinition[i].defaultStyleDefinition.image}`;
+			}
+			items.push(BMMenuItem.menuItemWithName(this.menuDefinition![i], {action, icon: image}));
 		}
 
 		const menu = BMMenu.menuWithItems(items);
 
 		let sourceEvent: MouseEvent | undefined;
 
-		if (event) {
+		if (event && 'originalEvent' in event) {
 			sourceEvent = event.originalEvent as MouseEvent;
 		}
 		else {
@@ -4050,7 +4070,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		}
 
 		if (sourceEvent) {
-			menu.openAtPoint(BMPointMake(sourceEvent.pageX, sourceEvent.pageY));
+			if (sourceEvent.type == 'touchstart') {
+				(menu as any).openFromNode(cell.node);
+			}
+			else {
+				menu.openAtPoint(BMPointMake(sourceEvent.pageX, sourceEvent.pageY));
+			}
 		}
 		else {
 			menu.openAtPoint(BMRectMakeWithNodeFrame(cell.node).center);
@@ -4063,10 +4088,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 */
 	initializeMenuTouchEventHandlersForCell(cell: BMCollectionViewMashupCell): boolean { // TODO: return value type?
 		// Don't install event handlers if use builtin is disabled
-		if (!this.getProperty('CellSlideMenuUseBuiltin')) return NO;
+		if (!this.menuUseBuiltin) return NO;
 
 		// Don't install touch event handlers if menu type is not auto or slide
-		if (this.menuType == BMCollectionViewWidgetSlideMenuType.Popup) return NO;
+		if (this.menuKind == BMCollectionViewWidgetSlideMenuType.Popup) return NO;
 							
 		var startingX: number, startingY: number;
 		var lastX: number, lastY: number;
@@ -4220,10 +4245,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			if (this.currentMenuCell) this.collapseMenuInCell(this.currentMenuCell, {animated: YES});	
 		
 			if (this.menuDefinition!.length) {
-				if (this.menuType == BMCollectionViewWidgetSlideMenuType.Popup) {
+				if (this.menuKind == BMCollectionViewWidgetSlideMenuType.Popup) {
 					this.showPopupMenuForCell(cell);
 				}
-				else if (this.menuType == BMCollectionViewWidgetSlideMenuType.Slide) {
+				else if (this.menuKind == BMCollectionViewWidgetSlideMenuType.Slide) {
 					this.currentMenuCell = cell;
 				
 					this.expandMenuInCell(cell, {animated: YES});
