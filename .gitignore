@@ -4,3 +4,4 @@ ui
 .gradle
 build
 zip
+.DS_Store
