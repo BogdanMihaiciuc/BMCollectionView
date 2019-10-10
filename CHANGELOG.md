@@ -1,6 +1,8 @@
 # 2.5.2
 
-Long taps will now open the slide menu, if it has been defined and the `CellSlideMenuType` property is set to `Auto` or `Popup`.
+Long taps will now open the slide menu, if it has been defined and the `CellSlideMenuType` property is set to `Auto` or `Popup`. Long taps on touch devices will now open a mobile specific menu.
+
+A new `LinkedCollectionView` property can now be set. When set to the `DisplayName` of another Collection View widget, the two Collection Views will have their scroll positions linked. Note that you don't have to set the value of this property on the two collection views to each other; instead, the linking is two-way by just setting the property on a single collection view. This way, it's possible to link the scrolling position of more than two collection views.
 
 # 2.5.1
 
