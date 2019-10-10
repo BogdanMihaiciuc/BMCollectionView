@@ -2021,6 +2021,14 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					_BMFriendlyName: 'Scrollbar Width',
 					_BMCategories: ['all', 'styles', 'scrollbar']
 				},
+				LinkedCollectionView: {
+					baseType: 'STRING',
+					description: 'When set to the DisplayName of a Collection View, this Collection View\'s scroll position will be linked to the target\'s scroll position.',
+					defaultValue: '',
+					_BMSection: 'Scrollbar',
+					_BMFriendlyName: 'Linked Collection View',
+					_BMCategories: ['all', 'scrollbar']
+				},
 				
 				
 				

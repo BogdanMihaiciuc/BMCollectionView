@@ -1738,6 +1738,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 * The mashup to use for editing cells.
 	 */
 	cellMashupEditingParameter?: string;
+
+	/**
+	 * The collection view whose scroll position will be linked to this one's.
+	 */
+	linkedCollectionViews!: BMCollectionViewWidget[];
 	
 	
 	// ******************************************** DELEGATE PROPERTIES ********************************************
@@ -1965,6 +1970,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
         require('./styles/runtime.css');
 		this.UIDField = this.getProperty("UIDField");
 
+		this.linkedCollectionViews = [];
+
 		// This promise is used to asynchronously preload the mashups for CellMashupName, CellMashupNameSelected and CellMashupNameEditing if they are set
 		// to avoid blocking user interaction of atomic requests if they are needed when rendering cells
 		var afterRenderedResolve;
@@ -2059,7 +2066,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		this.setProperty('_CanDoubleClick', canDoubleClick);
 
 		// NOTE: longClickSelectsCell is disabled if menu type is set to popup and the menu is enabled
-		if (this.menuStateDefinition.length && this.menuKind === BMCollectionViewWidgetSlideMenuType.Popup) {
+		if (this.menuStateDefinition && this.menuStateDefinition.length && this.menuKind === BMCollectionViewWidgetSlideMenuType.Popup) {
 			this.longClickSelectsCell = NO;
 		}
 		
@@ -2382,8 +2389,21 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			BMDirectLinkConnectWithDelegate(self);
 		}
 
+		this.initLinkedCollectionView();
+
 		afterRenderedResolve();
-    }
+	}
+	
+	async initLinkedCollectionView() {
+		if (this.getProperty('LinkedCollectionView')) {
+			await 0;
+			const collectionViewWidget = BMFindWidget({named: this.getProperty('LinkedCollectionView'), inMashup: this.mashup}) as BMCollectionViewWidget;
+			if (collectionViewWidget && this.linkedCollectionViews.indexOf(collectionViewWidget) == -1) {
+				this.linkedCollectionViews.push(collectionViewWidget);
+				collectionViewWidget.linkedCollectionViews.push(this);
+			}
+		}
+	}
 
 	// @deprecated Superseded by handleResponsiveWidgets
     resize(width: number, height: number): void {
@@ -3683,6 +3703,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		
 		return this.canRightClick;
 	}
+
+	/**
+	 * Temporarily set to true while scroll positions are being synced.
+	 */
+	private _blocksScrollPositionUpdates = NO;
 	
 	// @override - BMCollectionViewDelegate
 	collectionViewBoundsDidChange(collectionView: BMCollectionView, bounds: BMRect): void {
@@ -3690,6 +3715,33 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			this.collapseMenuInCell(this.currentMenuCell, {animated: YES});
 			this.currentMenuCell = undefined;
 		}
+
+		// Updated linked collection views
+		if (this.linkedCollectionViews.length) {
+			this._blocksScrollPositionUpdates = YES;
+			const scrollOffset = this.collectionView.scrollOffset;
+			for (const collectionViewWidget of this.linkedCollectionViews) {
+				collectionViewWidget.syncScrollPositionToPoint(scrollOffset);
+			}
+			this._blocksScrollPositionUpdates = NO;
+		}
+	}
+
+	/**
+	 * Invoked to synchronize this collection view's scroll position to another
+	 * collection view's scroll position.
+	 * This method will do nothing if this collection view is updating its data.
+	 * @param point 	The point to which the collection view should scroll.
+	 */
+	syncScrollPositionToPoint(point: BMPoint) {
+		// Don't update the scroll position if this is a recursive call or if collection view is busy updating data
+		if (this._blocksScrollPositionUpdates || this.collectionView.isUpdatingData) return;
+
+		point = point.copy();
+		point.x = BMNumberByConstrainingNumberToBounds(point.x, 0, this.collectionView.size.width - this.collectionView.frame.size.width);
+		point.y = BMNumberByConstrainingNumberToBounds(point.y, 0, this.collectionView.size.height - this.collectionView.frame.size.height);
+
+		this.collectionView.scrollOffset = point;
 	}
 	
 	/**
@@ -4898,3 +4950,50 @@ export class BMCollectionViewEditingController extends TWRuntimeWidget {
 }
 
 // #endregion
+
+/**
+ * Returns the widget with the specified id by searching the target mashup.
+ * {
+ * 	@param withId <String, nullable> 					Required if named is not specified. The ID of the widget to find
+ * 	@param named <String, nullable>						The display name of the widget, if specified, the search will find the first widget 
+ *														that has the specified id (if given) or the speficied display name.
+ * 	@param inMashup <TWMashup>							The mashup object in which to search.
+ * 	@param traverseContainedMashup <Boolean, nullable> 	Defaults to false. If set to true, the search will include other mashups contained within the source mashup.
+ * }
+ * @return <TWWidget, nullable> 						The actual widget object if found, null otherwise
+ */
+function BMFindWidget(args: {withId?: string, named?: string, inMashup: TWMashup, traverseContainedMashup?: boolean}) {
+	var id = args.withId;
+	var mashup = args.inMashup;
+	var name = args.named;
+	
+	if (!mashup) mashup = TW.Runtime.Workspace.Mashups.Current;
+	
+	return BMFindWidgetRecursive(id, name, mashup.rootWidget, args.traverseContainedMashup);
+}
+
+function BMFindWidgetRecursive(id: string | undefined, name: string | undefined, container: any, includeContainedMashup?: boolean) {
+	
+	var widgets = container.getWidgets();
+	var length = widgets.length;
+	
+	for (var i = 0; i < length; i++) {
+		var widget = widgets[i];
+		
+		if (widget.idOfThisElement == id || widget.properties.Id == id) return widget;
+		if (widget.properties.DisplayName == name) return widget;
+		
+		var subWidgets = widget.getWidgets();
+		if (widget.properties.__TypeDisplayName == "Contained Mashup" && !includeContainedMashup) continue;
+		if (subWidgets.length > 0) {
+			widget = BMFindWidgetRecursive(id, name, widget, includeContainedMashup);
+			
+			if (widget) return widget;
+		}
+		
+		
+	}
+	
+	return null;
+	
+}
