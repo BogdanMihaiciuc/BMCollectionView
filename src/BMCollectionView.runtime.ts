@@ -2401,6 +2401,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			if (collectionViewWidget && this.linkedCollectionViews.indexOf(collectionViewWidget) == -1) {
 				this.linkedCollectionViews.push(collectionViewWidget);
 				collectionViewWidget.linkedCollectionViews.push(this);
+				// Also link the layout queues
+				(this.collectionView as any).cellLayoutQueue = (collectionViewWidget.collectionView as any).cellLayoutQueue;
 			}
 		}
 	}
