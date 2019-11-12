@@ -1,3 +1,9 @@
+# 2.5.3
+
+Resolves a naming issue that caused the **Start** and **End** flow settings to behave unexpectedly. The **Left** and **Right** values of the `FlowLayoutGravity` property have been renamed to **Start** and **End** respectively to also better clarify their behaviour when using a horizontal orientation.
+
+Resolves an issue that caused the `Built-in Gestures` setting to fail to work when changed from the configuration window. This setting will now correctly map to the `CellSlideMenuUseBuiltin` property.
+
 # 2.5.2
 
 Long taps will now open the slide menu, if it has been defined and the `CellSlideMenuType` property is set to `Auto` or `Popup`. Long taps on touch devices will now open a mobile specific menu.
