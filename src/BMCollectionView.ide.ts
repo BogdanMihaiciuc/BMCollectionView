@@ -1490,8 +1490,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 						{text: 'Edge', value: 'Edge'},
 						{text: 'Spaced', value: 'Spaced'},
 						{text: 'Center', value: 'Center'},
-						{text: 'Left', value: 'Left'},
-						{text: 'Right', value: 'Right'},
+						{text: 'Start', value: 'Start'},
+						{text: 'End', value: 'End'},
 						{text: 'Expand', value: 'Expand'}
 					],
 					_BMSection: 'Flow Layout',
