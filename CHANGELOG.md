@@ -1,3 +1,7 @@
+# 2.5.4
+
+Resolves an issue that caused the **CustomClass** property to not work unless it was bound.
+
 # 2.5.3
 
 Resolves a naming issue that caused the **Start** and **End** flow settings to behave unexpectedly. The **Left** and **Right** values of the `FlowLayoutGravity` property have been renamed to **Start** and **End** respectively to also better clarify their behaviour when using a horizontal orientation.
