@@ -4634,6 +4634,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		else {
 			widgetElement = $(self.renderHtml())
 		}
+
+		// Set up the initial CustomClass
+		if (this.getProperty('CustomClass')) {
+			widgetElement.addClass(this.getProperty('CustomClass'));
+		}
 		
 		// Set up the ID and layout of the element
 		widgetElement.attr('id', ID);
