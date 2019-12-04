@@ -1,3 +1,7 @@
+# 2.6
+
+The **FlowLayoutContentGravity** property has a new option for the **Expand** content gravity setting in Collection View.
+
 # 2.5.4
 
 Resolves an issue that caused the **CustomClass** property to not work unless it was bound.

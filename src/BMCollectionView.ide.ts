@@ -1517,9 +1517,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					defaultValue: 'Center',
 					description: 'Must be used with Flow layout. Controls how content is aligned vertically within the collection view when its size is smaller than the collection view.',
 					selectOptions: [
-						{text: 'Top', value: 'Top'},
+						{text: 'Start', value: 'Top'},
 						{text: 'Center', value: 'Center'},
-						{text: 'Bottom', value: 'Bottom'}
+						{text: 'End', value: 'Bottom'},
+						{text: 'Expand', value: 'Expand'}
 					],
 					_BMSection: 'Flow Layout',
 					_BMFriendlyName: 'Gravity',
