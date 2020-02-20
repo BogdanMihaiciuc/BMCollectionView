@@ -1,3 +1,7 @@
+# 2.6 Beta 2
+
+Resolves an issue that could cause a crash when dropping an item over a supplementary view.
+
 # 2.6
 
 The **FlowLayoutContentGravity** property has a new option for the **Expand** content gravity setting in Collection View.

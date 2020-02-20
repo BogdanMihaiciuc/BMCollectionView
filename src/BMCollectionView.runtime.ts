@@ -3206,10 +3206,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		});
 
 		if (this.sectionField) {
-			targetIndex = this.sections![targetIndexPath.section].rows[targetIndexPath.row].index;
+			targetIndex = this.sections![targetIndexPath.section].rows[targetIndexPath.row || 0].index;
 		}
 		else {
-			targetIndex = this.sortField ? this.data[targetIndexPath.row]._BMCollectionViewInfoTableIndex : targetIndexPath.row;
+			targetIndex = this.sortField ? this.data[targetIndexPath.row || 0]._BMCollectionViewInfoTableIndex : targetIndexPath.row;
 		}
 
 		let newData;
