@@ -4452,7 +4452,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				newItem[key] = this.uniqueIdentifier();
 			}
 			else {
-				newItem[key] = this.dataShape.fieldDefinitions[key].defaultValue;
+				newItem[key] = this.dataShape.fieldDefinitions[key].aspects.defaultValue;
 			}
 		}
 
