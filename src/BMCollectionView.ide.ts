@@ -1298,7 +1298,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
                     isBindingSource: YES,
                     isBindingTarget: YES,
 					isVisible: NO,
-					_BMCategories: ['all']
+					_BMCategories: ['all'],
+					_BMSection: 'Styles'
                 },
 				Show: {
 					baseType: 'STRING',
@@ -1340,7 +1341,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					sourcePropertyName: 'Data',
 					description: 'Represents the unique identifier of a collection view item. This can be any type of field that uniquely identifies an item.',
 					_BMSection: 'Data',
-					_BMFriendlyName: 'Unique Identifier Field',
+					_BMFriendlyName: 'UID Field',
 					_BMCategories: ['all', 'data']
 				},
 				SortField: {

@@ -4435,6 +4435,30 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		
 		return NO;
 	};
+
+	/**
+	 * Constructs and returns a new item based on the data shape. The item's fields will use
+	 * the default values defined in the data shape, with the exception of the identifier field for which
+	 * a new unique value will be generated.
+	 * @return		An object.
+	 */
+	defaultItem(): any {
+		// Cannot create items without a predefined data shape
+		if (!this.dataShape) return;
+
+		const newItem: any = {};
+		for (const key in this.dataShape.fieldDefinitions) {
+			if (key == this.UIDField) {
+				newItem[key] = this.uniqueIdentifier();
+			}
+			else {
+				newItem[key] = this.dataShape.fieldDefinitions[key].defaultValue;
+			}
+		}
+
+		return newItem;
+
+	}
 	
 	/**
 	 * Creates a new item and inserts it into the data set at the specified index, then updates the collection view.
@@ -4466,15 +4490,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		}
 		
 		// Create and insert the item
-		var newItem = {};
-		for (var key in this.dataShape.fieldDefinitions) {
-			if (key == this.UIDField) {
-				newItem[key] = this.uniqueIdentifier();
-			}
-			else {
-				newItem[key] = undefined;
-			}
-		}
+		var newItem = this.defaultItem();
 		
 		newData.rows.splice(index == -1 ? newData.rows.length : index, 0, newItem);
         

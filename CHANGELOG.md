@@ -1,3 +1,7 @@
+# 2.6 Beta 3
+
+Collection View will now use the default values defined in the data shape when creating new items.
+
 # 2.6 Beta 2
 
 Resolves an issue that could cause a crash when dropping an item over a supplementary view.
