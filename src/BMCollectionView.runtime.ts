@@ -2392,6 +2392,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		this.initLinkedCollectionView();
 
 		afterRenderedResolve();
+		this.afterRendered = undefined;
 	}
 	
 	async initLinkedCollectionView() {
@@ -2440,7 +2441,9 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
         var property = updatePropertyInfo.TargetProperty;
 
 		// Don't process property updates until afterRender has finished executing
-		await this.afterRendered;
+		if (this.afterRendered) {
+			await this.afterRendered;
+		}
 
 		if (property == 'Data') {
 
@@ -3754,6 +3757,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 * }
 	 */
 	triggerEvent(event: string, options: {withCell: BMCollectionViewCell}): void {
+		if (window.event) {
+			(window.event as any)._BMOriginalTarget = options.withCell.node;
+		}
+
 		var object = options.withCell.indexPath.object;
 		
 		// Retrieve the event data shape
@@ -4452,7 +4459,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				newItem[key] = this.uniqueIdentifier();
 			}
 			else {
-				newItem[key] = this.dataShape.fieldDefinitions[key].aspects.defaultValue;
+				newItem[key] = (this.dataShape.fieldDefinitions[key] as any).aspects.defaultValue;
 			}
 		}
 

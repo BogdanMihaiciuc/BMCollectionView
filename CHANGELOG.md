@@ -1,3 +1,7 @@
+# 2.6 Beta 4
+
+Resolves an issue that could delay property updates.
+
 # 2.6 Beta 3
 
 Collection View will now use the default values defined in the data shape when creating new items.
