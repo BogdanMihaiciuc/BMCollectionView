@@ -910,41 +910,6 @@ input:not(:checked) + .BMCollectionViewVerticalTableSwitchGutter > .BMCollection
 }
 
 
-.BMCollectionViewEditingController, .BMCollectionViewMenuController, .BMCollectionViewSelectionController {
-	box-sizing: border-box;
-	border-radius: 5px;
-	
-	padding-left: 55px;
-	padding-right: 11px;
-	
-	border: 1px dashed rgba(0, 0, 0, .2);
-	
-	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Helvetica', 'Segoe UI', sans-serif;
-	font-size: 12px;
-	
-	text-align: center;
-	vertical-align: middle;
-	line-height: 22px;
-	
-	color: rgba(0, 0, 0, .66);
-	
-	background-image: url(../images/EditingControllerImage@2x.png);
-	background-position: 6px 6px;
-	background-size: 32px 32px;
-	background-repeat: no-repeat;
-}
-
-.BMCollectionViewMenuController {
-
-	background-image: url(../images/MenuControllerImage@2x.png);
-	
-}
-
-.BMCollectionViewSelectionController {
-
-	background-image: url(../images/SelectionControllerImage@2x.png);
-	
-}
 
 
 
@@ -1007,4 +972,40 @@ input:not(:checked) + .BMCollectionViewVerticalTableSwitchGutter > .BMCollection
 	position: absolute;
 
 	left: 72px;
+}
+
+.BMCollectionViewEditingController, .BMCollectionViewMenuController, .BMCollectionViewSelectionController {
+	box-sizing: border-box;
+	border-radius: 5px;
+	
+	padding-left: 55px;
+	padding-right: 11px;
+	
+	border: 1px dashed rgba(0, 0, 0, .2);
+	
+	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Helvetica', 'Segoe UI', sans-serif;
+	font-size: 12px;
+	
+	text-align: center;
+	vertical-align: middle;
+	line-height: 22px;
+	
+	color: rgba(0, 0, 0, .66);
+	
+	background-image: url(../images/EditingControllerImage@2x.png);
+	background-position: 6px 6px;
+	background-size: 32px 32px;
+	background-repeat: no-repeat;
+}
+
+.BMCollectionViewMenuController {
+
+	background-image: url(../images/MenuControllerImage@2x.png);
+	
+}
+
+.BMCollectionViewSelectionController {
+
+	background-image: url(../images/SelectionControllerImage@2x.png);
+	
 }

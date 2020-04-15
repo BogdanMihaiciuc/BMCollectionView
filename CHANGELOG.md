@@ -1,3 +1,7 @@
+# 2.6 Beta 5
+
+Resolves an issue with Thingworx that caused the configuration window close and minimize buttons to appear in an incorrect position.
+
 # 2.6 Beta 4
 
 Resolves an issue that could delay property updates.
