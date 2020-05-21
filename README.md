@@ -1,4 +1,8 @@
-​
+🛑 **Note: If you are planning to use this widget in Thingworx 8.5 or newer, strongly consider using [Core UI Widgets](https://github.com/ptc-iot-sharing/BMCoreUIWidgets) instead.**
+
+This repository contains the standalone development version of the `BMCollectionView` widget and is the source from which the widget is merged into core ui widgets.​
+
+
 # Collection Vie​w
 
 <!-- TOC depthfrom:2 orderedlist:false -->
