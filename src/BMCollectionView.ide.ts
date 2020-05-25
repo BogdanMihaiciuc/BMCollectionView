@@ -169,6 +169,14 @@ class BMWidgetConfigurationWindow extends BMWindow {
 				        (pickerElement as any).twMagicPicker('destroy');
 			        });
 				});
+
+				// When using Core UI widgets, the image sources will be changed
+				// TODO: In the future this should be handled by the build system instead of at runtime
+				Array.from(windowContent[0].querySelectorAll('img')).forEach(img => {
+					const sourceComponents = img.src.split('/');
+
+					img.src = `../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/${sourceComponents[sourceComponents.length - 1]}`;
+				});
 				
 				// Find all primitive editors and set up their event handlers
 				var primitiveEditors: $ = windowContent.find('[data-primitive="YES"]');
