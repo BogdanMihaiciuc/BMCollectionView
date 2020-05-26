@@ -4,6 +4,7 @@ The following settings are now also available in the configuration window, in ad
 
 - **Flow Layout > Content Gravity**: The **Expand** option has been added
 - **Flow Layout > Orientation**: The **Vertical** and **Horizontal** options have been added.
+- **Slide Menu > Appearance**: The **Auto**, **Slide** and **Popup** options have been added.
 
 # 2.6 Beta 5
 
