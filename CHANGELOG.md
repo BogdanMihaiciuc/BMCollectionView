@@ -1,3 +1,10 @@
+# 2.6 Beta 7
+
+The following settings are now also available in the configuration window, in addition to the property panel:
+
+- **Flow Layout > Content Gravity**: The **Expand** option has been added
+- **Flow Layout > Orientation**: The **Vertical** and **Horizontal** options have been added.
+
 # 2.6 Beta 5
 
 Resolves an issue with Thingworx that caused the configuration window close and minimize buttons to appear in an incorrect position.
