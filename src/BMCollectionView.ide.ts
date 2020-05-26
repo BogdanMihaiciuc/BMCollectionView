@@ -2767,7 +2767,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				{name: 'cellConfiguration', label: 'Cell Configuration'}, 
 				{name: 'selection', label: 'Selection'}, 
 				{name: 'styles', label: 'Styles'}, 
-				{name: 'menu', label: 'Slide Menu'}, 
+				{name: 'menu', label: 'Menu'}, 
 				{name: 'dataManipulation', label: 'Data Manipulation'}, 
 				{name: 'drag', label: 'Drag & Drop'}, 
 				{name: 'events', label: 'Events'}, 
