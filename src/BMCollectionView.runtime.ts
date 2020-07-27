@@ -1,7 +1,7 @@
 ///<reference path="../node_modules/bm-core-ui/lib/@types/BMCoreUI.min.d.ts"/>
 ///<reference types="velocity-animate"/>
 
-import { TWNamedRuntimeWidget, TWService, TWProperty } from './support/widgetRuntimeSupport'
+import { TWNamedRuntimeWidget, TWService, TWProperty } from 'typescriptwebpacksupport/widgetruntimesupport';
 
 enum BMCollectionViewWidgetSlideMenuType {
 	Auto = 'Auto',

@@ -1,3 +1,7 @@
+# 2.6 Beta 8
+
+Support for Thingworx 9.
+
 # 2.6 Beta 7
 
 The following settings are now also available in the configuration window, in addition to the property panel:

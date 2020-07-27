@@ -1,7 +1,7 @@
 ///<reference path="../node_modules/bm-core-ui/lib/@types/BMCoreUI.min.d.ts"/>
 ///<reference types="velocity-animate"/>
 
-import { TWNamedComposerWidget } from './support/widgetRuntimeSupport'
+import { TWNamedComposerWidget, property } from 'typescriptwebpacksupport/widgetidesupport';
 
 const EXTENSION_MODE = NO;
 
@@ -1274,7 +1274,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
     // #region Widget definition
 
     widgetIconUrl(): string {
-        return require('./images/ComposerIcon@2x.png');
+        return require('./images/ComposerIcon@2x.png').default;
     }
 
     widgetProperties(): BMCollectionViewWidgetProperties {
@@ -2714,7 +2714,19 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
     resize(width: number, height: number): void {
         //this.collectionView.resized();
-    }
+	}
+	
+	// @override - TWComposerWidget
+	getInfotableMetadataForProperty(propertyName) {
+		// As of Thingworx 9, this method will now throw when the data shape does not exist,
+		// but collection view relies on the previous behaviour of returning `undefined` in this case
+		try {
+			return super.getInfotableMetadataForProperty(propertyName);
+		}
+		catch (e) {
+			return undefined;
+		}
+	}
 
 	/**
 	 * Invoked by the platform to retrieve the data shape associated with an infotable property.
@@ -2859,7 +2871,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 @TWNamedComposerWidget('CollectionViewMenuController')
 export class BMCollectionViewMenuController extends TWComposerWidget {
     widgetIconUrl(): string {
-        return require('./images/MenuControllerIcon@2x.png');
+        return require('./images/MenuControllerIcon@2x.png').default;
     }
 
     widgetProperties(): TWWidgetProperties {
@@ -3038,7 +3050,7 @@ export class BMCollectionViewMenuController extends TWComposerWidget {
 @TWNamedComposerWidget('CollectionViewSelectionController')
 export class BMCollectionViewSelectionController extends TWComposerWidget {
     widgetIconUrl(): string {
-        return require('./images/SelectionControllerIcon@2x.png');
+        return require('./images/SelectionControllerIcon@2x.png').default;
     }
 
     widgetProperties(): TWWidgetProperties {
@@ -3095,7 +3107,7 @@ export class BMCollectionViewSelectionController extends TWComposerWidget {
 @TWNamedComposerWidget('CollectionViewEditingController')
 export class BMCollectionViewEditingController extends TWComposerWidget {
     widgetIconUrl(): string {
-        return require('./images/EditingControllerIcon@2x.png');
+        return require('./images/EditingControllerIcon@2x.png').default;
     }
 
     widgetProperties(): TWWidgetProperties {
