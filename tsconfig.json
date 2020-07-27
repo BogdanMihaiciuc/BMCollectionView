@@ -4,6 +4,7 @@
         "sourceMap": true,
         "noImplicitAny": false,
         "module": "esnext",
+        "moduleResolution": "node",
         "target": "es2018",
         "experimentalDecorators": true,
         "declaration": true,
