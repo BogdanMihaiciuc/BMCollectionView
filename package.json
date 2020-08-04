@@ -4,9 +4,9 @@
     "moduleName": "CollectionView",
     "version": "2.6.0",
     "description": "Requires BMCoreUI. A widget that manages a list of view elements, efficiently adding and removing them from view based on the current scroll position.",
-    "thingworxServer": "http://localhost:8016",
+    "thingworxServer": "http://localhost:8015",
     "thingworxUser": "Administrator",
-    "thingworxPassword": "admin",
+    "thingworxPassword": "Administrator12345",
     "author": "Thingworx RoIcenter",
     "minimumThingWorxVersion": "6.0.0",
     "homepage": "https://github.com/ptc-iot-sharing/BMCollectionView",
@@ -55,6 +55,6 @@
         "zip-webpack-plugin": "^3.0.0"
     },
     "dependencies": {
-        "typescriptwebpacksupport": "^2.0.7"
+        "typescriptwebpacksupport": "^2.0.8"
     }
 }

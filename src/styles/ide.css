@@ -92,6 +92,46 @@
 	background: rgb(0, 140, 235);
 }
 
+.BMCollectionViewWidgetDowngradeButton {
+	-webkit-appearance: none;
+	
+	border-radius: 4px;
+	box-shadow: 0px 2px 4px rgba(0, 0, 0, .1), 0px 0px 1px 1px rgba(0, 0, 0, .1);
+	
+	background: rgb(255, 160, 0);
+	
+	color: white;
+	font-family: -apple-system, BinkMacSystemFont, 'Roboto', 'Helvetica', 'Segoe UI', sans-serif;
+	font-size: 14px;
+	font-weight: bold;
+	
+	position: absolute;
+
+	top: 8px;
+	right: 8px;
+
+	width: 32px;
+	height: 32px;
+	border: none;
+	
+	z-index: 3;
+
+	text-align: center;
+	line-height: 32px;
+	vertical-align: middle;
+}
+
+.BMCollectionViewWidgetDowngradeButton:active {
+	background: rgb(235, 140, 0);
+}
+
+.BMCollectionViewWidgetInactiveButton {
+	background: rgb(140, 140, 140);
+
+	opacity: .5;
+	pointer-events: none;
+}
+
 /************************** CONFIGURATION WINDOW ************************/
 	
 @media (prefers-color-scheme: dark) {

@@ -1000,6 +1000,89 @@ export interface BMCollectionViewWidgetEvent extends TWWidgetEvent {
     isBaseProperty?: boolean
 }
 
+/**
+ * A dictionary that describes the mapping between collection view property names
+ * and their corresponding collection property names.
+ */
+const BMCollectionViewDowngradePropertyMap = {
+	CanSelectCells: 'AllowSelection',
+	AlwaysUseCustomScrollerOniOS: 'AlwaysUseCustomScrollerOniOS',
+	AutoSelectsFirstCell: 'AutoSelectFirstRow',
+	FlowLayoutBottomPadding: 'BottomPadding',
+	CellStyleActive: 'CellActiveStyle',
+	CellBorderRadius: 'CellBorderRadius',
+	CellBoxShadow: 'CellBoxShadow',
+	CellStyleHover: 'CellStyleHover',
+	CellMashupSelectedField: 'CellMashupSelectedField',
+	CellSlideMenuIconGravity: 'CellMenuStatesIconGravity',
+	CellSlideMenuIconSize: 'CellMenuStatesIconSize',
+	CellSlideMenuOrientation: 'CellMenuStatesOrientation',
+	CellSlideMenuUseBuiltin: 'CellMenuStatesUseBuiltin',
+	CellMultipleSelectionType: 'CellMultipleSelectionType',
+	CellPointer: 'CellPointer',
+	CellStyleSelected: 'CellSelectedStyle',
+	CellStyle: 'CellStyle',
+	DisplayName: 'DisplayName',
+	FlowLayoutAlignment: 'FlowLayoutAlignment',
+	FlowLayoutContentGravity: 'FlowLayoutContentGravity',
+	FlowLayoutGravity: 'FlowLayoutGravity',
+	FooterHeight: 'FooterHeight',
+	FooterMashupSectionProperty: 'FooterSectionParam',
+	HasSelectedCells: 'HasSelectedCells',
+	HeaderHeight: 'HeaderHeight',
+	HeaderMashupSectionProperty: 'HeaderSectionParam',
+	Height: 'Height',
+	Id: 'Id',
+	LastContainer: 'LastContainer',
+	Left: 'Left',
+	FlowLayoutLeftAlignFinalRow: 'LeftAlignFinalRow',
+	CellMashupGlobalPropertyBinding: 'MashupGlobalPropertyBinding',
+	CellHeight: 'MashupHeight',
+	CellMashupPropertyBinding: 'MashupPropertyBinding',
+	CellWidth: 'MashupWidth',
+	FlowLayoutMinimumSpacing: 'MinimumSpacing',
+	OffScreenBufferFactor: 'OffScreenBufferFactor',
+	PlaysIntroAnimation: 'PlaysIntroAnimation',
+	ResponsiveLayout: 'ResponsiveLayout',
+	RippleStyle: 'RippleEffectStyle',
+	FlowLayoutRowSpacing: 'FlowLayoutRowSpacing',
+	ScrollsToSelectedCell: 'ScrollsToSelectedCell',
+	SectionInsetBottom: 'SectionInsetBottom',
+	SectionInsetLeft: 'SectionInsetLeft',
+	SectionInsetRight: 'SectionInsetRight',
+	SectionInsetTop: 'SectionInsetTop',
+	SelectedCellsCount: 'SelectedCellsCount',
+	ShowDataLoading: 'ShowDataLoading',
+	ShowsFooters: 'ShowFooters',
+	ShowsHeaders: 'ShowHeaders',
+	SortAscending: 'SortAscending',
+	Top: 'Top',
+	FlowLayoutTopPadding: 'TopPadding',
+	UseCustomScrollerOnWindowsDesktops: 'UseCustomScrollerOnWindowsDesktops',
+	CellMashupHasIntrinsicSize: 'UseMashupDimensions',
+	UsesRipple: 'UseRippleEfect',
+	Layout: 'View',
+	Visible: 'Visible',
+	Width: 'Width',
+	'Z-index': 'Z-index',
+
+	UIDField: 'UIDField',
+	SortField: 'SortField',
+	SectionField: 'SectionField',
+	CustomClass: 'CustomClass'
+}
+
+/**
+ * A dictionary that contains properties that collection supports but are not available in
+ * collection view.
+ */
+const BMCollectionViewDowngradeStaticFields = {
+	Type: 'collection',
+	__TypeDisplayName: 'Collection',
+	ScrollbarType: 'hover',
+	ItemLoadBehavior: 'loadUnload',
+}
+
 // #region BMCollectionViewWidget
 
 @TWNamedComposerWidget("BMCollectionView")
@@ -2752,7 +2835,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	};
 
     renderHtml(): string {
-        return '<div class="widget-content BMCollectionViewWidget"><div class="BMCollectionViewWidgetBorder"></div><button class="BMCollectionViewWidgetConfigurationButton" style="' + (EXTENSION_MODE ? 'display: none;' : '') + '">CONFIGURE</button></div>';
+		return `
+		<div class="widget-content BMCollectionViewWidget">
+			<div class="BMCollectionViewWidgetBorder"></div>
+			<button class="BMCollectionViewWidgetDowngradeButton" style="' + (EXTENSION_MODE ? 'display: none;' : '') + '">⥥</button>
+			<button class="BMCollectionViewWidgetConfigurationButton" style="' + (EXTENSION_MODE ? 'display: none;' : '') + '">CONFIGURE</button>
+		</div>`;
     };
 
     afterRender(): void {
@@ -2761,7 +2849,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		}
 		
 		var self = this;
-		this.jqElement.find('button').click(function () {
+		this.jqElement.find('.BMCollectionViewWidgetConfigurationButton').click(function () {
 			if (self.configurationWindow) {
 				return self.configurationWindow.becomeKeyWindow();
 			}
@@ -2843,6 +2931,17 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			self.configurationWindow = configurationWindow;
 			
 		});
+
+		const downgradeButton = this.jqElement.find('.BMCollectionViewWidgetDowngradeButton').click(() => {
+			// TODO: Use a non-blocking window for this
+			if (confirm('This action will downgrade this Collection View to a standard collection.\nSome settings will be lost during the conversion.')) {
+				const message = this.downgradeToCollection();
+
+				alert(message);
+	
+				downgradeButton[0].classList.add('BMCollectionViewWidgetInactiveButton');
+			}
+		});
 		
 		// Construct the preview collection view
 		if (self.collectionView) self.collectionView.release();
@@ -2858,7 +2957,110 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
     beforeDestroy(): void {
 		this.collectionView.release();
-    }
+	}
+	
+	/**
+	 * Downgrades this widget to a built-in collection, providing a report of what could not be migrated.
+	 * @return		A message to display to the user indicating the downgrade result.
+	 */
+	downgradeToCollection(): string {
+		let report = '';
+
+		let DisableWrapping = false;
+		let MultiSelect = false;
+		const props: any = (this as any).properties;
+
+		if (this.getProperty('FlowLayoutMaximumCellsPerRow')) {
+			report += 'The "FlowLayoutMaximumCellsPerRow" property is unsupported and will be set to 0.\n';
+		}
+
+		if (this.getProperty('FlowLayoutOrientation') && this.getProperty('FlowLayoutOrientation') == 'Horizontal') {
+			report += 'Flow layout horizontal orientation is unsupported and will be approximated by setting "DisableWrapping" to true.\n';
+			DisableWrapping = true;
+		}
+
+		if (['Start', 'End', 'Left', 'Right'].includes(this.getProperty('FlowLayoutGravity'))) {
+			report += `The "${this.getProperty('FlowLayoutGravity')}" flow layout gravity is unsupported and will be set to "Spaced".\n`;
+			props.FlowLayoutGravity = 'Spaced';
+		}
+
+		if (this.getProperty('FlowLayoutContentGravity') == 'Expand') {
+			report += 'The "Expand" flow layout content gravity is unsupported and will be set to "Center".\n';
+			props.FlowLayoutContentGravity = 'Center';
+		}
+
+		if (['Masonry', 'Tile', 'Stack'].includes(this.getProperty('Layout'))) {
+			report += `The "${this.getProperty('Layout')}" layout is unsupported and will be set to "Flow".\n`;
+			props.Layout = 'Flow';
+		}
+
+		if (this.getProperty('AutomaticCellSize')) {
+			report += 'The automatic cell size feature is unsupported and will be disabled.\n';
+		}
+
+		if (this.getProperty('CellMultipleSelectionType') != 'Disabled') {
+			MultiSelect = true;
+			if (this.getProperty('CellMultipleSelectionType') != 'CtrlClick') {
+				report += `The multiple selection type "${this.getProperty('CellMultipleSelectionType')}" is not supported and will be set to "CtrlClick".\n`
+			}
+		}
+
+		if (this.getProperty('BackgroundStyle')) {
+			report += 'The background style property is unsupported and will be removed.\n';
+		}
+
+		if (this.getProperty('ScrollbarStyle') || this.getProperty('ScrollbarTrackStyle')) {
+			report += 'Scrollbar styles are unsupported and will be removed.\n';
+		}
+
+		if (this.getProperty('LinkedCollectionView')) {
+			report += 'Linked collection views are unsupported and will be disabled.\n';
+		}
+
+		if (this.getProperty('CellSlideMenuType') == 'Popup') {
+			report += 'Popup context menus are unsupported and will be converted into slide menus.\n';
+		}
+
+		// Ideally, this should also check for bindings
+		if (this.getProperty('CanDragCells') || this.getProperty('CanAcceptCells')) {
+			report += 'Drag & drop is not supported and will be disabled.\n';
+		}
+
+		if (this.getProperty('HandlesReponsiveWidgets') || this.getProperty('handlesReponsiveWidgetsImmediately')) {
+			report += 'HandlesReponsiveWidgets is unsupported and will be disabled.\n';
+		}
+
+		// Prepare the new collection properties
+		const newProperties = {
+			MultiSelect, 
+			DisableWrapping,
+			PinsFootersToBottom: this.getProperty('FlowLayoutPinsFootersToContentEdge') || this.getProperty('TableLayoutPinsFootersToContentEdge') || this.getProperty('TileLayoutPinsFootersToContentEdge'),
+			PinsHeadersToTop: this.getProperty('FlowLayoutPinsHeadersToContentEdge') || this.getProperty('TableLayoutPinsHeadersToContentEdge') || this.getProperty('TileLayoutPinsHeadersToContentEdge')
+		};
+
+		for (const key in BMCollectionViewDowngradeStaticFields) {
+			newProperties[key] = BMCollectionViewDowngradeStaticFields[key];
+		}
+
+		for (const key in BMCollectionViewDowngradePropertyMap) {
+			const collectionFieldName = BMCollectionViewDowngradePropertyMap[key];
+
+			newProperties[collectionFieldName] = props[key];
+		}
+
+		for (const key in props) {
+			delete props[key];
+		}
+
+		BMCopyProperties(props, newProperties);
+
+		if (!report) {
+			return 'Your collection view has been downgraded.\n\nTo commit your changes, save your mashup, then close and reopen it.';
+		}
+
+		return `Your collection view has been downgraded, but certain properties will no longer be supported.\n\nPlease review the downgrade report below:\n${report}\n\nTo commit your changes, save your mashup, then close and reopen it.`;
+
+	}
 
     // #endregion
 
