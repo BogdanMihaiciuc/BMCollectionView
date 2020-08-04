@@ -1069,7 +1069,20 @@ const BMCollectionViewDowngradePropertyMap = {
 	UIDField: 'UIDField',
 	SortField: 'SortField',
 	SectionField: 'SectionField',
-	CustomClass: 'CustomClass'
+	CustomClass: 'CustomClass',
+	CellMashupName: 'Mashup',
+	CellMashupNameSelected: 'MashupNameSelected',
+
+	CellWidthField: 'CellWidthField',
+	CellHeightField: 'CellHeightField',
+	CellMashupNameField: 'MashupNameField',
+
+	EmptyMashupName: 'EmptyMashupName',
+
+	_EventDataShape: '_EventDataShape',
+	_MenuDefinition: '_MenuDefinition',
+	_GlobalDataShape: '_GlobalDataShape'
+
 }
 
 /**
@@ -2932,14 +2945,31 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			
 		});
 
-		const downgradeButton = this.jqElement.find('.BMCollectionViewWidgetDowngradeButton').click(() => {
+		const downgradeButton = this.jqElement.find('.BMCollectionViewWidgetDowngradeButton').click(async event => {
+			event.stopImmediatePropagation();
+			event.stopPropagation();
+			event.preventDefault();
+			
 			// TODO: Use a non-blocking window for this
 			if (confirm('This action will downgrade this Collection View to a standard collection.\nSome settings will be lost during the conversion.')) {
-				const message = this.downgradeToCollection();
-
-				alert(message);
-	
 				downgradeButton[0].classList.add('BMCollectionViewWidgetInactiveButton');
+
+				this.jqElement.parent()[0].style.pointerEvents = 'none';
+
+				// It appears that clicking the downgrade button will also cause the widget to be selected (after a delay),
+				// which overrides the parent selection so a timeout is used to avoid this
+				setTimeout(() => {
+					this.parentWidget!.selectWidget();
+	
+					// A second timeout is used to ensure that the property panel has finished changing
+					// This is required because otherwise the new properties object may become corrupted
+					setTimeout(() => {
+						const message = this.downgradeToCollection();
+		
+						alert(message);
+					}, 100);
+				}, 100);
+				
 			}
 		});
 		
@@ -3028,6 +3058,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 		if (this.getProperty('HandlesReponsiveWidgets') || this.getProperty('handlesReponsiveWidgetsImmediately')) {
 			report += 'HandlesReponsiveWidgets is unsupported and will be disabled.\n';
+		}
+
+		if (this.getProperty('CellMashupEditingField') || this.getProperty('CellMashupNameEditing')) {
+			report += 'Editing states and the editing field are not supported and will be removed.\n';
 		}
 
 		// Prepare the new collection properties
