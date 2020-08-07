@@ -1,4 +1,5 @@
-///<reference path="../node_modules/bm-core-ui/lib/@types/BMCoreUI.min.d.ts"/>
+////<reference path="../node_modules/bm-core-ui/lib/@types/BMCoreUI.min.d.ts"/>
+///<reference path="../../BMCoreUI/build/ui/BMCoreUI/BMCoreUI.d.ts"/>
 ///<reference types="velocity-animate"/>
 
 import { TWNamedComposerWidget, property } from 'typescriptwebpacksupport/widgetidesupport';
@@ -2949,9 +2950,14 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			event.stopImmediatePropagation();
 			event.stopPropagation();
 			event.preventDefault();
+
+			const confirmationPopup = BMConfirmationPopup.confirmationPopupWithTitle('Downgrade to Collection', {
+				text: 'This action will downgrade this Collection View to a standard collection.\nSome settings may be lost during the conversion',
+				positiveActionText: 'Downgrade',
+				negativeActionText: 'Don\'t Downgrade'
+			});
 			
-			// TODO: Use a non-blocking window for this
-			if (confirm('This action will downgrade this Collection View to a standard collection.\nSome settings will be lost during the conversion.')) {
+			if (await confirmationPopup.confirm() == BMConfirmationPopupResult.Confirmed) {
 				downgradeButton[0].classList.add('BMCollectionViewWidgetInactiveButton');
 
 				this.jqElement.parent()[0].style.pointerEvents = 'none';
