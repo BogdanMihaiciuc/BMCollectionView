@@ -2972,7 +2972,9 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					setTimeout(() => {
 						const message = this.downgradeToCollection();
 		
-						alert(message);
+						const alertPopup = BMAlertPopup.alertPopupWithTitle('Downgrade complete', {text: '', actionText: 'Done'});
+						alertPopup.HTML = message;
+						alertPopup.confirm();
 					}, 100);
 				}, 100);
 				
@@ -3007,26 +3009,26 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		const props: any = (this as any).properties;
 
 		if (this.getProperty('FlowLayoutMaximumCellsPerRow')) {
-			report += 'The "FlowLayoutMaximumCellsPerRow" property is unsupported and will be set to 0.\n';
+			report += '<li style="line-height: 1.5">The <code>FlowLayoutMaximumCellsPerRow</code> property is unsupported and will be set to 0.</li>';
 		}
 
 		if (this.getProperty('FlowLayoutOrientation') && this.getProperty('FlowLayoutOrientation') == 'Horizontal') {
-			report += 'Flow layout horizontal orientation is unsupported and will be approximated by setting "DisableWrapping" to true.\n';
+			report += '<li style="line-height: 1.5">Flow layout horizontal orientation is unsupported and will be approximated by setting <code>DisableWrapping</code> to true.</li>';
 			DisableWrapping = true;
 		}
 
 		if (['Start', 'End', 'Left', 'Right'].includes(this.getProperty('FlowLayoutGravity'))) {
-			report += `The "${this.getProperty('FlowLayoutGravity')}" flow layout gravity is unsupported and will be set to "Spaced".\n`;
+			report += `<li style="line-height: 1.5">The <code>${this.getProperty('FlowLayoutGravity')}</code> flow layout gravity is unsupported and will be set to <code>Spaced</code>.</li>`;
 			props.FlowLayoutGravity = 'Spaced';
 		}
 
 		if (this.getProperty('FlowLayoutContentGravity') == 'Expand') {
-			report += 'The "Expand" flow layout content gravity is unsupported and will be set to "Center".\n';
+			report += '<li style="line-height: 1.5">The <code>Expand</code> flow layout content gravity is unsupported and will be set to <code>Center</code>.</li>';
 			props.FlowLayoutContentGravity = 'Center';
 		}
 
 		if (['Masonry', 'Tile', 'Stack'].includes(this.getProperty('Layout'))) {
-			report += `The "${this.getProperty('Layout')}" layout is unsupported and will be set to "Flow".\n`;
+			report += `<li style="line-height: 1.5">The <code>${this.getProperty('Layout')}</code> layout is unsupported and will be set to <code>Flow</code>.</li>`;
 			props.Layout = 'Flow';
 		}
 
@@ -3037,37 +3039,37 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		if (this.getProperty('CellMultipleSelectionType') != 'Disabled') {
 			MultiSelect = true;
 			if (this.getProperty('CellMultipleSelectionType') != 'CtrlClick') {
-				report += `The multiple selection type "${this.getProperty('CellMultipleSelectionType')}" is not supported and will be set to "CtrlClick".\n`
+				report += `<li style="line-height: 1.5">The multiple selection type <code>${this.getProperty('CellMultipleSelectionType')}</code> is not supported and will be set to <code>CtrlClick</code>.</li>`
 			}
 		}
 
 		if (this.getProperty('BackgroundStyle')) {
-			report += 'The background style property is unsupported and will be removed.\n';
+			report += '<li style="line-height: 1.5">The background style property is unsupported and will be removed.</li>';
 		}
 
 		if (this.getProperty('ScrollbarStyle') || this.getProperty('ScrollbarTrackStyle')) {
-			report += 'Scrollbar styles are unsupported and will be removed.\n';
+			report += '<li style="line-height: 1.5">Scrollbar styles are unsupported and will be removed.</li>';
 		}
 
 		if (this.getProperty('LinkedCollectionView')) {
-			report += 'Linked collection views are unsupported and will be disabled.\n';
+			report += '<li style="line-height: 1.5">Linked collection views are unsupported and will be disabled.</li>';
 		}
 
 		if (this.getProperty('CellSlideMenuType') == 'Popup') {
-			report += 'Popup context menus are unsupported and will be converted into slide menus.\n';
+			report += '<li style="line-height: 1.5">Popup context menus are unsupported and will be converted into slide menus.</li>';
 		}
 
 		// Ideally, this should also check for bindings
 		if (this.getProperty('CanDragCells') || this.getProperty('CanAcceptCells')) {
-			report += 'Drag & drop is not supported and will be disabled.\n';
+			report += '<li style="line-height: 1.5">Drag & drop is not supported and will be disabled.</li>';
 		}
 
 		if (this.getProperty('HandlesReponsiveWidgets') || this.getProperty('handlesReponsiveWidgetsImmediately')) {
-			report += 'HandlesReponsiveWidgets is unsupported and will be disabled.\n';
+			report += '<li style="line-height: 1.5">HandlesReponsiveWidgets is unsupported and will be disabled.</li>';
 		}
 
 		if (this.getProperty('CellMashupEditingField') || this.getProperty('CellMashupNameEditing')) {
-			report += 'Editing states and the editing field are not supported and will be removed.\n';
+			report += '<li style="line-height: 1.5">Editing states and the editing field are not supported and will be removed.</li>';
 		}
 
 		// Prepare the new collection properties
@@ -3095,10 +3097,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		BMCopyProperties(props, newProperties);
 
 		if (!report) {
-			return 'Your collection view has been downgraded.\n\nTo commit your changes, save your mashup, then close and reopen it.';
+			return 'Your collection view has been downgraded.<br><br>To commit your changes, save your mashup, then close and reopen it.';
 		}
 
-		return `Your collection view has been downgraded, but certain properties will no longer be supported.\n\nPlease review the downgrade report below:\n${report}\n\nTo commit your changes, save your mashup, then close and reopen it.`;
+		return `Your collection view has been downgraded, but certain properties will no longer be supported.<br><br>Please review the downgrade report below:<br><br><ul style="list-style: disc inside; margin-left: 0; padding-left: 32px;">${report}</ul><br><br>To commit your changes, save your mashup, then close and reopen it.`;
 
 	}
 
