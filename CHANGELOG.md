@@ -1,3 +1,25 @@
+# 2.6
+
+Support for Thingworx 9.
+
+The following settings are now also available in the configuration window, in addition to the property panel:
+
+- **Flow Layout > Content Gravity**: The **Expand** option has been added
+- **Flow Layout > Orientation**: The **Vertical** and **Horizontal** options have been added.
+- **Slide Menu > Appearance**: The **Auto**, **Slide** and **Popup** options have been added.
+
+Resolves an issue with the new composer that caused the configuration window close and minimize buttons to appear in an incorrect position.
+
+Resolves an issue that could delay property updates.
+
+Collection View will now use the default values defined in the data shape when creating new items.
+
+Resolves an issue that could cause a crash when dropping an item over a supplementary view.
+
+The **FlowLayoutContentGravity** property has a new option for the **Expand** content gravity setting in Collection View.
+
+Collection View widgets will now get a button to downgrade to a built-in Collection widget.
+
 # 2.6 Beta 8
 
 Support for Thingworx 9.
