@@ -2911,6 +2911,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					}});
 				}, 0);
 			}});
+
+			configurationWindow.anchorNode = button;
 			
 			$(window).on('resize.BMCollectionView', function () {
 						
