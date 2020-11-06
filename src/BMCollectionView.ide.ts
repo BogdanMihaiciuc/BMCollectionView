@@ -158,8 +158,12 @@ class BMWidgetConfigurationWindow extends BMWindow {
 								//self._notifyObserversForProperty(propertyName);
 				                
 				                // TODO Handle other entity pickers for the same property
-				            }
-			            });
+							}
+						});
+						
+						// In certain versions of thingworx, the magic picker popover has a Z index value that makes it appear
+						// behind the configuration window so it is manually correct to be the window's Z index + 1
+						pickerElement.find('.twInlineSearch').data().twInlineSearch.inlineResults[0].style.zIndex = BMWindow.zIndexMax() + 1;
 			        }
 			        catch (e) {
 				        
