@@ -1,3 +1,7 @@
+# 2.6.3
+
+Resolves an issue that caused entity pickers to appear behind the configuration window.
+
 # 2.6
 
 Support for Thingworx 9.
