@@ -1,3 +1,7 @@
+# 2.6.4
+
+Resolves an issue that caused collection view to freeze and stop processing data updates following a badly formatted data update.
+
 # 2.6.3
 
 Resolves an issue that caused entity pickers to appear behind the configuration window.
