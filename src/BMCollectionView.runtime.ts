@@ -2447,6 +2447,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 		if (property == 'Data') {
 
+			// If the property update is badly formatted, ignore
+			if (!updatePropertyInfo.SinglePropertyValue && !updatePropertyInfo.RawSinglePropertyValue) {
+				console.warn('[BMCollectionView] Ignoring badly formatted property update.');
+				return;
+			}
+
 			this.pendingDataUpdate = updatePropertyInfo;
 
 			// Await for the currently running data update to finish before attempting to process another one
