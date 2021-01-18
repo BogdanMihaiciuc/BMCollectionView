@@ -1550,6 +1550,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 * The name of the mashup displayed when the data set is empty.
 	 */
 	emptyMashupName?: string;
+
+	/**
+	 * An object describing the static parameter values to use for the empty mashup.
+	 */
+	emptyMashupParameters?: Dictionary<any>;
 	
 	/**
 	 * Controls whether cells can be selected and whether more than one cell can be selected at a time.
@@ -2321,7 +2326,18 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		this.cellBoxShadow = this.getProperty('CellBoxShadow');
 		
 		this.emptyMashupName = this.getProperty('EmptyMashupName');
-		if (this.emptyMashupName) await BMCollectionViewDefinitionForMashupNamed(this.emptyMashupName, {atomic: NO});
+		if (this.emptyMashupName) {
+			
+			try {
+				this.emptyMashupParameters = JSON.parse(this.getProperty('EmptyMashupParameters', '{}'));
+			}
+			catch (e) {
+				// If the property is badly formatted, an empty list will be used instead
+				this.emptyMashupParameters = {};
+			}
+		
+			await BMCollectionViewDefinitionForMashupNamed(this.emptyMashupName, {atomic: NO});
+		}
 		
 		if (this.cellStyleSelected && this.cellStyleSelected.backgroundColor) {
 			this.cellStyleSelectedColor = BMColorMakeWithString(this.cellStyleSelected.backgroundColor)!;	
@@ -3141,7 +3157,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
                 if (this.footerMashupSectionProperty) cell._parameterMap = {[this.footerMashupSectionProperty]: this.footerMashupSectionProperty};
             }
             else if (identifier == BMCollectionViewTableLayoutSupplementaryView.Empty) {
-                cell._parameterMap = {};
+				const parameterMap = {};
+				if (this.emptyMashupParameters) {
+					Object.keys(this.emptyMashupParameters).forEach(key => parameterMap[key] = key);
+				}
+                cell._parameterMap = parameterMap;
             }
 
             cell.initialized = YES;
@@ -3174,9 +3194,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
             }
             else if (cell.reuseIdentifier == BMCollectionViewTableLayoutSupplementaryView.Footer) {
                 if (this.footerMashupSectionProperty) cell.parameters = {[this.footerMashupSectionProperty]: sectionIdentifier};
-            }
-				
-			// This data set does not handle the update for the empty supplementary view
+			}
+			else if (cell.reuseIdentifier == BMCollectionViewTableLayoutSupplementaryView.Empty) {
+				if (this.emptyMashupParameters) {
+					cell.parameters = this.emptyMashupParameters;
+				}
+			}
 		}
 		catch (e) {
 			

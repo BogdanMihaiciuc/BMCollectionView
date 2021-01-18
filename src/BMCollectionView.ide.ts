@@ -880,7 +880,7 @@ export function BMWidgetConfigurationWindowGetBindingFieldsForProperty(property:
 	var widget = args.widget;
 	var array = args.intoArray;
 	var callback = args.completionHandler;
-	
+
 	// An empty property name may be supplied, which causes an empty array to be returned.
 	if (!property) {
 		if (args.completionHandler) {
@@ -2290,6 +2290,14 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					description: 'Optional. If specified, this mashup will be displayed when the data set is empty',
 					_BMSection: 'Empty View',
 					_BMFriendlyName: 'Empty Mashup name',
+					_BMCategories: ['all', 'table', 'flow', 'tile']
+				},
+				EmptyMashupParameters: {
+					baseType: 'STRING',
+					description: 'A JSON object that specifies static string values that will be assiged as parameters for the empty mashup.',
+					defaultValue: '{}',
+					_BMSection: 'Empty View',
+					_BMFriendlyName: 'Empty Mashup parameters',
 					_BMCategories: ['all', 'table', 'flow', 'tile']
 				},
 				
