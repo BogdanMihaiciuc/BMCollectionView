@@ -868,7 +868,7 @@ export function BMWidgetConfigurationWindowGetParametersForMashup(mashup: string
 /**
  * Loads the binding fields for the given property into the given array.
  * Depending on the type of property, this may happen asynchronously.
- * @param property <String>									The property for which to load the binding fields.
+ * @param property <String>									The property for which to load the binding fields. If blank, an empty array will be supplied to the callback.
  * {
  *	@param widget <TWWidget>								The widget containing the given property.
  *	@param intoArray <[String]>								The array into which the binding fields will be added.
@@ -880,6 +880,15 @@ export function BMWidgetConfigurationWindowGetBindingFieldsForProperty(property:
 	var widget = args.widget;
 	var array = args.intoArray;
 	var callback = args.completionHandler;
+	
+	// An empty property name may be supplied, which causes an empty array to be returned.
+	if (!property) {
+		if (args.completionHandler) {
+			args.completionHandler([]);
+		}
+
+		return;
+	}
 	
 	var properties = (widget.allWidgetProperties() as any).properties;
 	
