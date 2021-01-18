@@ -1,3 +1,11 @@
+# 2.6.7
+
+A new `BMCollectionViewSupplementaryView` class is now added to the `node` of cells representing headers, footers, the empty view and any other supplementary views.
+
+A new `EmptyMashupParameters` property can be used to specify static values to use for the empty mashup's parameters.
+
+Resolves an issue that caused the hover effect to be improperly applied to supplementary views.
+
 # 2.6.4
 
 Resolves an issue that caused collection view to freeze and stop processing data updates following a badly formatted data update.
