@@ -731,10 +731,14 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 	}
 
 	// @override - BMCollectionViewCell
-	initWithCollectionView(collectionView: BMCollectionView, args: {reuseIdentifier: string, node: DOMNode}): BMCollectionViewMashupCell {
+	initWithCollectionView(collectionView: BMCollectionView, args: {reuseIdentifier: string, node: DOMNode, kind?: BMCollectionViewLayoutAttributesType}): BMCollectionViewMashupCell {
 		super.initWithCollectionView(collectionView, args);
 
 		this.node.classList.add('BMCollectionViewCellWrapper');
+
+		if (args.kind == BMCollectionViewLayoutAttributesType.SupplementaryView) {
+			this.node.classList.add('BMCollectionViewSupplementaryViewWrapper');
+		}
 
 		return this;
 	}
@@ -895,7 +899,13 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 		// A new container has to be created for the mashup
 		// because it gets removed when the mashup is destroyed
 		var containerNode: HTMLDivElement = document.createElement('div');
-		containerNode.classList.add('BMCollectionViewCell', 'BMCollectionViewCellHoverable');
+		containerNode.classList.add('BMCollectionViewCell');
+
+		// Only data cells take the hoverable class
+		if (this.itemType == BMCollectionViewLayoutAttributesType.Cell) {
+			containerNode.classList.add('BMCollectionViewCellHoverable');
+		}
+
 		this.node.appendChild(containerNode);
 		var container: $ = $(containerNode);
 
