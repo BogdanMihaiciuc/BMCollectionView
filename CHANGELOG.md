@@ -1,3 +1,11 @@
+# 2.6.9
+
+Resolves an issue that could cause drag & drop to fail on touch devices if a slide menu wasn't set.
+
+Improved behaviour when starting a drag & drop operation on a touch device while using a slide menu. Since both of these actions are started with a long tap gesture, when committing to a drag & drop by dragging after a long tap, the menu will close.
+
+Resolves an issue that caused debug messages to be written to the browser console.
+
 # 2.6.7
 
 A new `BMCollectionViewSupplementaryView` class is now added to the `node` of cells representing headers, footers, the empty view and any other supplementary views.
