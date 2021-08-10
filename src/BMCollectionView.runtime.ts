@@ -18,6 +18,9 @@ declare var Encoder: any;
 // This flag controls whether the new features that require BMCollectionViewCell to subclass BMView should be enabled
 const USE_BMVIEW_SUBCLASS: boolean = YES;
 
+// A flag used to control whether debug messages are logged to the browser console
+const DEBUG_MESSAGES = NO;
+
 /**
  * Represents the serial number for each mashup created for this collection view.
  * This number is used to guarantee a unique ID for these mashups.
@@ -343,6 +346,7 @@ export class BMMashupView extends BMView {
 	get _supportsAutomaticIntrinsicSize(): boolean {return NO}
 
 	// @override - BMView
+	// @ts-ignore
 	get contentNode() {
 		return this._contentNode || this.node;
 	}
@@ -385,6 +389,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 	
 	private _contentNode?: DOMNode;
 
+	// @ts-ignore
 	get contentNode() {
 		return this._contentNode || this.node;
 	}
@@ -807,8 +812,8 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 			this._mashupInstance.destroyMashup();
 		}
 		catch (err) {
-			console.log('CollectionView was unable to destroy the mashup associated with the cell at index path ' + this.indexPath);
-			console.log(err);	
+			console.error('CollectionView was unable to destroy the mashup associated with the cell at index path ' + this.indexPath);
+			console.error(err);	
         }
         
         super.destroy();
@@ -1723,6 +1728,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			_BMSupportsFastWidgetAppend: YES
 		};
 	}
+
+	/**
+	 * The currently displayed menu, if any.
+	 */
+	menu?: BMMenu;
 	
 	
 	// ******************************************** GLOBAL PROPERTIES ********************************************
@@ -2789,7 +2799,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				if (mashup) mashup.BM_setParameterInternal(property, args.didUpdateToValue);
 			}
 			catch (e) {
-				console.log(e);
+				console.error(e);
 			}
 		}) as any);
 	};
@@ -3466,6 +3476,17 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 	// @override - BMCollectionViewDelegate
 	collectionViewWillBeginInteractiveMovementForCell(collectionView: BMManagedCollectionView, cell: BMCollectionViewMashupCell, {atIndexPath: indexPath}: {atIndexPath: BMIndexPath}) {
+		// If a menu is open, dismiss it
+		if (this.menu) {
+			this.menu.closeAnimated();
+		}
+
+		// If a slide menu is open, dismiss it
+		if (this.currentMenuCell) {
+			this.collapseMenuInCell(this.currentMenuCell, {animated: YES});
+			this.currentMenuCell = undefined;
+		}
+
 		this.triggerEvent('CollectionViewWillBeginInteractiveMovement', {withCell: cell});
 	};
 
@@ -3701,7 +3722,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		// Long click events originate from mousedown or touchstart events so this event type can be used to differentiate between taps and clicks
 		if (event.type == 'touchstart') {
 			// On mobiles, the default action for long tapping is to bring up the menu
-			if (this.menuStateDefinition.length && this.menuUseBuiltin && this.menuKind != BMCollectionViewWidgetSlideMenuType.Slide) {
+			if (this.menuStateDefinition?.length && this.menuUseBuiltin && this.menuKind != BMCollectionViewWidgetSlideMenuType.Slide) {
 				this.showPopupMenuForCell(cell, {forEvent: event});
 				return YES;
 			}
@@ -4180,6 +4201,16 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		else {
 			menu.openAtPoint(BMRectMakeWithNodeFrame(cell.node).center);
 		}
+
+		this.menu = menu;
+		menu.delegate = this;
+	}
+
+	// @override - BMMenuDelegate
+	menuWillClose(menu: BMMenu) {
+		if (menu == this.menu) {
+			this.menu = undefined;
+		}
 	}
 
 	/**
@@ -4291,7 +4322,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					var menuEntriesLength = menuEntries!.length;
 					var menuEntryWidth = menuWidth / menuEntriesLength;
 					var displacementPercentage = BMNumberByConstrainingNumberToBounds(displacement / menuWidth, 0, 1);
-					console.log('Raw displacement is ' + (displacement / menuWidth));
+					if (DEBUG_MESSAGES) console.log('Raw displacement is ' + (displacement / menuWidth));
 					for (var i = 0; i < menuEntriesLength; i++) {
 						var menuEntry = menuEntries!.eq(i);
 						
