@@ -2403,6 +2403,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					description: 'Optional. If specified, this is the mashup parameter that will receive the editing state of the mashup.',
 					_BMCategories: ['all', 'cell', 'manipulation']
 				},
+				EmptyDataSetOnStartup: {
+					baseType: 'BOOLEAN',
+					description: 'Requires setting a data shape. Can be enabled to cause collection view to start with an empty data set.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'manipulation']
+				},
 				
 				
 				// ******************************************** PERFORMANCE PROPERTIES ********************************************

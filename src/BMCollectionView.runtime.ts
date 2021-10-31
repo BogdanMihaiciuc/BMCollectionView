@@ -2447,9 +2447,17 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		
 		// Load the inline data manipulation data shape if it was specified
 		if (this.getProperty('DataShape')) {
-            let self = this;
-            TW.Runtime.GetDataShapeInfo(this.getProperty('DataShape'), function (info) {
-                if (!self.dataShape) self.dataShape = info;
+            TW.Runtime.GetDataShapeInfo(this.getProperty('DataShape'), (info) => {
+                if (!this.dataShape) this.dataShape = info;
+
+				// If this collection view is set to load an empty data set on startup, load it now
+				if (!this.getProperty('EmptyDataSetOnStartup', NO)) return;
+				
+				if (!this.data || !this.collectionView.dataSet) {
+					let newDataInfotable = {dataShape: this.dataShape, rows: []};
+		
+					this.updateProperty({TargetProperty: 'Data', SinglePropertyValue: newDataInfotable, ActualDataRows: newDataInfotable.rows, ForceUpdateLayout: YES});
+				}
             });
 		}
 		
