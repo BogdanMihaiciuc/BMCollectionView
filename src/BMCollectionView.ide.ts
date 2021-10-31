@@ -1679,7 +1679,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				},
 				FlowLayoutPinsHeadersToContentEdge: {
 					baseType: 'BOOLEAN',
-					defaultValue: false,
+					defaultValue: NO,
 					description: 'Must be used with Flow layout. If enabled, the currently visible section\'s header will be stuck to the top edge of the collection view.',
 					_BMSection: 'Table Layout',
 					_BMFriendlyName: 'Pin Headers',
@@ -1687,7 +1687,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				},
 				FlowLayoutPinsFootersToContentEdge: {
 					baseType: 'BOOLEAN',
-					defaultValue: false,
+					defaultValue: NO,
 					description: 'Must be used with Flow layout. If enabled, the currently visible section\'s footer will be stuck to the bottom edge of the collection view.',
 					_BMSection: 'Table Layout',
 					_BMFriendlyName: 'Pin Footers',
@@ -2019,7 +2019,96 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					_BMFriendlyName: 'Mashup selected parameter',
 					_BMCategories: ['all', 'cell', 'selection']
 				},
+
 				
+				// ******************************************** HIGHLIGHT PROPERTIES ********************************************
+				KeyboardHighlightingEnabled: {
+					baseType: 'BOOLEAN',
+					description: 'When enabled, keyboard navigation can be used to highlight cells.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'highlighting']
+				},
+				KeyboardAutoHighlightsFirstCell: {
+					baseType: 'BOOLEAN',
+					description: 'When enabled, when data is updated and no cell is highlighted, the collection view will automatically highlight the first available cell.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'selection']
+				},
+				KeyboardHighlightingBehaviour: {
+					baseType: 'STRING',
+					defaultValue: 'Highlight',
+					description: 'Controls what happens when a cell is highlighted.',
+					selectOptions: [
+						{text: 'Highlight', value: 'Highlight'},
+						{text: 'Select', value: 'Select'}
+					],
+					_BMCategories: ['all', 'selection']
+				},
+				KeyboardHighlightingSpacebarBehaviour: {
+					baseType: 'STRING',
+					defaultValue: 'Event',
+					description: 'Controls what happens the spacebar key is pressed while a cell is highlighted.',
+					selectOptions: [
+						{text: 'Event', value: 'Event'},
+						{text: 'Click', value: 'Click'},
+						{text: 'Select', value: 'Select'}
+					],
+					_BMCategories: ['all', 'selection']
+				},
+				KeyboardHighlightingReturnBehaviour: {
+					baseType: 'STRING',
+					defaultValue: 'Event',
+					description: 'Controls what happens the return key is pressed while a cell is highlighted.',
+					selectOptions: [
+						{text: 'Event', value: 'Event'},
+						{text: 'Click', value: 'Click'},
+						{text: 'Select', value: 'Select'}
+					],
+					_BMCategories: ['all', 'selection']
+				},
+				KeyboardHighlightOmitsInputElements: {
+					baseType: 'STRING',
+					defaultValue: 'All',
+					description: 'Controls which parts of keyboard navigation are disabled when an input or button element has keyboard focus.',
+					selectOptions: [
+						{text: 'All', value: 'All'},
+						{text: 'Navigation', value: 'Navigation'},
+						{text: 'Actions', value: 'Actions'},
+						{text: 'None', value: 'None'}
+					],
+					_BMCategories: ['all', 'selection']
+				},
+				KeyboardBlockSelectionEnabled: {
+					baseType: 'BOOLEAN',
+					description: 'Must be used with KeyboardHighlightEnabled and CellMultipleSelectionType enabled. When enabled, using the shift key with keyboard navigation selects a block of cells.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'highlighting']
+				},
+				KeyboardDelegateWidget: {
+					baseType: 'STRING',
+					description: 'The displayName of a widget that can process keyboard events for this collection view.',
+					defaultValue: '',
+					_BMCategories: ['all', 'highlighting']
+				},
+				KeyboardDelegateWidgetKeys: {
+					baseType: 'STRING',
+					description: 'An array containing the supported keys that can be processed by the keyboard delegate widget.',
+					defaultValue: '["ArrowDown", "ArrowUp", "Enter"]',
+					_BMCategories: ['all', 'highlighting']
+				},
+				KeyboardDelegateWidgetStealFocus: {
+					baseType: 'BOOLEAN',
+					defaultValue: NO,
+					description: 'Must be used with KeyboardDelegateWidget. When enabled, pressing any supported key will cause this collection view to acquire keyboard focus from the delegate widget.',
+					_BMCategories: ['all', 'highlighting']
+				},
+				TabIndex: {
+					baseType: 'NUMBER',
+					defaultValue: -1,
+					description: 'The tab index to assign to this collection view',
+					_BMFriendlyName: 'Mashup selected parameter',
+					_BMCategories: ['all', 'highlighting']
+				},
 				
 				
 				// ******************************************** STYLE PROPERTIES ********************************************
@@ -2537,6 +2626,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		return {
 			Deselect: {_BMCategories: ['all', 'selection'], description: 'Should be invoked to cause the collection view to deselect all rows from its data set.'},
 			SelectAll: {_BMCategories: ['all', 'selection'], description: 'Should be invoked to cause the collection view to select all rows in its data set.'},
+			AcquireFocus: {_BMCategories: ['all', 'highlighting'], description: 'Should be invoked to cause the collection view to acquire keyboard focus.'},
+			ResignFocus: {_BMCategories: ['all', 'highlighting'], description: 'Should be invoked to cause the collection view to resign keyboard focus.'},
 			InvalidateLayout: {_BMCategories: ['all', 'performance'], description: 'Should be invoked to cause the collection view to invalidate its layout.'},
 			CreateItemAtBeginning: {_BMCategories: ['all', 'manipulation'], description: 'When invoked, the collection view will add an item to the beginning of the data set. If sections are defined, the item will belong to an empty section.'},
 			CreateItemAtEnd: {_BMCategories: ['all', 'manipulation'], description: 'When invoked, the collection view will add an item to the end of the data set. If sections are defined, the item will belong to an empty section.'},
@@ -2553,6 +2644,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			CellWasRightClicked: {_BMCategories: ['all', 'data'], description: 'Triggered whenever any cell is right-clicked.'},
 			CellWasDoubleClicked: {_BMCategories: ['all', 'data'], description: 'Triggered whenever any cell is double-clicked or double-tapped.'},
 			CellWasLongClicked: {_BMCategories: ['all', 'data'], description: 'Triggered whenever any cell is long-clicked or long-tapped.'},
+			ReturnPressed: {_BMCategories: ['all', 'data'], description: 'Triggered whenever the return key is pressed while a cell is highlighted.'},
+			SpacebarPressed: {_BMCategories: ['all', 'data'], description: 'Triggered whenever the return key is pressed while a cell is highlighted.'},
 			CollectionViewDidAcceptDroppedItems: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view accepts items from another collection view.'},
 			CollectionViewDidMoveItems: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view moves items from a drag & drop operation.'},
 			CollectionViewDidRemoveItems: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view removes items from a drag & drop operation.'},
