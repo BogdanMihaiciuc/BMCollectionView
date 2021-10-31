@@ -3519,6 +3519,9 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		// If this collection view becomes a possible drop target before data loads
 		// create a dummy infotable from the data shape property and initialize it
 		if (!this.data || !this.collectionView.dataSet) {
+			// If a data shape isn't set, this collection view can't accept items yet
+			if (!this.dataShape) return NO;
+
 			this.setProperty('PlaysIntroAnimation', NO);
 
 			let newDataInfotable = {dataShape: this.dataShape, rows: []};
