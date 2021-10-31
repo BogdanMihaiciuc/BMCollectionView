@@ -211,15 +211,6 @@ class BMWidgetConfigurationWindow extends BMWindow {
 					// Populate the input with the property's current value from the widget
 					primitiveEditor.val(self._widget.getProperty(propertyName));
 					
-					// Set up the input event handler to update the property
-					primitiveEditor.on('input', function () {
-						self._widget.setProperty(propertyName, valueByConvertingValue(primitiveEditor.val()));
-						//self._notifyObserversForProperty(propertyName);
-						
-						// Update the other primitive editors to the new value
-						otherPrimitiveEditors.val(primitiveEditor.val()!);
-					});
-					
 					// Check if this property is a single binding
 					if (primitiveEditor.data('single-binding') == "YES") {
 						// If it is, set up the completion drop-down
@@ -236,57 +227,45 @@ class BMWidgetConfigurationWindow extends BMWindow {
 						
 						// Register an observer that reloads the fields when the source property is updated
 						self.registerObserver(observer, {forProperty: sourceProperty});
-						
-						// Set up the dropdown
-						primitiveEditor.on('focus', function () {
-							// Create the dropdown popover
-							var frame: BMRect = BMRectMakeWithNodeFrame(this);
-							
-							var dropdown: $ = $('<div class="BMCollectionViewConfigurationDropdown"></div>');
-							
-							sourcePropertyFields.forEach(function (key: string) {
-								var entry = $('<div class="BMCollectionViewConfigurationDropdownEntry">' + key + '</div>');
-								
-								entry.mousedown(function (event) {
-									primitiveEditor.val(key);
-									self._widget.setProperty(propertyName, valueByConvertingValue(key));
-									//self._notifyObserversForProperty(propertyName);
-									
-									event.stopPropagation();
-									event.preventDefault();
-								});
-								
-								entry.mouseup(function (event) {
-									primitiveEditor.blur();
-								});
-								
-								dropdown.append(entry);
-							});
-							
-							let top = frame.bottom;
-							let translation = '32px';
 
-							if (top + 480 > window.innerHeight) {
-								top = frame.top - Math.min(480, 32 * sourcePropertyFields.length);
-								translation = '-32px';
+						const textField = BMTextField.textFieldForInputNode(primitiveEditor[0]);
+						textField.delegate = {
+							textFieldShouldAutocompleteText() {
+								return YES;
+							},
+
+							textFieldShouldShowSuggestions() {
+								return YES;
+							},
+
+							textFieldSuggestionsForText(field, text) {
+								return sourcePropertyFields;
+							},
+
+							textFieldContentsDidChange(field) {
+								self._widget.setProperty(propertyName, valueByConvertingValue(primitiveEditor.val()));
+								//self._notifyObserversForProperty(propertyName);
+								
+								// Update the other primitive editors to the new value
+								otherPrimitiveEditors.val(primitiveEditor.val()!);
 							}
+						};
 
-							dropdown.css({left: frame.left + 'px', top: top + 'px', opacity: 0});
+						textField.maxSuggestions = 20;
+						
+						self.registerWindowDidCloseCallback(function () {
+							textField.release();
+						});
+					}
+					else {
+					
+						// Set up the input event handler to update the property
+						primitiveEditor.on('input', function () {
+							self._widget.setProperty(propertyName, valueByConvertingValue(primitiveEditor.val()));
+							//self._notifyObserversForProperty(propertyName);
 							
-							$(document.body).append(dropdown);
-							
-							BMHook(dropdown, {translateY: translation});
-							dropdown.velocity({translateY: 0, opacity: 1}, {duration: 200, easing: 'easeOutQuart'});
-							
-							(primitiveEditor as any).keyDropdown = dropdown;
-							
-						}).on('blur', function () {
-							if (!(primitiveEditor as any).keyDropdown) return;
-							
-							var dropdown = (primitiveEditor as any).keyDropdown;
-							(primitiveEditor as any).keyDropdown = undefined;
-							
-							dropdown.velocity({translateY: '32px', opacity: 0}, {duration: 200, easing: 'easeInQuart', complete: function () {dropdown.remove()}});
+							// Update the other primitive editors to the new value
+							otherPrimitiveEditors.val(primitiveEditor.val()!);
 						});
 					}
 				});
@@ -417,114 +396,48 @@ class BMWidgetConfigurationWindow extends BMWindow {
 										<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewConfigurationDoubleBindingValue" value = "' + binding.value + '"/>\
 										<div class="BMCollectionViewConfigurationDoubleBindingDeleteButton">&times;</div>\
 									</div>');
-									
-						
-						// Set up the event handlers
-						row.find('.BMCollectionViewConfigurationDoubleBindingKey').on('change', function (event) {
-							binding.key = (this as HTMLInputElement).value;
-						}).on('focus', function () {
-							// Create the dropdown popover
-							var frame = BMRectMakeWithNodeFrame(this);
-							var keyField = $(this);
-							
-							var dropdown = $('<div class="BMCollectionViewConfigurationDropdown"></div>');
-							
-							sourcePropertyFields.forEach(function (key) {
-								var entry = $('<div class="BMCollectionViewConfigurationDropdownEntry">' + key + '</div>');
-								
-								entry.mousedown(function (event) {
-									keyField.val(key);
-									binding.key = key;
-									
-									event.stopPropagation();
-									event.preventDefault();
-								});
-								
-								entry.mouseup(function (event) {
-									keyField.blur();
-								});
-								
-								dropdown.append(entry);
-							});
-							
-							let top = frame.bottom;
-							let translation = '32px';
 
-							if (top + 480 > window.innerHeight) {
-								top = frame.top - Math.min(480, 32 * sourcePropertyFields.length);
-								translation = '-32px';
-							}
-							
-							dropdown.css({left: frame.left + 'px', top: top + 'px', opacity: 0});
-							
-							$(document.body).append(dropdown);
-							
-							BMHook(dropdown, {translateY: translation});
-							dropdown.velocity({translateY: 0, opacity: 1}, {duration: 200, easing: 'easeOutQuart'});
-							
-							binding.keyDropdown = dropdown;
-							
-						}).on('blur', function () {
-							if (!binding.keyDropdown) return;
-							
-							var dropdown = binding.keyDropdown;
-							binding.keyDropdown = undefined;
-							
-							dropdown.velocity({translateY: '32px', opacity: 0}, {duration: 200, easing: 'easeInQuart', complete: function () {dropdown.remove()}});
-						});
-									
-						row.find('.BMCollectionViewConfigurationDoubleBindingValue').on('change', function (event) {
-							binding.value = (this as HTMLInputElement).value;
-						}).on('focus', function () {
-							// Create the dropdown popover
-							var frame = BMRectMakeWithNodeFrame(this);
-							var keyField = $(this);
-							
-							var dropdown = $('<div class="BMCollectionViewConfigurationDropdown"></div>');
-							
-							targetPropertyFields.forEach(function (key) {
-								var entry = $('<div class="BMCollectionViewConfigurationDropdownEntry">' + key + '</div>');
-								
-								entry.mousedown(function (event) {
-									keyField.val(key);
-									binding.value = key;
-									
-									event.stopPropagation();
-									event.preventDefault();
-								});
-								
-								entry.mouseup(function (event) {
-									keyField.blur();
-								});
-								
-								dropdown.append(entry);
-							});
-							
-							let top = frame.bottom;
-							let translation = '32px';
+						const keyTextField = BMTextField.textFieldForInputNode(row.find('.BMCollectionViewConfigurationDoubleBindingKey')[0]);
+						keyTextField.delegate = {
+							textFieldShouldAutocompleteText() {
+								return YES;
+							},
 
-							if (top + 480 > window.innerHeight) {
-								top = frame.top - Math.min(480, 32 * targetPropertyFields.length);
-								translation = '-32px';
+							textFieldShouldShowSuggestions() {
+								return YES;
+							},
+
+							textFieldSuggestionsForText(field, text) {
+								return sourcePropertyFields;
+							},
+
+							textFieldContentsDidChange(field) {
+								binding.key = (field.node as HTMLInputElement).value;
 							}
-							
-							dropdown.css({left: frame.left + 'px', top: top + 'px', opacity: 0});
-							
-							$(document.body).append(dropdown);
-							
-							BMHook(dropdown, {translateY: translation});
-							dropdown.velocity({translateY: 0, opacity: 1}, {duration: 200, easing: 'easeOutQuart'});
-							
-							binding.keyDropdown = dropdown;
-							
-						}).on('blur', function () {
-							if (!binding.keyDropdown) return;
-							
-							var dropdown = binding.keyDropdown;
-							binding.keyDropdown = undefined;
-							
-							dropdown.velocity({translateY: '32px', opacity: 0}, {duration: 200, easing: 'easeInQuart', complete: function () {dropdown.remove()}});
-						});
+						};
+
+						keyTextField.maxSuggestions = 20;
+
+						const valueTextField = BMTextField.textFieldForInputNode(row.find('.BMCollectionViewConfigurationDoubleBindingValue')[0]);
+						valueTextField.delegate = {
+							textFieldShouldAutocompleteText() {
+								return YES;
+							},
+
+							textFieldShouldShowSuggestions() {
+								return YES;
+							},
+
+							textFieldSuggestionsForText(field, text) {
+								return targetPropertyFields;
+							},
+
+							textFieldContentsDidChange(field) {
+								binding.value = (field.node as HTMLInputElement).value;
+							}
+						};
+
+						valueTextField.maxSuggestions = 20;
 									
 						row.find('.BMCollectionViewConfigurationDoubleBindingDeleteButton').on('click', function (event) {
 							BMWidgetConfigurationWindowDoubleBindingRemoveBinding(binding, {animated: YES});
@@ -543,6 +456,8 @@ class BMWidgetConfigurationWindow extends BMWindow {
 						
 						// Retain a reference to the HTML element for this binding
 						binding.row = row;
+						binding.keyField = keyTextField;
+						binding.valueField = valueTextField;
 						
 						// Update the property when the window closes
 						self.registerWindowDidCloseCallback(function () {
@@ -552,6 +467,9 @@ class BMWidgetConfigurationWindow extends BMWindow {
 								if (binding.key && binding.value) {
 									bindings[binding.key] = binding.value;
 								}
+
+								binding.keyField.release();
+								binding.valueField.release();
 							});
 							
 							self._widget.setProperty(propertyName, JSON.stringify(bindings));
@@ -577,9 +495,15 @@ class BMWidgetConfigurationWindow extends BMWindow {
 						// Animate as needed
 						if (animated) {
 							row.css({pointerEvents: 'none'});
-							row.velocity({height: '0px', opacity: 0}, {easing: 'easeInOutQuart', duration: 300, complete: function () {row.remove()}});
+							row.velocity({height: '0px', opacity: 0}, {easing: 'easeInOutQuart', duration: 300, complete: function () {
+								row.keyField.release();
+								row.valueField.release();
+								row.remove();
+							}});
 						}
 						else {
+							row.keyField.release();
+							row.valueField.release();
 							row.remove();
 						}
 					}
@@ -3022,6 +2946,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				{name: 'menu', label: 'Menu'}, 
 				{name: 'dataManipulation', label: 'Data Manipulation'}, 
 				{name: 'drag', label: 'Drag & Drop'}, 
+				{name: 'keyboard', label: 'Keyboard'}, 
 				{name: 'events', label: 'Events'}, 
 				{name: 'advanced', label: 'Advanced'}
 			];
