@@ -889,6 +889,23 @@ export function BMWidgetConfigurationWindowGetBindingFieldsForProperty(property:
 
 		return;
 	}
+
+	// A special "@Widgets" may be specified to show the available widget display names
+	if (property == '@Widgets') {
+		const rootWidget = widget.jqElement.closest('#mashup-root').data('widget');
+		const names = [rootWidget.getProperty('DisplayName')];
+		
+		let widgets = rootWidget.widgets.slice();
+		while (widgets.length) {
+			const widget = widgets.pop();
+			names.push(widget.getProperty('DisplayName'));
+			widgets = widgets.concat(widget.widgets);
+		}
+
+		array.push.apply(array, names);
+
+		return args.completionHandler?.(array);
+	}
 	
 	var properties = (widget.allWidgetProperties() as any).properties;
 	
