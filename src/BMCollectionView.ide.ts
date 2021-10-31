@@ -2296,6 +2296,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					baseType: 'STRING',
 					description: 'A JSON object that specifies static string values that will be assiged as parameters for the empty mashup.',
 					defaultValue: '{}',
+					isBindingTarget: YES,
 					_BMSection: 'Empty View',
 					_BMFriendlyName: 'Empty Mashup parameters',
 					_BMCategories: ['all', 'table', 'flow', 'tile']

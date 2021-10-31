@@ -1101,7 +1101,9 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 			
 			// Don't publish changes originating from unbound cells
 			if (!self.isRetained) return;
-			//if (this._BMCell.BM_recycled) return;
+
+			// Don't publish changes originating from supplementary views
+			if (self.attributes?.itemType != BMCollectionViewLayoutAttributesType.Cell) return;
 
 			// Don't publish changes to the selected or editing parameter
 			if (key == self._selectedParameter) return;
@@ -1109,9 +1111,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 			
 			// Global keys will update the associated global property, rather than the data attribute
 			if (key in self._globalParameters) {
-				//self.controller.globalParameter(key, {didUpdateToValue: value});
 				self._globalParameters[key] = value;
-				//self.controller.setProperty(key, value);
 				return;
 			}
 			
@@ -2864,6 +2864,30 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			
 			//this.updateProperty({TargetProperty: 'Data', ActualDataRows: this.data, SinglePropertyValue: self.getProperty('Data')});
 		}
+		else if (property == 'EmptyMashupParameters') {
+			try {
+				this.emptyMashupParameters = JSON.parse(updatePropertyInfo.SinglePropertyValue);
+			}
+			catch (e) {
+				// The most likely error is an incorrect JSON, log and stop
+				console.error(e);
+				return;
+			}
+
+			// If the empty mashup is currently visible, update its parameters
+			if (this.collectionView.dataSet && this.data && this.data.length == 0) {
+				this.collectionView.enumerateRetainedCellsWithBlock((cell, kind, identifier): boolean => {
+					if (kind == BMCollectionViewLayoutAttributesType.SupplementaryView && identifier == 'Empty') {
+						const mashupCell = cell as BMCollectionViewMashupCell;
+						mashupCell._parameterMap = this._emptyMashupParameterMap;
+						mashupCell.parameters = this.emptyMashupParameters;
+						return NO;
+					}
+
+					return YES;
+				})
+			}
+		}
 		else if (property in this.globalDataShape) {
 			let value = updatePropertyInfo.RawSinglePropertyValue || updatePropertyInfo.SinglePropertyValue;
 			this.setProperty(property, value);
@@ -3274,6 +3298,18 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		if (identifier == BMCollectionViewTableLayoutSupplementaryView.Footer) return this.footerMashupName!;
 		if (identifier == BMCollectionViewTableLayoutSupplementaryView.Empty) return this.emptyMashupName!;
 	}
+
+	/**
+	 * Returns an object that specifies the parameter mapping for the empty mashup.
+	 */
+	private get _emptyMashupParameterMap(): Dictionary<any> {
+		const parameterMap = {};
+		if (this.emptyMashupParameters) {
+			Object.keys(this.emptyMashupParameters).forEach(key => parameterMap[key] = key);
+		}
+
+		return parameterMap;
+	}
 	
 	// @override - BMCollectionViewDataSet
 	cellForSupplementaryViewWithIdentifier(identifier: string, options: {atIndexPath: BMIndexPath}): BMCollectionViewMashupCell {
@@ -3291,11 +3327,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
                 if (this.footerMashupSectionProperty) cell._parameterMap = {[this.footerMashupSectionProperty]: this.footerMashupSectionProperty};
             }
             else if (identifier == BMCollectionViewTableLayoutSupplementaryView.Empty) {
-				const parameterMap = {};
-				if (this.emptyMashupParameters) {
-					Object.keys(this.emptyMashupParameters).forEach(key => parameterMap[key] = key);
-				}
-                cell._parameterMap = parameterMap;
+                cell._parameterMap = this._emptyMashupParameterMap;
             }
 
             cell.initialized = YES;
