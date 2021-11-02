@@ -3707,11 +3707,9 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 */
 	configureKeyboardShortcuts() {
 		const returnKeyboardShortcut = BMKeyboardShortcut.keyboardShortcutWithKeyCode('Enter', {target: this, action: 'returnPressedWithEvent'});
-		returnKeyboardShortcut.preventsDefault = YES;
 		this.collectionView.registerKeyboardShortcut(returnKeyboardShortcut);
 
 		const spacebarKeyboardShortcut = BMKeyboardShortcut.keyboardShortcutWithKeyCode('Space', {target: this, action: 'spacebarPressedWithEvent'});
-		spacebarKeyboardShortcut.preventsDefault = YES;
 		this.collectionView.registerKeyboardShortcut(spacebarKeyboardShortcut);
 
 		// If a delegate is configured, set up keyboard shortcuts for it as well
@@ -3829,7 +3827,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					// Events originating from the delegate widget are always handled
 					if (!this.isDelegateEvent) {
 						// All other sources may prevent this event from being handled
-						if (['button', 'input'].includes(target.tagName.toLowerCase())) {
+						if (['button', 'input', 'textarea'].includes(target.tagName.toLowerCase())) {
+							return;
+						}
+
+						if (target.hasAttribute('contenteditable')) {
 							return;
 						}
 	
@@ -3840,6 +3842,9 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				}
 				break;
 		}
+
+		// If the event should be handled, prevent the default behaviour
+		event.preventDefault();
 
 		switch (this.getProperty(`KeyboardHighlighting${key}Behaviour`, 'Event')) {
 			case BMCollectionViewKeyboardActionKeyBehaviour.Event:
@@ -3869,7 +3874,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				if (event.target instanceof HTMLElement) {
 					const target = event.target;
 
-					if (['button', 'input'].includes(target.tagName.toLowerCase())) {
+					if (['button', 'input', 'textarea'].includes(target.tagName.toLowerCase())) {
+						return NO;
+					}
+
+					if (target.hasAttribute('contenteditable')) {
 						return NO;
 					}
 
