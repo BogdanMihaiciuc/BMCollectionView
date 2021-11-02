@@ -458,23 +458,23 @@ class BMWidgetConfigurationWindow extends BMWindow {
 						binding.row = row;
 						binding.keyField = keyTextField;
 						binding.valueField = valueTextField;
-						
-						// Update the property when the window closes
-						self.registerWindowDidCloseCallback(function () {
-							var bindings = {};
-							
-							bindingModel.forEach(function (binding) {
-								if (binding.key && binding.value) {
-									bindings[binding.key] = binding.value;
-								}
-
-								binding.keyField.release();
-								binding.valueField.release();
-							});
-							
-							self._widget.setProperty(propertyName, JSON.stringify(bindings));
-						});
 					}
+						
+					// Update the property when the window closes
+					self.registerWindowDidCloseCallback(function () {
+						var bindings = {};
+						
+						bindingModel.forEach(function (binding) {
+							if (binding.key && binding.value) {
+								bindings[binding.key] = binding.value;
+							}
+
+							binding.keyField.release();
+							binding.valueField.release();
+						});
+						
+						self._widget.setProperty(propertyName, JSON.stringify(bindings));
+					});
 					
 					/**
 					 * Removes a binding.
@@ -522,6 +522,172 @@ class BMWidgetConfigurationWindow extends BMWindow {
 					});
 					
 					doubleBinding.append(table);
+					
+					
+				});
+
+				// Find all arrays and set up their contents and event handlers
+				// Arrays are a special case of string properties, whose contents is a JSON array of strings
+				const arrays: $ = windowContent.find('[data-array="YES"]');
+				arrays.each(function () {
+					// NOTE: because they are only updated when the configuration window closes, double binding properties currently do not support notifying observers
+					
+					const array = $(this);
+					
+					// Get the source property name
+					var sourceProperty = array.data('source-property');
+					
+					// Get the binding property name and current value
+					var propertyName = array.data('property');
+					var currentArray;
+					try {
+						currentArray = JSON.parse(self._widget.getProperty(propertyName)) || [];
+					}
+					catch (error) {
+						currentArray = [];
+					}
+					
+					var sourcePropertyFields = [];
+					
+					// Load the fields
+					BMWidgetConfigurationWindowGetBindingFieldsForProperty(sourceProperty, {widget: self._widget, intoArray: sourcePropertyFields});
+						
+					function sourceObserver() {
+						sourcePropertyFields.length = 0;
+						BMWidgetConfigurationWindowGetBindingFieldsForProperty(sourceProperty, {widget: self._widget, intoArray: sourcePropertyFields});
+					}
+					
+					// Register observerd that reload the fields when the source or target properties ar updated
+					self.registerObserver(sourceObserver, {forProperty: sourceProperty});
+					
+					// Populate the table
+					var table = $('<div class="BMCollectionViewConfigurationDoubleBindingTable"></div>');
+					
+					
+					// The array model is the JSON object describing this array
+					// Internally, is modelled as an array of objects and is transformed to the
+					// required JSON format when saving this property
+					var arrayModel: any[] = [];
+					
+					/**
+					 * Adds an item.
+					 * @param item <Object>						The item to add.
+					 * {
+					 *	@param animated <Boolean, nullable>		Defaults to NO. If set to YES, this change will be animated, otherwise it will be instant.
+					 * }
+					 */
+					function BMWidgetConfigurationWindowArrayAddItem(item: any, args?: {animated?: boolean}) {
+						// Add the binding to the binding model
+						arrayModel.push(item);
+						
+						var animated = args && args.animated;
+						
+						// Create the HTML representation
+						var row = $('<div class="BMCollectionViewConfigurationDoubleBindingRow">\
+										<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewConfigurationDoubleBindingValue" value = "' + item.value + '"/>\
+										<div class="BMCollectionViewConfigurationDoubleBindingDeleteButton">&times;</div>\
+									</div>');
+
+						const valueTextField = BMTextField.textFieldForInputNode(row.find('.BMCollectionViewConfigurationDoubleBindingValue')[0]);
+						valueTextField.delegate = {
+							textFieldShouldAutocompleteText() {
+								return YES;
+							},
+
+							textFieldShouldShowSuggestions() {
+								return YES;
+							},
+
+							textFieldSuggestionsForText(field, text) {
+								return sourcePropertyFields;
+							},
+
+							textFieldContentsDidChange(field) {
+								item.value = (field.node as HTMLInputElement).value;
+							}
+						};
+
+						valueTextField.maxSuggestions = 20;
+									
+						row.find('.BMCollectionViewConfigurationDoubleBindingDeleteButton').on('click', function (event) {
+							BMWidgetConfigurationWindowArrayRemoveItem(item, {animated: YES});
+						});
+									
+						if (animated) {
+							BMHook(row, {height: 0, opacity: 0});
+						}
+									
+						addItemButton.before(row);
+						
+						// Animate as needed
+						if (animated) {
+							row.velocity({height: '48px', opacity: 1}, {easing: 'easeInOutQuart', duration: 300});
+						}
+						
+						// Retain a reference to the HTML element for this binding
+						item.row = row;
+						item.valueField = valueTextField;
+					}
+						
+					// Update the property when the window closes
+					self.registerWindowDidCloseCallback(function () {
+						var array: string[] = [];
+						
+						arrayModel.forEach(function (item) {
+							if (item.value) {
+								array.push(item.value);
+							}
+
+							item.valueField.release();
+						});
+						
+						self._widget.setProperty(propertyName, JSON.stringify(array));
+					});
+					
+					/**
+					 * Removes an itemg.
+					 * @param item <Object>						The item to remove.
+					 * {
+					 *	@param animated <Boolean, nullable>		Defaults to NO. If set to YES, this change will be animated, otherwise it will be instant.
+					 * }
+					 */
+					function BMWidgetConfigurationWindowArrayRemoveItem(item, args) {
+						// Remove the item from the model
+						arrayModel.splice(arrayModel.indexOf(item), 1);
+						
+						var animated = args && args.animated;
+						
+						// Retrieve the associated HTML element
+						var row = item.row;
+						
+						// Animate as needed
+						if (animated) {
+							row.css({pointerEvents: 'none'});
+							row.velocity({height: '0px', opacity: 0}, {easing: 'easeInOutQuart', duration: 300, complete: function () {
+								row.valueField.release();
+								row.remove();
+							}});
+						}
+						else {
+							row.valueField.release();
+							row.remove();
+						}
+					}
+					
+					// Set up the button used to add new items
+					var addItemButton = $('<div class="BMCollectionViewConfigurationButton">Add Item</div>');
+					addItemButton.on('click', function () {
+						BMWidgetConfigurationWindowArrayAddItem({value: ''}, {animated: YES});
+					});
+					
+					table.append(addItemButton);
+					
+					// Create the already set items
+					currentArray.forEach(function (value) {
+						BMWidgetConfigurationWindowArrayAddItem({value});
+					});
+					
+					array.append(table);
 					
 					
 				});
@@ -814,8 +980,8 @@ export function BMWidgetConfigurationWindowGetBindingFieldsForProperty(property:
 		return;
 	}
 
-	// A special "@Widgets" may be specified to show the available widget display names
-	if (property == '@Widgets') {
+	// A special "__Widgets" may be specified to show the available widget display names
+	if (property == '__Widgets') {
 		const rootWidget = widget.jqElement.closest('#mashup-root').data('widget');
 		const names = [rootWidget.getProperty('DisplayName')];
 		
@@ -827,6 +993,13 @@ export function BMWidgetConfigurationWindowGetBindingFieldsForProperty(property:
 		}
 
 		array.push.apply(array, names);
+
+		return args.completionHandler?.(array);
+	}
+
+	// A special "__DelegateKeys" may be specified to show the available delegate keys
+	if (property == '__DelegateKeys') {
+		array.push.apply(array, ['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'Space', 'Enter']);
 
 		return args.completionHandler?.(array);
 	}
