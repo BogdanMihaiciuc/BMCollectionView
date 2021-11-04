@@ -1,3 +1,30 @@
+# 2.8.0
+
+This release adds support for keyboard navigation and actions. The following new properties can be used to control this behaviour:
+ - `KeyboardHighlightingEnabled` can be used to enable or disable keyboard support. Defaults to disabled.
+ - `KeyboardAutoHighlightsFirstCell` is similar to `AutoSelectsFirstCell` and automatically focuses (highlights) the first cell when nothing is highlighted.
+ - `KeyboardHighlightingBehaviour` can be used to control whether highlighting a cell should also select it.
+ - `KeyboardHighlightingSpacebarBehaviour` can be used to control what happens when the spacebar is pressed.
+ - `KeyboardHighlightingReturnBehaviour` can be used to control what happens when the return key is pressed.
+ - `KeyboardHighlightOmitsInputElements` can be used to control when input elements are prevented from triggering keyboard shortcuts.
+ - `KeyboardBlockSelectionEnabled` can be used to enable block selection via shift + arrow keys. This requires that multi selection also be enabled.
+ - `KeyboardDelegateWidget` can be used to specify a widget that will process keyboard events on behalf of collection view. For example this may be set to a text field to allow keyboard navigation while that text field is focused.
+ - `KeyboardDelegateWidgetKeys` can be used to control which keys the delegate widget responds to. For example you may not want text fields to respond to the left and right arrow keys since those are used for manipulating text.
+ - `KeyboardDelegateWidgetStealFocus` can be enabled to cause collection view to acquire keyboard focus whenever its delegate widget detects any keyboard shortcut.
+ - `TabIndex` can be used to control collection view's tab index.
+
+The following new events are also related to keyboard navigation:
+ - `ReturnPressed` is triggered when the return key is pressed while any cell is highlighted.
+ - `SpacebarPressed` is triggered when the spacebar is pressed while any cell is highlighted.
+
+The following new services are also related to keyboard navigation:
+ - `AcquireFocus` causes collection view to acquire keyboard focus.
+ - `ResignFocus` causes collection view to relinquish keyboard focus.
+
+The `EmptyMashupParameters` property is now a binding target.
+
+A new `EmptyDataSetOnStartup` property can be enabled to cause collection view to load an empty data set when starting up. This requires having a value set for the `DataShape` parameter.
+
 # 2.6.9
 
 Resolves an issue that could cause drag & drop to fail on touch devices if a slide menu wasn't set.
