@@ -21,6 +21,8 @@ The following new services are also related to keyboard navigation:
  - `AcquireFocus` causes collection view to acquire keyboard focus.
  - `ResignFocus` causes collection view to relinquish keyboard focus.
 
+When using the configuration window, fields that show a list of suggestions will now also autocomplete.
+
 The `EmptyMashupParameters` property is now a binding target.
 
 A new `EmptyDataSetOnStartup` property can be enabled to cause collection view to load an empty data set when starting up. This requires having a value set for the `DataShape` parameter.
