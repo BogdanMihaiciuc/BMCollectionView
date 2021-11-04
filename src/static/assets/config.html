@@ -1063,7 +1063,8 @@
 					Empty Mashup Parameters
 				</div>
 				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
-					Parameters for the empty mashup can be specified statically. The values specified here will be passed directly to the empty mashup's parameters as strings.
+					Parameters for the empty mashup can be specified statically. The values specified here will be passed directly to the empty mashup's parameters as strings.<br/>
+					This property may also be bound to specify these values at runtime.
 				</div>
 			</div>
 		</div>
@@ -1662,7 +1663,8 @@
 					Empty Mashup Parameters
 				</div>
 				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
-					Parameters for the empty mashup can be specified statically. The values specified here will be passed directly to the empty mashup's parameters as strings.
+					Parameters for the empty mashup can be specified statically. The values specified here will be passed directly to the empty mashup's parameters as strings.<br/>
+					This property may also be bound to specify these values at runtime.
 				</div>
 			</div>
 		</div>
@@ -2562,6 +2564,29 @@
 				</div>
 			</div>
 		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/emptyInitialDataSet.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Empty Initial Data Set
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Requires a value set for the <strong>Data Shape</strong> property. If enabled, this collection view will generate and use an empty data 
+					set when initializing until any value is passed to the <strong>Data</strong> property.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="EmptyDataSetOnStartup"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
 	</div>
 	<div class="BMCollectionViewVerticalTableSectionHeading">ADDITIONAL INFORMATION</div>
 	<div class="BMCollectionViewVerticalTable">
@@ -2828,6 +2853,288 @@
 				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
 					When selected, items accepted by this collection view will be copied from the source collection view and completely replace this collection view's 
 					current content.
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none;" data-group="keyboard">
+	<div class="BMCollectionViewWindowHeading">Keyboard Settings</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice">
+		Contains settings to configure the keyboard navigation and action keys behaviour.
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">GENERAL SETTINGS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/keyboardNavigation.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Keyboard Navigation
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, users can use the directional arrow keys on the keyboard to highlight cells and navigate the collection view.<br/><br/>
+					To start navigating, the collection view must have keyboard focus. The <code>AcquireFocus</code> service can be invoked 
+					to cause collection view to acquire keyboard focus. The <code>ResignFocus</code> service can be used to give up keyboard focus.<br/>
+					To navigate, use any of the arrow keys to highlight the first cell and then navigate from there.<br/><br/>
+					The highlighted cell gains the <code>BMCollectionViewCellHighlighted</code> CSS class which can be used to customize its appearance.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="KeyboardHighlightingEnabled"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/blockSelection.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Block Selection
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When keyboard navigation and cell multi selection are enabled, using the arrow keys with the shift key pressed
+					causes all cells to be selected between the starting cell and the cell the key navigates to.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="KeyboardBlockSelectionEnabled"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/highlightBehaviourHighlight.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Auto Highlight First Cell
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, whenever the data set is updated, if there is no highlighted cell, the collection view will automatically highlight
+					the first available cell.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="KeyboardAutoHighlightsFirstCell"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/tabIndex.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Tab Index
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls the collection view's tab index, which specifies in which order elements on the page acquire focus via the tab key.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Tab Index:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="TabIndex" data-primitive-type="Int"
+					/>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">KEYBOARD DELEGATE</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		The keyboard delegate is an optional feature that allows specifying a different widget that will handle keyboard events on behalf of this collection view.
+	</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/delegateWidget.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Delegate Widget
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					This property can be set to the <strong>DisplayName</strong> property of another widget in this mashup to cause it to become the 
+					keyboard delegate for this collection view.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Delegate Widget:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewVerticalTablePropertyListString" data-primitive="YES"
+					 data-property="KeyboardDelegateWidget" data-single-binding="YES" data-source-property="__Widgets" />
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/stealFocusFromDelegate.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Steal Focus From Delegate
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When enabled and a delegate widget is configured, whenever any keyboard shortcut is recognized by the delegate widget, this collection view 
+					will acquire keyboard focus.<br/><br/>When this is disabled, the delegate widget will retain keyboard focus, but will still be able to recognize 
+					keyboard shortcuts on behalf of this collection view.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="KeyboardDelegateWidgetStealFocus"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Delegate Widget Keys
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Select the keys that can be handled by the keyboard delegate widget.<br/><br/>
+					For example, the left and right arrow keys may be excluded when the delegate widget is a text field so they don't interfere with text navigation.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableEntry" data-array="YES" data-source-property="__DelegateKeys" data-property="KeyboardDelegateWidgetKeys">
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">HIGHLIGHT BEHAVIOUR</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		Controls what happens when the user navigates using the keyboard.
+	</div>
+	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="KeyboardHighlightingBehaviour">
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Highlight">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/highlightBehaviourHighlight.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Highlight
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, navigating to a cell without using the shift key causes it be highlighted.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Select">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/highlightBehaviourSelect.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Select
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, navigating to a cell without using the shift key causes it to be selected, in addition to being highlighted.
+					Any other selected cells will be deselected when this happens.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">SPACEBAR BEHAVIOUR</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		Controls what happens when the spacebar is pressed while a cell is highlighted.
+	</div>
+	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="KeyboardHighlightingSpacebarBehaviour">
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Event">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/spacebarBehaviourEvent.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Trigger Event
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, pressing the spacebar while a cell is highlighted triggers the <code>SpacebarPressed</code> event.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Click">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/spacebarBehaviourClick.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Click
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, pressing the spacebar while a cell is highlighted will click that cell, in addition to triggering the <code>SpacebarPressed</code> event.
+					This will also trigger any secondary effects related to clicking, such as selection.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Select">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/spacebarBehaviourSelect.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Select
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, pressing the spacebar while a cell is highlighted will select that cell, in addition to triggering the <code>SpacebarPressed</code> event.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">RETURN BEHAVIOUR</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		Controls what happens when the return key is pressed while a cell is highlighted.
+	</div>
+	<div class="BMCollectionViewVerticalTable" data-choice="YES" data-property="KeyboardHighlightingReturnBehaviour">
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Event">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/returnBehaviourEvent.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Trigger Event
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, pressing the return key while a cell is highlighted triggers the <code>ReturnPressed</code> event.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Click">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/returnBehaviourClick.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Click
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, pressing the return key while a cell is highlighted will click that cell, in addition to triggering the <code>ReturnPressed</code> event.
+					This will also trigger any secondary effects related to clicking, such as selection.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry BMCollectionViewVerticalTableEntryChoice" data-value="Select">
+			<img class="BMCollectionViewVerticalTableImage BMCollectionViewVerticalTableImageMini" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/returnBehaviourSelect.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Select
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					When selected, pressing the return key while a cell is highlighted will select that cell, in addition to triggering the <code>ReturnPressed</code> event.
 				</div>
 			</div>
 		</div>
