@@ -2269,6 +2269,9 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		if (this.getProperty('KeyboardHighlightingEnabled', NO)) {
 			this.collectionView.node.tabIndex = this.getProperty('TabIndex', tabIndex);
 		}
+		else {
+			this.collectionView.supportsKeyboardNavigation = NO;
+		}
 		
 		if (this.sectionField = this.getProperty('SectionField')) {
 
