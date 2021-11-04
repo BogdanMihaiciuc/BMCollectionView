@@ -1,5 +1,5 @@
-////<reference path="../node_modules/bm-core-ui/lib/@types/BMCoreUI.min.d.ts"/>
-///<reference path="../../BMCoreUI/build/ui/BMCoreUI/BMCoreUI.d.ts"/>
+///<reference path="../node_modules/bm-core-ui/lib/@types/BMCoreUI.min.d.ts"/>
+////<reference path="../../BMCoreUI/build/ui/BMCoreUI/BMCoreUI.d.ts"/>
 ///<reference types="velocity-animate"/>
 
 import { TWNamedRuntimeWidget, TWService, TWProperty } from 'typescriptwebpacksupport/widgetruntimesupport';
