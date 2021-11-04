@@ -1,4 +1,5 @@
 ///<reference path="../node_modules/bm-core-ui/lib/@types/BMCoreUI.min.d.ts"/>
+////<reference path="../../BMCoreUI/build/ui/BMCoreUI/BMCoreUI.d.ts"/>
 ///<reference types="velocity-animate"/>
 
 import { TWNamedRuntimeWidget, TWService, TWProperty } from 'typescriptwebpacksupport/widgetruntimesupport';
@@ -81,6 +82,27 @@ export let BMCollectionViewCellMultipleSelectionType = Object.freeze({
 });
 
 (window as any).BMCollectionViewCellMultipleSelectionType = BMCollectionViewCellMultipleSelectionType;
+
+/**
+ * Contains the constants that describe what happens when a keyboard action key is pressed.
+ */
+export const BMCollectionViewKeyboardActionKeyBehaviour = Object.freeze({
+
+	/**
+	 * Indicates that pressing the action key will trigger an event.
+	 */
+	Event: 'Event',
+
+	/**
+	 * Indicates that pressing the action key will trigger an event and simulate a click on the highlighted cell.
+	 */
+	Click: 'Click',
+
+	/**
+	 * Indicates that pressing the action key will trigger an event and select the highlighted cell.
+	 */
+	Select: 'Select'
+});
 
 // #region Private Definitions
 
@@ -653,6 +675,48 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 		}
 	}
 
+	/**
+	 * The mashup parameter name that holds the highlighted state.
+	 */
+	_highlightedParameter?: string = undefined; // <String>
+
+	/**
+	 * The value of the mashup selected parameter.
+	 */
+    _isHighlighted: boolean = NO;
+
+	/**
+	 * The value of the mashup selected parameter.
+	 */
+	get isHighlighted(): boolean {
+		return this._isHighlighted;
+	}
+	set isHighlighted(highlighted: boolean) {
+		if (this._isHighlighted != highlighted) {
+            this._isHighlighted = highlighted;
+
+            if (this.node) {
+                if (highlighted) {
+                    this.node.classList.add('BMCollectionViewCellHighlighted');
+                }
+                else {
+                    this.node.classList.remove('BMCollectionViewCellHighlighted');
+                }
+            }
+            
+			this._setHighlightedParameterInternal();
+		}
+	}
+
+	/**
+	 * Invoked internally by the mashup cell to update the managed mashup's highlighted parameter;
+	 */
+	_setHighlightedParameterInternal(): void {
+		if (this._highlightedParameter && this._mashupInstance) {
+			this._mashupInstance.BM_setParameterInternal(this._highlightedParameter, this._isHighlighted);
+		}
+	}
+
 
 	/**
 	 * The mashup parameter name that holds the editing state.
@@ -1037,7 +1101,9 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 			
 			// Don't publish changes originating from unbound cells
 			if (!self.isRetained) return;
-			//if (this._BMCell.BM_recycled) return;
+
+			// Don't publish changes originating from supplementary views
+			if (self.attributes?.itemType != BMCollectionViewLayoutAttributesType.Cell) return;
 
 			// Don't publish changes to the selected or editing parameter
 			if (key == self._selectedParameter) return;
@@ -1045,9 +1111,7 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 			
 			// Global keys will update the associated global property, rather than the data attribute
 			if (key in self._globalParameters) {
-				//self.controller.globalParameter(key, {didUpdateToValue: value});
 				self._globalParameters[key] = value;
-				//self.controller.setProperty(key, value);
 				return;
 			}
 			
@@ -1608,6 +1672,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 * Controls whether the collection view auto-selectes the first index path when new data arrives and there is no selected cell.
 	 */
 	autoSelectsFirstCell: boolean = NO;
+
+	/**
+	 * Controls whether the collection view auto-highlights the first index path when new data arrives and there is no highlighted cell.
+	 */
+	autoHighlightsFirstCell: boolean = NO;
 
 	/**
 	 * Set to YES if the cells in this collection view respond to right clicks.
@@ -2195,6 +2264,14 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		this.collectionView.controller = this;
 
 		this.collectionView.cellClass = BMCollectionViewMashupCell;
+
+		const tabIndex = this.getProperty('TabIndex', -1);
+		if (this.getProperty('KeyboardHighlightingEnabled', NO)) {
+			this.collectionView.node.tabIndex = this.getProperty('TabIndex', tabIndex);
+		}
+		else {
+			this.collectionView.supportsKeyboardNavigation = NO;
+		}
 		
 		if (this.sectionField = this.getProperty('SectionField')) {
 
@@ -2321,6 +2398,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		
 		this.scrollsToSelectedCell = this.getProperty('ScrollsToSelectedCell');
 		this.autoSelectsFirstCell = this.getProperty('AutoSelectsFirstCell');
+		this.autoHighlightsFirstCell = this.getProperty('KeyboardAutoHighlightsFirstCell') && this.getProperty('KeyboardHighlightingEnabled');
 		
 		this.cellMashupNameSelected = this.getProperty('CellMashupNameSelected');
 		this.cellMashupSelectedField = this.getProperty('CellMashupSelectedField');
@@ -2372,9 +2450,17 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		
 		// Load the inline data manipulation data shape if it was specified
 		if (this.getProperty('DataShape')) {
-            let self = this;
-            TW.Runtime.GetDataShapeInfo(this.getProperty('DataShape'), function (info) {
-                if (!self.dataShape) self.dataShape = info;
+            TW.Runtime.GetDataShapeInfo(this.getProperty('DataShape'), (info) => {
+                if (!this.dataShape) this.dataShape = info;
+
+				// If this collection view is set to load an empty data set on startup, load it now
+				if (!this.getProperty('EmptyDataSetOnStartup', NO)) return;
+				
+				if (!this.data || !this.collectionView.dataSet) {
+					let newDataInfotable = {dataShape: this.dataShape, rows: []};
+		
+					this.updateProperty({TargetProperty: 'Data', SinglePropertyValue: newDataInfotable, ActualDataRows: newDataInfotable.rows, ForceUpdateLayout: YES});
+				}
             });
 		}
 		
@@ -2650,10 +2736,17 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			
 			if (!this.collectionView.dataSet) {
 				this.collectionView.dataSet = this;
+
+				this.configureKeyboardShortcuts();
 				
 				// Select the first index path if there is no selection and the behavior is enabled
 				if (this.autoSelectsFirstCell && this.collectionView.selectedIndexPaths.length === 0 && this.numberOfSections() && this.numberOfObjectsInSectionAtIndex(0)) {
 					this.collectionView.selectedIndexPaths = [this.indexPathForObjectAtRow(0, {inSectionAtIndex: 0})];
+				}
+
+				// Highlight the first index path if there is no highlight and the behaviour is enabled
+				if (this.autoHighlightsFirstCell && !this.collectionView.highlightedIndexPath && this.numberOfSections() && this.numberOfObjectsInSectionAtIndex(0)) {
+					this.collectionView.highlightedIndexPath = this.indexPathForObjectAtRow(0, {inSectionAtIndex: 0});
 				}
 				
 				// After updating the data, update the selection as well
@@ -2670,6 +2763,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					// Select the first index path if there is no selection and the behavior is enabled
 					if (this.autoSelectsFirstCell && this.collectionView.selectedIndexPaths.length === 0 && this.numberOfSections() && this.numberOfObjectsInSectionAtIndex(0)) {
 						this.collectionView.selectedIndexPaths = [this.indexPathForObjectAtRow(0, {inSectionAtIndex: 0})];
+					}
+
+					// Highlight the first index path if there is no highlight and the behaviour is enabled
+					if (this.autoHighlightsFirstCell && !this.collectionView.highlightedIndexPath && this.numberOfSections() && this.numberOfObjectsInSectionAtIndex(0)) {
+						this.collectionView.highlightedIndexPath = this.indexPathForObjectAtRow(0, {inSectionAtIndex: 0});
 					}
 					
 					// After updating the data, update the selection as well
@@ -2769,6 +2867,30 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			
 			//this.updateProperty({TargetProperty: 'Data', ActualDataRows: this.data, SinglePropertyValue: self.getProperty('Data')});
 		}
+		else if (property == 'EmptyMashupParameters') {
+			try {
+				this.emptyMashupParameters = JSON.parse(updatePropertyInfo.SinglePropertyValue);
+			}
+			catch (e) {
+				// The most likely error is an incorrect JSON, log and stop
+				console.error(e);
+				return;
+			}
+
+			// If the empty mashup is currently visible, update its parameters
+			if (this.collectionView.dataSet && this.data && this.data.length == 0) {
+				this.collectionView.enumerateRetainedCellsWithBlock((cell, kind, identifier): boolean => {
+					if (kind == BMCollectionViewLayoutAttributesType.SupplementaryView && identifier == 'Empty') {
+						const mashupCell = cell as BMCollectionViewMashupCell;
+						mashupCell._parameterMap = this._emptyMashupParameterMap;
+						mashupCell.parameters = this.emptyMashupParameters;
+						return NO;
+					}
+
+					return YES;
+				})
+			}
+		}
 		else if (property in this.globalDataShape) {
 			let value = updatePropertyInfo.RawSinglePropertyValue || updatePropertyInfo.SinglePropertyValue;
 			this.setProperty(property, value);
@@ -2810,6 +2932,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
      * the widget fighting for selection with other widgets that update their selection.
      */
     selectionUpdateBlocked: boolean = NO;
+
+	/**
+	 * Set to `YES` while performing a block selection. When set to `YES` some of the processing
+	 * related to selection is disabled.
+	 */
+	isPerformingBlockSelection: boolean = NO;
 
 
 	/**
@@ -2895,6 +3023,16 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
             this.updateThingworxSelection();
         }
     }
+
+	@TWService('AcquireFocus')
+	acquireFocus() {
+		this.collectionView.node.focus();
+	}
+
+	@TWService('ResignFocus')
+	resignFocus() {
+		this.collectionView.node.blur();
+	}
 
     @TWService('InvalidateLayout')
     invalidateLayout(): void {
@@ -3033,10 +3171,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	
 	// @override - BMCollectionViewDataSet
 	cellForItemAtIndexPath(indexPath: BMIndexPath): BMCollectionViewMashupCell {
-		var cell;
-		var isSelected = this.collectionView.isCellAtIndexPathSelected(indexPath);
-		var isEditing = this.isCellAtIndexPathEditing(indexPath);
-		var mashup;
+		let cell;
+		const isSelected = this.collectionView.isCellAtIndexPathSelected(indexPath);
+		const isEditing = this.isCellAtIndexPathEditing(indexPath);
+		const isHighlighted = this.collectionView.isCellAtIndexPathHighlighted(indexPath);
+		let mashup;
 
 		// When using BMCollectionViewMashupCell the mashup name and reuse identifiers are always identical
         mashup = this._mashupNameForCellAtIndexPath(indexPath);
@@ -3049,6 +3188,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 			cell.isSelected = isSelected;
 			cell.isEditing = isEditing;
+			cell.isHighlighted = isHighlighted;
 
 			this.updateCell(cell, {atIndexPath: indexPath});
 		}
@@ -3073,6 +3213,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
             
             cell.isSelected = isSelected;
             cell.isEditing = isEditing;
+			cell.isHighlighted = isHighlighted;
 
             // Initialize the menu touch event handler if there are menu entries
             if (this.menuDefinition!.length) {
@@ -3160,6 +3301,18 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		if (identifier == BMCollectionViewTableLayoutSupplementaryView.Footer) return this.footerMashupName!;
 		if (identifier == BMCollectionViewTableLayoutSupplementaryView.Empty) return this.emptyMashupName!;
 	}
+
+	/**
+	 * Returns an object that specifies the parameter mapping for the empty mashup.
+	 */
+	private get _emptyMashupParameterMap(): Dictionary<any> {
+		const parameterMap = {};
+		if (this.emptyMashupParameters) {
+			Object.keys(this.emptyMashupParameters).forEach(key => parameterMap[key] = key);
+		}
+
+		return parameterMap;
+	}
 	
 	// @override - BMCollectionViewDataSet
 	cellForSupplementaryViewWithIdentifier(identifier: string, options: {atIndexPath: BMIndexPath}): BMCollectionViewMashupCell {
@@ -3177,11 +3330,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
                 if (this.footerMashupSectionProperty) cell._parameterMap = {[this.footerMashupSectionProperty]: this.footerMashupSectionProperty};
             }
             else if (identifier == BMCollectionViewTableLayoutSupplementaryView.Empty) {
-				const parameterMap = {};
-				if (this.emptyMashupParameters) {
-					Object.keys(this.emptyMashupParameters).forEach(key => parameterMap[key] = key);
-				}
-                cell._parameterMap = parameterMap;
+                cell._parameterMap = this._emptyMashupParameterMap;
             }
 
             cell.initialized = YES;
@@ -3519,6 +3668,9 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		// If this collection view becomes a possible drop target before data loads
 		// create a dummy infotable from the data shape property and initialize it
 		if (!this.data || !this.collectionView.dataSet) {
+			// If a data shape isn't set, this collection view can't accept items yet
+			if (!this.dataShape) return NO;
+
 			this.setProperty('PlaysIntroAnimation', NO);
 
 			let newDataInfotable = {dataShape: this.dataShape, rows: []};
@@ -3550,7 +3702,275 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		}
 		return this.getProperty('CellAcceptPolicy') || BMCollectionViewAcceptPolicy.Copy;
     };
+
+	// #region BMCollectionViewDelegate - highlight handlers
+
+	/**
+	 * Sets up the keyboard shortcuts if keyboard navigation is enabled
+	 */
+	configureKeyboardShortcuts() {
+		const returnKeyboardShortcut = BMKeyboardShortcut.keyboardShortcutWithKeyCode('Enter', {target: this, action: 'returnPressedWithEvent'});
+		this.collectionView.registerKeyboardShortcut(returnKeyboardShortcut);
+
+		const spacebarKeyboardShortcut = BMKeyboardShortcut.keyboardShortcutWithKeyCode('Space', {target: this, action: 'spacebarPressedWithEvent'});
+		this.collectionView.registerKeyboardShortcut(spacebarKeyboardShortcut);
+
+		// If a delegate is configured, set up keyboard shortcuts for it as well
+		if (this.getProperty('KeyboardDelegateWidget')) {
+			let keys: string[] | undefined;
+			try {
+				keys = JSON.parse(this.getProperty('KeyboardDelegateWidgetKeys')) as string[];
+
+				if (!Array.isArray(keys)) return;
+			}
+			catch (e) {
+				// Likely a badly formatted JSON, which means delegate shortcuts can't be set up
+				return;
+			}
+
+			const widget = BMFindWidget({named: this.getProperty('KeyboardDelegateWidget'), inMashup: this.mashup});
+
+			if (widget) {
+				const widgetView = BMView.viewForNode(widget.boundingBox[0]);
+
+				for (const key of keys) {
+					const shortcut = BMKeyboardShortcut.keyboardShortcutWithKeyCode(key, {modifiers: [], target: this, action: 'delegateKeyPressedWithEvent'});
+					shortcut.preventsDefault = YES;
+					widgetView.registerKeyboardShortcut(shortcut);
+
+					if (key.startsWith('Arrow')) {
+						// Arrow keys also need a shift modifier set up to enable block selection
+						const shiftShortcut = BMKeyboardShortcut.keyboardShortcutWithKeyCode(key, {modifiers: [BMKeyboardShortcutModifier.Shift], target: this, action: 'delegateKeyPressedWithEvent'});
+						shiftShortcut.preventsDefault = YES;
+						widgetView.registerKeyboardShortcut(shiftShortcut);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Set to `YES` while this widget is processing a delegate event.
+	 */
+	private isDelegateEvent = NO;
+
+	/**
+	 * Invoked when a keyboard shortcut is triggered on the delegate widget.
+	 * @param event 	The event that triggered this action.
+	 */
+	delegateKeyPressedWithEvent(event: KeyboardEvent): void {
+		this.isDelegateEvent = YES;
+
+		// Steal focus if this functionality is enabled
+		if (this.getProperty('KeyboardDelegateWidgetStealFocus', NO)) {
+			this.collectionView.node.focus();
+		}
+
+		if (event.key.startsWith('Arrow')) {
+			// Arrow keys are forwarded directly to collection view
+			this.collectionView.keyboardArrowPressed(event.key, {withEvent: event});
+		}
+		else {
+			// Return and spacebar are handled by the widget
+			switch (event.key) {
+				case 'Enter':
+					this.returnPressedWithEvent(event);
+					break;
+				case 'Space':
+					this.spacebarPressedWithEvent(event);
+					break;
+			}
+		}
+
+		this.isDelegateEvent = NO;
+	}
+
+	/**
+	 * Invoked when the return key is pressed.
+	 * @param event 	The event that triggered this action.
+	 */
+	returnPressedWithEvent(event: UIEvent): void {
+		if (this.collectionView.highlightedIndexPath) {
+			const cell = this.collectionView.retainCellForIndexPath(this.collectionView.highlightedIndexPath) as BMCollectionViewMashupCell;
+			if (cell) {
+				this.triggerKeyAction('Return', {forCell: cell, withEvent: event});
+				cell.release();
+			}
+		}
+	}
+
+	/**
+	 * Invoked when the return key is pressed.
+	 * @param event 	The event that triggered this action.
+	 */
+	spacebarPressedWithEvent(event: UIEvent): void {
+		if (this.collectionView.highlightedIndexPath) {
+			const cell = this.collectionView.retainCellForIndexPath(this.collectionView.highlightedIndexPath) as BMCollectionViewMashupCell;
+			if (cell) {
+				this.triggerKeyAction('Spacebar', {forCell: cell, withEvent: event});
+				cell.release();
+			}
+		}
+	}
+
+	/**
+	 * Should be invoked to trigger the appropriate action when a key is pressed.
+	 * @param key			Must be 'Return' or 'Spacebar'. The key that was pressed.
+	 * @param forCell		The cell for which to trigger the action.
+	 * @param withEvent 	The event that triggered this action.
+	 */
+	private triggerKeyAction(key: 'Return' | 'Spacebar', {forCell: cell, withEvent: event}: {forCell: BMCollectionViewMashupCell, withEvent: UIEvent}): void {
+		// Don't handle these events when they originate from input or button elements if this behaviour is enabled
+		switch (this.getProperty('KeyboardHighlightOmitsInputElements', 'All')) {
+			case 'All':
+			case 'Actions':
+				if (event.target instanceof HTMLElement) {
+					const target = event.target;
+
+					// Events originating from the delegate widget are always handled
+					if (!this.isDelegateEvent) {
+						// All other sources may prevent this event from being handled
+						if (['button', 'input', 'textarea'].includes(target.tagName.toLowerCase())) {
+							return;
+						}
+
+						if (target.hasAttribute('contenteditable')) {
+							return;
+						}
+	
+						if (target.classList.contains('BMCollectionViewCellEventHandler')) {
+							return;
+						}
+					}
+				}
+				break;
+		}
+
+		// If the event should be handled, prevent the default behaviour
+		event.preventDefault();
+
+		switch (this.getProperty(`KeyboardHighlighting${key}Behaviour`, 'Event')) {
+			case BMCollectionViewKeyboardActionKeyBehaviour.Event:
+				this.triggerEvent(`${key}Pressed`, {withCell: cell});
+				break;
+			case BMCollectionViewKeyboardActionKeyBehaviour.Select:
+				this.collectionView.selectedIndexPaths = [cell.indexPath];
+				this.triggerEvent(`${key}Pressed`, {withCell: cell});
+				break;
+			case BMCollectionViewKeyboardActionKeyBehaviour.Click:
+				this.collectionView.cellWasClicked(cell, {withEvent: event});
+				this.triggerEvent(`${key}Pressed`, {withCell: cell});
+				break;
+		}
+	}
+
+	// @override - BMCollectionViewDelegate
+	collectionViewShouldHighlightCellForArrowKey(collectionView: BMCollectionView, key: string, {withEvent: event}: {withEvent: KeyboardEvent}): boolean {
+		if (this.isDelegateEvent) {
+			// Events originating from the delegate widget are always handled
+			return this.getProperty('KeyboardHighlightingEnabled', NO);
+		}
+
+		switch (this.getProperty('KeyboardHighlightOmitsInputElements', 'All')) {
+			case 'All':
+			case 'Navigation':
+				if (event.target instanceof HTMLElement) {
+					const target = event.target;
+
+					if (['button', 'input', 'textarea'].includes(target.tagName.toLowerCase())) {
+						return NO;
+					}
+
+					if (target.hasAttribute('contenteditable')) {
+						return NO;
+					}
+
+					if (target.classList.contains('BMCollectionViewCellEventHandler')) {
+						return NO;
+					}
+
+					return this.getProperty('KeyboardHighlightingEnabled', NO);
+				}
+				break;
+			default:
+				return this.getProperty('KeyboardHighlightingEnabled', NO);
+		}
+
+		return this.getProperty('KeyboardHighlightingEnabled', NO);
+	}
+	
+	// @override - BMCollectionViewDelegate
+	collectionViewCanHighlightCellAtIndexPath(collectionView: BMCollectionView, indexPath: BMIndexPath): boolean {
+		if (!indexPath) {
+			return YES;
+		}
+
+		return this.getProperty('KeyboardHighlightingEnabled', NO);	
+	};
+
+	/**
+	 * When selecting a block of cells using the shift key, this represents the index path where the selection initially started.
+	 */
+	private _initiallyHighlightedIndexPath?: BMIndexPath;
     
+	// @override - BMCollectionViewDelegate
+	collectionViewDidHighlightCellAtIndexPath(collectionView: BMCollectionView, indexPath: BMIndexPath, {withEvent: event}: {withEvent?: KeyboardEvent}): void {
+		if (!indexPath) {
+			this._initiallyHighlightedIndexPath = undefined;
+			return;
+		}
+
+		var cell = collectionView.cellAtIndexPath(indexPath, {ofType: BMCollectionViewLayoutAttributesType.Cell}) as BMCollectionViewMashupCell;
+
+		if (event && !event.shiftKey || !this._initiallyHighlightedIndexPath) {
+			// If this is highlighted without the shift key, set the initially highlighted index path to this one
+			// so that the next highlighting with the shift key selects a block starting from this cell
+			this._initiallyHighlightedIndexPath = indexPath.copy();
+		}
+		else {
+			// Otherwise select a block of cells from the initial index path to the current one, if the properties allow it
+			if (this.getProperty('KeyboardBlockSelectionEnabled', NO)) {
+				switch (this.getProperty('CellMultipleSelectionType', 'Disabled')) {
+					case BMCollectionViewCellMultipleSelectionType.Disabled:
+						// Disabled disallows multiple selection
+						break;
+					case BMCollectionViewCellMultipleSelectionType.SelectionMode:
+						// Selection mode disallows multiple selection when not active
+						if (!this.isSelectionModeEnabled) break;
+					default:
+						// All other modes allow multiple selection
+						this.isPerformingBlockSelection = YES;
+						this.collectionView.selectedIndexPaths = this.collectionView.layout.indexPathsFromIndexPath(indexPath, {toIndexPath: this._initiallyHighlightedIndexPath});
+						this.isPerformingBlockSelection = NO;
+						this.updateThingworxSelection();
+				}
+			}
+		}
+
+		// When highlighting is set to also select, set the current selection to the highlighted index path
+		if (this.getProperty('KeyboardHighlightingBehaviour', 'Highlight') == 'Select') {
+			if (event && !event.shiftKey) {
+				this.collectionView.selectedIndexPaths = [indexPath];
+			}
+		}
+		
+		if (!cell) return;
+
+		cell.isHighlighted = YES;
+			
+        return;
+	};
+	
+	// @override - BMCollectionViewDelegate
+	collectionViewDidDehighlightCellAtIndexPath(collectionView: BMCollectionView, indexPath: BMIndexPath): void {
+		var cell = collectionView.cellAtIndexPath(indexPath, {ofType: BMCollectionViewLayoutAttributesType.Cell}) as BMCollectionViewMashupCell;
+		this.updateThingworxSelection();
+		
+        if (!cell) return;
+
+		cell.isHighlighted = NO;
+		
+    };
 
 	// #region BMCollectionViewDelegate - selection handlers
 	
@@ -3572,12 +3992,15 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	collectionViewDidSelectCellAtIndexPath(collectionView: BMCollectionView, indexPath: BMIndexPath): void {
 		var cell = collectionView.cellAtIndexPath(indexPath, {ofType: BMCellAttributesType.Cell}) as BMCollectionViewMashupCell;
 		
-		if (!this.canSelectMultipleCells && !this.isSelectionModeEnabled && !this.isCtrlPressed && this.multipleSelectionType !== BMCollectionViewCellMultipleSelectionType.ClickTap) {
-			// In single selection mode, deselect all other index paths
-            collectionView.selectedIndexPaths = [indexPath];
+		if (!this.isPerformingBlockSelection) {
+			// Don't modify the selection or notify Thingworx if this is part of a block selection
+			if (!this.canSelectMultipleCells && !this.isSelectionModeEnabled && !this.isCtrlPressed && this.multipleSelectionType !== BMCollectionViewCellMultipleSelectionType.ClickTap) {
+				// In single selection mode, deselect all other index paths
+				collectionView.selectedIndexPaths = [indexPath];
+			}
+			
+			this.updateThingworxSelection();
 		}
-		
-		this.updateThingworxSelection();
 		
 		if (!cell) return;
 
@@ -3592,7 +4015,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	// @override - BMCollectionViewDelegate
 	collectionViewDidDeselectCellAtIndexPath(collectionView: BMCollectionView, indexPath: BMIndexPath): void {
 		var cell = collectionView.cellAtIndexPath(indexPath, {ofType: BMCellAttributesType.Cell}) as BMCollectionViewMashupCell;
-		this.updateThingworxSelection();
+		
+		if (!this.isPerformingBlockSelection) {
+			// Don't modify the selection or notify Thingworx if this is part of a block selection
+			this.updateThingworxSelection();
+		}
 		
         if (!cell) return;
         
@@ -3652,12 +4079,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	};
 	
 	// @override - BMCollectionViewDelegate
-	collectionViewCanDoubleClickCell(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {withEvent: $event}): boolean {
+	collectionViewCanDoubleClickCell(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {withEvent: UIEvent}): boolean {
 		return this.getProperty('_CanDoubleClick');
 	}
 	
 	// @override - BMCollectionViewDelegate
-	collectionViewCellWasClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, args: {withEvent: $event}): boolean {
+	collectionViewCellWasClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, args: {withEvent: UIEvent}): boolean {
 		if (this.currentMenuCell) {
 			this.collapseMenuInCell(this.currentMenuCell, {animated: YES});
 			this.currentMenuCell = undefined;
@@ -3665,9 +4092,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		
 		this.triggerEvent('CellWasClicked', {withCell: cell});
 
+		const event = args.withEvent as MouseEvent;
+
 		if (this.multipleSelectionType === BMCollectionViewCellMultipleSelectionType.CtrlClick && this.canSelectCells) {
 			// When a cell is clicked while holding ctrl, toggle its selection state
-			if (args.withEvent.ctrlKey || args.withEvent.metaKey) {
+			if (event.ctrlKey || event.metaKey) {
 				this.isCtrlPressed = YES;
 				if (collectionView.isCellAtIndexPathSelected(cell.indexPath)) {
 					collectionView.deselectCellAtIndexPath(cell.indexPath);
@@ -3688,7 +4117,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	};
 	
 	// @override - BMCollectionViewDelegate
-	collectionViewCellWasDoubleClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {atIndexPath: BMIndexPath, withEvent: $event}): boolean {
+	collectionViewCellWasDoubleClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {atIndexPath: BMIndexPath, withEvent: UIEvent}): boolean {
 		if (this.currentMenuCell) {
 			this.collapseMenuInCell(this.currentMenuCell, {animated: YES});
 			this.currentMenuCell = undefined;
@@ -3700,7 +4129,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	};
 	
 	// @override - BMCollectionViewDelegate
-	collectionViewCellWasLongClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, {atIndexPath: indexPath, withEvent: event}: {atIndexPath: BMIndexPath, withEvent: $event}): boolean {
+	collectionViewCellWasLongClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, {atIndexPath: indexPath, withEvent: event}: {atIndexPath: BMIndexPath, withEvent: UIEvent}): boolean {
 		if (this.currentMenuCell) {
 			this.collapseMenuInCell(this.currentMenuCell, {animated: YES});
 			this.currentMenuCell = undefined;
@@ -3733,7 +4162,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	
 	
 	// @override - BMCollectionViewDelegate
-	collectionViewCellWasRightClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {atIndexPath: BMIndexPath, withEvent: $event}): boolean {
+	collectionViewCellWasRightClicked(collectionView: BMCollectionView, cell: BMCollectionViewMashupCell, options: {atIndexPath: BMIndexPath, withEvent: UIEvent}): boolean {
 		
 		this.triggerEvent('CellWasRightClicked', {withCell: cell});
 		
@@ -4058,7 +4487,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 *	@param forEvent <$event, nullable>		If this is requested in response to an event, this represents the event that triggered this action.
 	 * }
 	 */
-	expandMenuInCell(cell: BMCollectionViewMashupCell, options: {animated?: boolean, duration?: number, inPlace?: boolean, forEvent?: $event}): void {
+	expandMenuInCell(cell: BMCollectionViewMashupCell, options: {animated?: boolean, duration?: number, inPlace?: boolean, forEvent?: UIEvent}): void {
 		var inPlace = options && options.inPlace;
 		
 		if (cell.BM_hasMenu && !inPlace) return;

@@ -1,5 +1,5 @@
-////<reference path="../node_modules/bm-core-ui/lib/@types/BMCoreUI.min.d.ts"/>
-///<reference path="../../BMCoreUI/build/ui/BMCoreUI/BMCoreUI.d.ts"/>
+///<reference path="../node_modules/bm-core-ui/lib/@types/BMCoreUI.min.d.ts"/>
+////<reference path="../../BMCoreUI/build/ui/BMCoreUI/BMCoreUI.d.ts"/>
 ///<reference types="velocity-animate"/>
 
 import { TWNamedComposerWidget, property } from 'typescriptwebpacksupport/widgetidesupport';
@@ -211,15 +211,6 @@ class BMWidgetConfigurationWindow extends BMWindow {
 					// Populate the input with the property's current value from the widget
 					primitiveEditor.val(self._widget.getProperty(propertyName));
 					
-					// Set up the input event handler to update the property
-					primitiveEditor.on('input', function () {
-						self._widget.setProperty(propertyName, valueByConvertingValue(primitiveEditor.val()));
-						//self._notifyObserversForProperty(propertyName);
-						
-						// Update the other primitive editors to the new value
-						otherPrimitiveEditors.val(primitiveEditor.val()!);
-					});
-					
 					// Check if this property is a single binding
 					if (primitiveEditor.data('single-binding') == "YES") {
 						// If it is, set up the completion drop-down
@@ -236,57 +227,45 @@ class BMWidgetConfigurationWindow extends BMWindow {
 						
 						// Register an observer that reloads the fields when the source property is updated
 						self.registerObserver(observer, {forProperty: sourceProperty});
-						
-						// Set up the dropdown
-						primitiveEditor.on('focus', function () {
-							// Create the dropdown popover
-							var frame: BMRect = BMRectMakeWithNodeFrame(this);
-							
-							var dropdown: $ = $('<div class="BMCollectionViewConfigurationDropdown"></div>');
-							
-							sourcePropertyFields.forEach(function (key: string) {
-								var entry = $('<div class="BMCollectionViewConfigurationDropdownEntry">' + key + '</div>');
-								
-								entry.mousedown(function (event) {
-									primitiveEditor.val(key);
-									self._widget.setProperty(propertyName, valueByConvertingValue(key));
-									//self._notifyObserversForProperty(propertyName);
-									
-									event.stopPropagation();
-									event.preventDefault();
-								});
-								
-								entry.mouseup(function (event) {
-									primitiveEditor.blur();
-								});
-								
-								dropdown.append(entry);
-							});
-							
-							let top = frame.bottom;
-							let translation = '32px';
 
-							if (top + 480 > window.innerHeight) {
-								top = frame.top - Math.min(480, 32 * sourcePropertyFields.length);
-								translation = '-32px';
+						const textField = BMTextField.textFieldForInputNode(primitiveEditor[0]);
+						textField.delegate = {
+							textFieldShouldAutocompleteText() {
+								return YES;
+							},
+
+							textFieldShouldShowSuggestions() {
+								return YES;
+							},
+
+							textFieldSuggestionsForText(field, text) {
+								return sourcePropertyFields;
+							},
+
+							textFieldContentsDidChange(field) {
+								self._widget.setProperty(propertyName, valueByConvertingValue(primitiveEditor.val()));
+								//self._notifyObserversForProperty(propertyName);
+								
+								// Update the other primitive editors to the new value
+								otherPrimitiveEditors.val(primitiveEditor.val()!);
 							}
+						};
 
-							dropdown.css({left: frame.left + 'px', top: top + 'px', opacity: 0});
+						textField.maxSuggestions = 20;
+						
+						self.registerWindowDidCloseCallback(function () {
+							textField.release();
+						});
+					}
+					else {
+					
+						// Set up the input event handler to update the property
+						primitiveEditor.on('input', function () {
+							self._widget.setProperty(propertyName, valueByConvertingValue(primitiveEditor.val()));
+							//self._notifyObserversForProperty(propertyName);
 							
-							$(document.body).append(dropdown);
-							
-							BMHook(dropdown, {translateY: translation});
-							dropdown.velocity({translateY: 0, opacity: 1}, {duration: 200, easing: 'easeOutQuart'});
-							
-							(primitiveEditor as any).keyDropdown = dropdown;
-							
-						}).on('blur', function () {
-							if (!(primitiveEditor as any).keyDropdown) return;
-							
-							var dropdown = (primitiveEditor as any).keyDropdown;
-							(primitiveEditor as any).keyDropdown = undefined;
-							
-							dropdown.velocity({translateY: '32px', opacity: 0}, {duration: 200, easing: 'easeInQuart', complete: function () {dropdown.remove()}});
+							// Update the other primitive editors to the new value
+							otherPrimitiveEditors.val(primitiveEditor.val()!);
 						});
 					}
 				});
@@ -417,114 +396,48 @@ class BMWidgetConfigurationWindow extends BMWindow {
 										<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewConfigurationDoubleBindingValue" value = "' + binding.value + '"/>\
 										<div class="BMCollectionViewConfigurationDoubleBindingDeleteButton">&times;</div>\
 									</div>');
-									
-						
-						// Set up the event handlers
-						row.find('.BMCollectionViewConfigurationDoubleBindingKey').on('change', function (event) {
-							binding.key = (this as HTMLInputElement).value;
-						}).on('focus', function () {
-							// Create the dropdown popover
-							var frame = BMRectMakeWithNodeFrame(this);
-							var keyField = $(this);
-							
-							var dropdown = $('<div class="BMCollectionViewConfigurationDropdown"></div>');
-							
-							sourcePropertyFields.forEach(function (key) {
-								var entry = $('<div class="BMCollectionViewConfigurationDropdownEntry">' + key + '</div>');
-								
-								entry.mousedown(function (event) {
-									keyField.val(key);
-									binding.key = key;
-									
-									event.stopPropagation();
-									event.preventDefault();
-								});
-								
-								entry.mouseup(function (event) {
-									keyField.blur();
-								});
-								
-								dropdown.append(entry);
-							});
-							
-							let top = frame.bottom;
-							let translation = '32px';
 
-							if (top + 480 > window.innerHeight) {
-								top = frame.top - Math.min(480, 32 * sourcePropertyFields.length);
-								translation = '-32px';
-							}
-							
-							dropdown.css({left: frame.left + 'px', top: top + 'px', opacity: 0});
-							
-							$(document.body).append(dropdown);
-							
-							BMHook(dropdown, {translateY: translation});
-							dropdown.velocity({translateY: 0, opacity: 1}, {duration: 200, easing: 'easeOutQuart'});
-							
-							binding.keyDropdown = dropdown;
-							
-						}).on('blur', function () {
-							if (!binding.keyDropdown) return;
-							
-							var dropdown = binding.keyDropdown;
-							binding.keyDropdown = undefined;
-							
-							dropdown.velocity({translateY: '32px', opacity: 0}, {duration: 200, easing: 'easeInQuart', complete: function () {dropdown.remove()}});
-						});
-									
-						row.find('.BMCollectionViewConfigurationDoubleBindingValue').on('change', function (event) {
-							binding.value = (this as HTMLInputElement).value;
-						}).on('focus', function () {
-							// Create the dropdown popover
-							var frame = BMRectMakeWithNodeFrame(this);
-							var keyField = $(this);
-							
-							var dropdown = $('<div class="BMCollectionViewConfigurationDropdown"></div>');
-							
-							targetPropertyFields.forEach(function (key) {
-								var entry = $('<div class="BMCollectionViewConfigurationDropdownEntry">' + key + '</div>');
-								
-								entry.mousedown(function (event) {
-									keyField.val(key);
-									binding.value = key;
-									
-									event.stopPropagation();
-									event.preventDefault();
-								});
-								
-								entry.mouseup(function (event) {
-									keyField.blur();
-								});
-								
-								dropdown.append(entry);
-							});
-							
-							let top = frame.bottom;
-							let translation = '32px';
+						const keyTextField = BMTextField.textFieldForInputNode(row.find('.BMCollectionViewConfigurationDoubleBindingKey')[0]);
+						keyTextField.delegate = {
+							textFieldShouldAutocompleteText() {
+								return YES;
+							},
 
-							if (top + 480 > window.innerHeight) {
-								top = frame.top - Math.min(480, 32 * targetPropertyFields.length);
-								translation = '-32px';
+							textFieldShouldShowSuggestions() {
+								return YES;
+							},
+
+							textFieldSuggestionsForText(field, text) {
+								return sourcePropertyFields;
+							},
+
+							textFieldContentsDidChange(field) {
+								binding.key = (field.node as HTMLInputElement).value;
 							}
-							
-							dropdown.css({left: frame.left + 'px', top: top + 'px', opacity: 0});
-							
-							$(document.body).append(dropdown);
-							
-							BMHook(dropdown, {translateY: translation});
-							dropdown.velocity({translateY: 0, opacity: 1}, {duration: 200, easing: 'easeOutQuart'});
-							
-							binding.keyDropdown = dropdown;
-							
-						}).on('blur', function () {
-							if (!binding.keyDropdown) return;
-							
-							var dropdown = binding.keyDropdown;
-							binding.keyDropdown = undefined;
-							
-							dropdown.velocity({translateY: '32px', opacity: 0}, {duration: 200, easing: 'easeInQuart', complete: function () {dropdown.remove()}});
-						});
+						};
+
+						keyTextField.maxSuggestions = 20;
+
+						const valueTextField = BMTextField.textFieldForInputNode(row.find('.BMCollectionViewConfigurationDoubleBindingValue')[0]);
+						valueTextField.delegate = {
+							textFieldShouldAutocompleteText() {
+								return YES;
+							},
+
+							textFieldShouldShowSuggestions() {
+								return YES;
+							},
+
+							textFieldSuggestionsForText(field, text) {
+								return targetPropertyFields;
+							},
+
+							textFieldContentsDidChange(field) {
+								binding.value = (field.node as HTMLInputElement).value;
+							}
+						};
+
+						valueTextField.maxSuggestions = 20;
 									
 						row.find('.BMCollectionViewConfigurationDoubleBindingDeleteButton').on('click', function (event) {
 							BMWidgetConfigurationWindowDoubleBindingRemoveBinding(binding, {animated: YES});
@@ -543,20 +456,25 @@ class BMWidgetConfigurationWindow extends BMWindow {
 						
 						// Retain a reference to the HTML element for this binding
 						binding.row = row;
-						
-						// Update the property when the window closes
-						self.registerWindowDidCloseCallback(function () {
-							var bindings = {};
-							
-							bindingModel.forEach(function (binding) {
-								if (binding.key && binding.value) {
-									bindings[binding.key] = binding.value;
-								}
-							});
-							
-							self._widget.setProperty(propertyName, JSON.stringify(bindings));
-						});
+						binding.keyField = keyTextField;
+						binding.valueField = valueTextField;
 					}
+						
+					// Update the property when the window closes
+					self.registerWindowDidCloseCallback(function () {
+						var bindings = {};
+						
+						bindingModel.forEach(function (binding) {
+							if (binding.key && binding.value) {
+								bindings[binding.key] = binding.value;
+							}
+
+							binding.keyField.release();
+							binding.valueField.release();
+						});
+						
+						self._widget.setProperty(propertyName, JSON.stringify(bindings));
+					});
 					
 					/**
 					 * Removes a binding.
@@ -577,9 +495,15 @@ class BMWidgetConfigurationWindow extends BMWindow {
 						// Animate as needed
 						if (animated) {
 							row.css({pointerEvents: 'none'});
-							row.velocity({height: '0px', opacity: 0}, {easing: 'easeInOutQuart', duration: 300, complete: function () {row.remove()}});
+							row.velocity({height: '0px', opacity: 0}, {easing: 'easeInOutQuart', duration: 300, complete: function () {
+								row.keyField.release();
+								row.valueField.release();
+								row.remove();
+							}});
 						}
 						else {
+							row.keyField.release();
+							row.valueField.release();
 							row.remove();
 						}
 					}
@@ -598,6 +522,172 @@ class BMWidgetConfigurationWindow extends BMWindow {
 					});
 					
 					doubleBinding.append(table);
+					
+					
+				});
+
+				// Find all arrays and set up their contents and event handlers
+				// Arrays are a special case of string properties, whose contents is a JSON array of strings
+				const arrays: $ = windowContent.find('[data-array="YES"]');
+				arrays.each(function () {
+					// NOTE: because they are only updated when the configuration window closes, double binding properties currently do not support notifying observers
+					
+					const array = $(this);
+					
+					// Get the source property name
+					var sourceProperty = array.data('source-property');
+					
+					// Get the binding property name and current value
+					var propertyName = array.data('property');
+					var currentArray;
+					try {
+						currentArray = JSON.parse(self._widget.getProperty(propertyName)) || [];
+					}
+					catch (error) {
+						currentArray = [];
+					}
+					
+					var sourcePropertyFields = [];
+					
+					// Load the fields
+					BMWidgetConfigurationWindowGetBindingFieldsForProperty(sourceProperty, {widget: self._widget, intoArray: sourcePropertyFields});
+						
+					function sourceObserver() {
+						sourcePropertyFields.length = 0;
+						BMWidgetConfigurationWindowGetBindingFieldsForProperty(sourceProperty, {widget: self._widget, intoArray: sourcePropertyFields});
+					}
+					
+					// Register observerd that reload the fields when the source or target properties ar updated
+					self.registerObserver(sourceObserver, {forProperty: sourceProperty});
+					
+					// Populate the table
+					var table = $('<div class="BMCollectionViewConfigurationDoubleBindingTable"></div>');
+					
+					
+					// The array model is the JSON object describing this array
+					// Internally, is modelled as an array of objects and is transformed to the
+					// required JSON format when saving this property
+					var arrayModel: any[] = [];
+					
+					/**
+					 * Adds an item.
+					 * @param item <Object>						The item to add.
+					 * {
+					 *	@param animated <Boolean, nullable>		Defaults to NO. If set to YES, this change will be animated, otherwise it will be instant.
+					 * }
+					 */
+					function BMWidgetConfigurationWindowArrayAddItem(item: any, args?: {animated?: boolean}) {
+						// Add the binding to the binding model
+						arrayModel.push(item);
+						
+						var animated = args && args.animated;
+						
+						// Create the HTML representation
+						var row = $('<div class="BMCollectionViewConfigurationDoubleBindingRow">\
+										<input class="BMCollectionViewVerticalTablePropertyListValue BMCollectionViewConfigurationDoubleBindingValue" value = "' + item.value + '"/>\
+										<div class="BMCollectionViewConfigurationDoubleBindingDeleteButton">&times;</div>\
+									</div>');
+
+						const valueTextField = BMTextField.textFieldForInputNode(row.find('.BMCollectionViewConfigurationDoubleBindingValue')[0]);
+						valueTextField.delegate = {
+							textFieldShouldAutocompleteText() {
+								return YES;
+							},
+
+							textFieldShouldShowSuggestions() {
+								return YES;
+							},
+
+							textFieldSuggestionsForText(field, text) {
+								return sourcePropertyFields;
+							},
+
+							textFieldContentsDidChange(field) {
+								item.value = (field.node as HTMLInputElement).value;
+							}
+						};
+
+						valueTextField.maxSuggestions = 20;
+									
+						row.find('.BMCollectionViewConfigurationDoubleBindingDeleteButton').on('click', function (event) {
+							BMWidgetConfigurationWindowArrayRemoveItem(item, {animated: YES});
+						});
+									
+						if (animated) {
+							BMHook(row, {height: 0, opacity: 0});
+						}
+									
+						addItemButton.before(row);
+						
+						// Animate as needed
+						if (animated) {
+							row.velocity({height: '48px', opacity: 1}, {easing: 'easeInOutQuart', duration: 300});
+						}
+						
+						// Retain a reference to the HTML element for this binding
+						item.row = row;
+						item.valueField = valueTextField;
+					}
+						
+					// Update the property when the window closes
+					self.registerWindowDidCloseCallback(function () {
+						var array: string[] = [];
+						
+						arrayModel.forEach(function (item) {
+							if (item.value) {
+								array.push(item.value);
+							}
+
+							item.valueField.release();
+						});
+						
+						self._widget.setProperty(propertyName, JSON.stringify(array));
+					});
+					
+					/**
+					 * Removes an itemg.
+					 * @param item <Object>						The item to remove.
+					 * {
+					 *	@param animated <Boolean, nullable>		Defaults to NO. If set to YES, this change will be animated, otherwise it will be instant.
+					 * }
+					 */
+					function BMWidgetConfigurationWindowArrayRemoveItem(item, args) {
+						// Remove the item from the model
+						arrayModel.splice(arrayModel.indexOf(item), 1);
+						
+						var animated = args && args.animated;
+						
+						// Retrieve the associated HTML element
+						var row = item.row;
+						
+						// Animate as needed
+						if (animated) {
+							row.css({pointerEvents: 'none'});
+							row.velocity({height: '0px', opacity: 0}, {easing: 'easeInOutQuart', duration: 300, complete: function () {
+								row.valueField.release();
+								row.remove();
+							}});
+						}
+						else {
+							row.valueField.release();
+							row.remove();
+						}
+					}
+					
+					// Set up the button used to add new items
+					var addItemButton = $('<div class="BMCollectionViewConfigurationButton">Add Item</div>');
+					addItemButton.on('click', function () {
+						BMWidgetConfigurationWindowArrayAddItem({value: ''}, {animated: YES});
+					});
+					
+					table.append(addItemButton);
+					
+					// Create the already set items
+					currentArray.forEach(function (value) {
+						BMWidgetConfigurationWindowArrayAddItem({value});
+					});
+					
+					array.append(table);
 					
 					
 				});
@@ -888,6 +978,30 @@ export function BMWidgetConfigurationWindowGetBindingFieldsForProperty(property:
 		}
 
 		return;
+	}
+
+	// A special "__Widgets" may be specified to show the available widget display names
+	if (property == '__Widgets') {
+		const rootWidget = widget.jqElement.closest('#mashup-root').data('widget');
+		const names = [rootWidget.getProperty('DisplayName')];
+		
+		let widgets = rootWidget.widgets.slice();
+		while (widgets.length) {
+			const widget = widgets.pop();
+			names.push(widget.getProperty('DisplayName'));
+			widgets = widgets.concat(widget.widgets);
+		}
+
+		array.push.apply(array, names);
+
+		return args.completionHandler?.(array);
+	}
+
+	// A special "__DelegateKeys" may be specified to show the available delegate keys
+	if (property == '__DelegateKeys') {
+		array.push.apply(array, ['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'Space', 'Enter']);
+
+		return args.completionHandler?.(array);
 	}
 	
 	var properties = (widget.allWidgetProperties() as any).properties;
@@ -1679,7 +1793,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				},
 				FlowLayoutPinsHeadersToContentEdge: {
 					baseType: 'BOOLEAN',
-					defaultValue: false,
+					defaultValue: NO,
 					description: 'Must be used with Flow layout. If enabled, the currently visible section\'s header will be stuck to the top edge of the collection view.',
 					_BMSection: 'Table Layout',
 					_BMFriendlyName: 'Pin Headers',
@@ -1687,7 +1801,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				},
 				FlowLayoutPinsFootersToContentEdge: {
 					baseType: 'BOOLEAN',
-					defaultValue: false,
+					defaultValue: NO,
 					description: 'Must be used with Flow layout. If enabled, the currently visible section\'s footer will be stuck to the bottom edge of the collection view.',
 					_BMSection: 'Table Layout',
 					_BMFriendlyName: 'Pin Footers',
@@ -2019,7 +2133,96 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					_BMFriendlyName: 'Mashup selected parameter',
 					_BMCategories: ['all', 'cell', 'selection']
 				},
+
 				
+				// ******************************************** HIGHLIGHT PROPERTIES ********************************************
+				KeyboardHighlightingEnabled: {
+					baseType: 'BOOLEAN',
+					description: 'When enabled, keyboard navigation can be used to highlight cells.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'highlighting']
+				},
+				KeyboardAutoHighlightsFirstCell: {
+					baseType: 'BOOLEAN',
+					description: 'When enabled, when data is updated and no cell is highlighted, the collection view will automatically highlight the first available cell.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'selection']
+				},
+				KeyboardHighlightingBehaviour: {
+					baseType: 'STRING',
+					defaultValue: 'Highlight',
+					description: 'Controls what happens when a cell is highlighted.',
+					selectOptions: [
+						{text: 'Highlight', value: 'Highlight'},
+						{text: 'Select', value: 'Select'}
+					],
+					_BMCategories: ['all', 'selection']
+				},
+				KeyboardHighlightingSpacebarBehaviour: {
+					baseType: 'STRING',
+					defaultValue: 'Event',
+					description: 'Controls what happens the spacebar key is pressed while a cell is highlighted.',
+					selectOptions: [
+						{text: 'Event', value: 'Event'},
+						{text: 'Click', value: 'Click'},
+						{text: 'Select', value: 'Select'}
+					],
+					_BMCategories: ['all', 'selection']
+				},
+				KeyboardHighlightingReturnBehaviour: {
+					baseType: 'STRING',
+					defaultValue: 'Event',
+					description: 'Controls what happens the return key is pressed while a cell is highlighted.',
+					selectOptions: [
+						{text: 'Event', value: 'Event'},
+						{text: 'Click', value: 'Click'},
+						{text: 'Select', value: 'Select'}
+					],
+					_BMCategories: ['all', 'selection']
+				},
+				KeyboardHighlightOmitsInputElements: {
+					baseType: 'STRING',
+					defaultValue: 'All',
+					description: 'Controls which parts of keyboard navigation are disabled when an input or button element has keyboard focus.',
+					selectOptions: [
+						{text: 'All', value: 'All'},
+						{text: 'Navigation', value: 'Navigation'},
+						{text: 'Actions', value: 'Actions'},
+						{text: 'None', value: 'None'}
+					],
+					_BMCategories: ['all', 'selection']
+				},
+				KeyboardBlockSelectionEnabled: {
+					baseType: 'BOOLEAN',
+					description: 'Must be used with KeyboardHighlightEnabled and CellMultipleSelectionType enabled. When enabled, using the shift key with keyboard navigation selects a block of cells.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'highlighting']
+				},
+				KeyboardDelegateWidget: {
+					baseType: 'STRING',
+					description: 'The displayName of a widget that can process keyboard events for this collection view.',
+					defaultValue: '',
+					_BMCategories: ['all', 'highlighting']
+				},
+				KeyboardDelegateWidgetKeys: {
+					baseType: 'STRING',
+					description: 'An array containing the supported keys that can be processed by the keyboard delegate widget.',
+					defaultValue: '["ArrowDown", "ArrowUp", "Enter"]',
+					_BMCategories: ['all', 'highlighting']
+				},
+				KeyboardDelegateWidgetStealFocus: {
+					baseType: 'BOOLEAN',
+					defaultValue: NO,
+					description: 'Must be used with KeyboardDelegateWidget. When enabled, pressing any supported key will cause this collection view to acquire keyboard focus from the delegate widget.',
+					_BMCategories: ['all', 'highlighting']
+				},
+				TabIndex: {
+					baseType: 'NUMBER',
+					defaultValue: -1,
+					description: 'The tab index to assign to this collection view',
+					_BMFriendlyName: 'Mashup selected parameter',
+					_BMCategories: ['all', 'highlighting']
+				},
 				
 				
 				// ******************************************** STYLE PROPERTIES ********************************************
@@ -2296,6 +2499,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					baseType: 'STRING',
 					description: 'A JSON object that specifies static string values that will be assiged as parameters for the empty mashup.',
 					defaultValue: '{}',
+					isBindingTarget: YES,
 					_BMSection: 'Empty View',
 					_BMFriendlyName: 'Empty Mashup parameters',
 					_BMCategories: ['all', 'table', 'flow', 'tile']
@@ -2402,6 +2606,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					baseType: 'STRING',
 					description: 'Optional. If specified, this is the mashup parameter that will receive the editing state of the mashup.',
 					_BMCategories: ['all', 'cell', 'manipulation']
+				},
+				EmptyDataSetOnStartup: {
+					baseType: 'BOOLEAN',
+					description: 'Requires setting a data shape. Can be enabled to cause collection view to start with an empty data set.',
+					defaultValue: NO,
+					_BMCategories: ['all', 'manipulation']
 				},
 				
 				
@@ -2530,6 +2740,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		return {
 			Deselect: {_BMCategories: ['all', 'selection'], description: 'Should be invoked to cause the collection view to deselect all rows from its data set.'},
 			SelectAll: {_BMCategories: ['all', 'selection'], description: 'Should be invoked to cause the collection view to select all rows in its data set.'},
+			AcquireFocus: {_BMCategories: ['all', 'highlighting'], description: 'Should be invoked to cause the collection view to acquire keyboard focus.'},
+			ResignFocus: {_BMCategories: ['all', 'highlighting'], description: 'Should be invoked to cause the collection view to resign keyboard focus.'},
 			InvalidateLayout: {_BMCategories: ['all', 'performance'], description: 'Should be invoked to cause the collection view to invalidate its layout.'},
 			CreateItemAtBeginning: {_BMCategories: ['all', 'manipulation'], description: 'When invoked, the collection view will add an item to the beginning of the data set. If sections are defined, the item will belong to an empty section.'},
 			CreateItemAtEnd: {_BMCategories: ['all', 'manipulation'], description: 'When invoked, the collection view will add an item to the end of the data set. If sections are defined, the item will belong to an empty section.'},
@@ -2546,6 +2758,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			CellWasRightClicked: {_BMCategories: ['all', 'data'], description: 'Triggered whenever any cell is right-clicked.'},
 			CellWasDoubleClicked: {_BMCategories: ['all', 'data'], description: 'Triggered whenever any cell is double-clicked or double-tapped.'},
 			CellWasLongClicked: {_BMCategories: ['all', 'data'], description: 'Triggered whenever any cell is long-clicked or long-tapped.'},
+			ReturnPressed: {_BMCategories: ['all', 'data'], description: 'Triggered whenever the return key is pressed while a cell is highlighted.'},
+			SpacebarPressed: {_BMCategories: ['all', 'data'], description: 'Triggered whenever the return key is pressed while a cell is highlighted.'},
 			CollectionViewDidAcceptDroppedItems: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view accepts items from another collection view.'},
 			CollectionViewDidMoveItems: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view moves items from a drag & drop operation.'},
 			CollectionViewDidRemoveItems: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view removes items from a drag & drop operation.'},
@@ -2905,6 +3119,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				{name: 'menu', label: 'Menu'}, 
 				{name: 'dataManipulation', label: 'Data Manipulation'}, 
 				{name: 'drag', label: 'Drag & Drop'}, 
+				{name: 'keyboard', label: 'Keyboard'}, 
 				{name: 'events', label: 'Events'}, 
 				{name: 'advanced', label: 'Advanced'}
 			];
