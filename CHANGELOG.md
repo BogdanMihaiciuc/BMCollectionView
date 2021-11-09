@@ -1,3 +1,7 @@
+# 2.8.2
+
+Resolves an issue that caused mashups displayed by collection views to have incorrect styling when they had spaces in their name.
+
 # 2.8.0
 
 This release adds support for keyboard navigation and actions. The following new properties can be used to control this behaviour:

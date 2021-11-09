@@ -998,8 +998,8 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 		mashup.dataMgr = new DataManager() as TWDataManager;
 		
 		// Set up the unique IDs
-		// Replace dots with underscores so they don't throw off the jQuery selectors used by Thingworx
-		mashup.rootName = definition.name.replace(/\./g, '_') + '-' + BMCollectionViewWidgetSerialVersion;
+		// Replace dots and spaces with underscores so they don't throw off the jQuery selectors used by Thingworx
+		mashup.rootName = definition.name.replace(/\./g, '_').replace(/\s/g, '_') + '-' + BMCollectionViewWidgetSerialVersion;
 		container.attr('id', mashup.rootName);
 		mashup.htmlIdOfMashup = '#' + mashup.rootName;
 		TW.Runtime.HtmlIdOfCurrentlyLoadedMashup = mashup.htmlIdOfMashup;
