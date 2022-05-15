@@ -1568,6 +1568,53 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					_BMSection: 'Data',
 					_BMCategories: ['all', 'data']
 				},
+				AdditionalData: {
+					baseType: 'INFOTABLE',
+					isBindingTarget: YES,
+					description: 'When updated, the data bound to this property will be added at the end of collection view\'s data.',
+					_BMSection: 'Data',
+					_BMCategories: ['all', 'data']
+				},
+				DataCurrentSize: {
+					baseType: 'NUMBER',
+					isBindingSource: YES,
+					isEditable: NO,
+					defaultValue: 0,
+					description: 'Represents the number of items currently in the data set.',
+					_BMSection: 'Data',
+					_BMCategories: ['all', 'data'],
+				},
+				DataTotalSize: {
+					baseType: 'NUMBER',
+					isBindingTarget: YES,
+					defaultValue: 0,
+					description: 'If set to a value greater than 0, this represents the total number of items in the complete data set. When the number of items displayed by collection view is equal to or greater than this value, the events for approaching the end of the current data set no longer fire.',
+					_BMSection: 'Data',
+					_BMCategories: ['all', 'data'],
+				},
+				HasCompleteDataSet: {
+					baseType: 'BOOLEAN',
+					defaultValue: NO,
+					isBindingSource: YES,
+					isBindingTarget: YES,
+					description: 'When set to true, collection view will no longer trigger the events for approaching the end of the current data set.',
+					_BMSection: 'Data',
+					_BMCategories: ['all', 'data']
+				},
+				DataSetEndThreshold: {
+					baseType: 'STRING',
+					defaultValue: '50%',
+					description: 'Controls when the DataSetEndThreshold event is triggered. This must be a size expressed in px units, or a percent relative to collection view\'s frame size.',
+					_BMSection: 'Data',
+					_BMCategories: ['all', 'data']
+				},
+				PreventsRepeatedDataEndEvents: {
+					baseType: 'BOOLEAN',
+					defaultValue: YES,
+					description: 'If enabled, the events for approaching the end of the current data set will only fire once, until the AdditionalData property is updated.',
+					_BMSection: 'Data',
+					_BMCategories: ['all', 'data']
+				},
 				UIDField: {
 					baseType: 'FIELDNAME',
 					sourcePropertyName: 'Data',
@@ -2764,7 +2811,9 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			CollectionViewDidMoveItems: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view moves items from a drag & drop operation.'},
 			CollectionViewDidRemoveItems: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view removes items from a drag & drop operation.'},
 			CollectionViewWillBeginInteractiveMovement: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view begins a drag & drop operation. The event fields will be populated with the value of the cell that was used to initiate this operation.'},
-			CollectionViewDidFinishInteractiveMovement: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view begins a drag & drop operation. The event fields will be populated with the value of the cell that was used to initiate this operation.'}
+			CollectionViewDidFinishInteractiveMovement: {_BMCategories: ['all', 'data', 'manipulation'], description: 'Triggered whenever collection view begins a drag & drop operation. The event fields will be populated with the value of the cell that was used to initiate this operation.'},
+			CollectionViewWillApproachDataSetEnd: {_BMCategories: ['all', 'data'], description: 'Triggered when the scroll position approaches the end of the data set.'},
+			CollectionViewDidReachDataSetEnd: {_BMCategories: ['all', 'data'], description: 'Triggered when the scroll position reaches the end of the data set.'},
 			// NOTE: The hover event is currently unsupported
 			//CellWasHovered: {description: 'Triggered whenever any cell is hovered.'}
 		};
@@ -3119,7 +3168,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				{name: 'menu', label: 'Menu'}, 
 				{name: 'dataManipulation', label: 'Data Manipulation'}, 
 				{name: 'drag', label: 'Drag & Drop'}, 
-				{name: 'keyboard', label: 'Keyboard'}, 
+				{name: 'keyboard', label: 'Keyboard'},
+				{name: 'infinite', label: 'Infinite Scrolling'}, 
 				{name: 'events', label: 'Events'}, 
 				{name: 'advanced', label: 'Advanced'}
 			];
@@ -3210,7 +3260,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					setTimeout(() => {
 						const message = this.downgradeToCollection();
 		
-						const alertPopup = BMAlertPopup.alertPopupWithTitle('Downgrade complete', {text: '', actionText: 'Done'});
+						const alertPopup = BMAlertPopup.alertPopupWithTitle('Downgrade Complete', {text: '', actionText: 'Done'});
 						alertPopup.HTML = message;
 						alertPopup.confirm();
 					}, 100);
@@ -3271,7 +3321,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		}
 
 		if (this.getProperty('AutomaticCellSize')) {
-			report += 'The automatic cell size feature is unsupported and will be disabled.\n';
+			report += '<li style="line-height: 1.5">The automatic cell size feature is unsupported and will be disabled.</li>';
 		}
 
 		if (this.getProperty('CellMultipleSelectionType') != 'Disabled') {
@@ -3308,6 +3358,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 		if (this.getProperty('CellMashupEditingField') || this.getProperty('CellMashupNameEditing')) {
 			report += '<li style="line-height: 1.5">Editing states and the editing field are not supported and will be removed.</li>';
+		}
+
+		if (this.getProperty('KeyboardHighlightingEnabled') || this.getProperty('KeyboardAutoHighlightsFirstCell')) {
+			report += '<li style="line-height: 1.5">Keyboard navigation is not supported and will be disabled.</li>';
 		}
 
 		// Prepare the new collection properties

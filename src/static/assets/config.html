@@ -3140,6 +3140,140 @@
 		</div>
 	</div>
 </div>
+<div style="display: none;" data-group="infinite">
+	<div class="BMCollectionViewWindowHeading">Infinite Scrolling Settings</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice">
+		Contains settings to configure when the <code>CollectionViewWillApproachDataSetEnd</code> and <code>CollectionViewDidReachDataSetEnd</code> events are triggered.<br/>
+		These events can be used to request additional data, and bind it to the <code>AdditionalData</code> property to implement infinite scrolling.
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">GENERAL SETTINGS</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/edgeThreshold.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Edge Threshold
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					Controls how close to the end a user needs to scroll in order for the <code>CollectionViewWillApproachDataSetEnd</code> event to trigger.<br/>
+					This can either be expressed in <code>px</code> units, or as a <code>%</code> of collection view's size.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<div class="BMCollectionViewVerticalTablePropertyListName">Edge Threshold:</div>
+					<input class="BMCollectionViewVerticalTablePropertyListValue" data-primitive="YES" data-property="DataSetEndThreshold" data-primitive-type="String"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<img class="BMCollectionViewVerticalTableImage" src="../Common/extensions/CollectionView/ui/BMCollectionView/static/assets/repeatedEvents.png"
+			/>
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					Prevent Repeated Events
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					If enabled, the <code>DataSetEnd</code> events will only trigger once when the user first approaches or reaches the end of the current data set.<br/>
+					When either the <code>Data</code> or <code>AdditionalData</code> property is updated, the events are reenabled. <br/><br/>
+					This prevents those events from triggering again while data may be loading if the user scrolls back up and then down again.
+				</div>
+				<div class="BMCollectionViewVerticalTablePropertyList">
+					<label class="BMCollectionViewVerticalTableSwitch">
+						<input type="checkbox" data-toggle="YES" data-property="PreventsRepeatedDataEndEvents"> ON
+						<div class="BMCollectionViewVerticalTableSwitchGutter">
+							<div class="BMCollectionViewVerticalTableSwitchKnob"></div>
+						</div>
+						OFF
+					</label>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">ADDITIONAL PROPERTIES</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		The follwing additional properties may be bound to support infinite scrolling.
+	</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					AdditionalData
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The <code>AdditionalData</code> property may be bound to an infotable that should have the same data shape as the <code>Data</code> property.<br/>
+					Whenever it is updated, the data that was bound to it is added to the <code>Data</code> property.<br/>
+					When both this and <code>Data</code> are bound, updating the <code>Data</code> property will discard any additional data loaded until that point.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					DataCurrentSize
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The <code>DataCurrentSize</code> property is updated by collection view to reflect the number of items currently in the data set.<br/>
+					It can be used as an offset when requesting additional data.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					DataTotalSize
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The <code>DataTotalSize</code> property may be bound to a number that tells collection view how many items there are in the complete data set.<br/>
+					When loading data or additional data, if the new data set size matches (or exceeds) this number, the <code>HasCompleteDataSet</code> property will be set to <code>true</code>.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					HasCompleteDataSet
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The <code>HasCompleteDataSet</code> property may be bound to a boolean that tells collection view whether to trigger the data set end events.<br/>
+					It is also automatically updated based on the <code>DataTotalSize</code> property if it is set.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="BMCollectionViewVerticalTableSectionHeading">Events</div>
+	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice BMCollectionViewPropertyNoticeInline">
+		The follwing events may be used to request additional data.
+	</div>
+	<div class="BMCollectionViewVerticalTable">
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					CollectionViewWillApproachDataSetEnd
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The <code>CollectionViewWillApproachDataSetEnd</code> event is triggered when the scroll position approaches the end of the current data set.<br/>
+					How far from the end this event triggered is controlled by the edge threshold property.
+				</div>
+			</div>
+		</div>
+		<div class="BMCollectionViewVerticalTableDivider"></div>
+		<div class="BMCollectionViewVerticalTableEntry">
+			<div class="BMCollectionViewVerticalTableDescription">
+				<div class="BMCollectionViewPropertyHeading BMCollectionViewVerticalTableHeading">
+					CollectionViewDidReachDataSetEnd
+				</div>
+				<div class="BMCollectionViewPropertyDescription BMCollectionViewVerticalTablePropertyDescription">
+					The <code>CollectionViewDidReachDataSetEnd</code> event is triggered when the scroll position reaches to end of the current data set.
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 <div style="display: none;" data-group="events">
 	<div class="BMCollectionViewWindowHeading">Events</div>
 	<div class="BMCollectionViewPropertyDescription BMCollectionViewPropertyNotice">
