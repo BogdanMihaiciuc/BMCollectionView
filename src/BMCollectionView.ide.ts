@@ -1173,7 +1173,7 @@ const BMCollectionViewDowngradePropertyMap = {
 	PlaysIntroAnimation: 'PlaysIntroAnimation',
 	ResponsiveLayout: 'ResponsiveLayout',
 	RippleStyle: 'RippleEffectStyle',
-	FlowLayoutRowSpacing: 'FlowLayoutRowSpacing',
+	FlowLayoutRowSpacing: 'RowSpacing',
 	ScrollsToSelectedCell: 'ScrollsToSelectedCell',
 	SectionInsetBottom: 'SectionInsetBottom',
 	SectionInsetLeft: 'SectionInsetLeft',
@@ -1213,6 +1213,21 @@ const BMCollectionViewDowngradePropertyMap = {
 
 }
 
+
+/**
+ * A dictionary that describes the mapping between collection property names
+ * and their corresponding collection view property names.
+ */
+const BMCollectionViewUpgradePropertyMap = (function () {
+	const reversePropertyMap: Dictionary<string> = {};
+
+	for (const [key, value] of Object.entries(BMCollectionViewDowngradePropertyMap)) {
+		reversePropertyMap[value] = key;
+	}
+
+	return reversePropertyMap;
+})();
+
 /**
  * A dictionary that contains properties that collection supports but are not available in
  * collection view.
@@ -1224,7 +1239,1299 @@ const BMCollectionViewDowngradeStaticFields = {
 	ItemLoadBehavior: 'loadUnload',
 }
 
+/**
+ * A dictionary that contains properties that collection view supports but are not available in
+ * collection.
+ */
+const BMCollectionViewUpgradeStaticFields = {
+	Type: 'BMCollectionView',
+	__TypeDisplayName: 'Collection'
+}
+
 // #region BMCollectionViewWidget
+
+/**
+ * Returns the property definitions of the collection view widget.
+ * @returns 	An object containing property definitions.
+ */
+function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetProperty> {
+	return {
+		// ******************************************** STANDARD PROPERTIES ********************************************
+		Width: {
+			defaultValue: 480,
+			baseType: 'NUMBER',
+			_BMCategories: ['all']
+		},
+		Height: {
+			defaultValue: 640,
+			baseType: 'NUMBER',
+			_BMCategories: ['all']
+		},
+		CustomClass: {
+			description: TW.IDE.I18NController.translate('tw.button-ide.properties.custom-class.description'),
+			baseType: 'STRING',
+			isLocalizable: NO,
+			isBindingSource: YES,
+			isBindingTarget: YES,
+			isVisible: NO,
+			_BMCategories: ['all'],
+			_BMSection: 'Styles'
+		},
+		Show: {
+			baseType: 'STRING',
+			defaultValue: 'all',
+			description: 'Controls which property category to show.',
+			selectOptions: [
+				{text: 'All', value: 'all'},
+				{text: 'Data Configuration', value: 'data'},
+				{text: 'Layout', value: 'layout'},
+				//{text: 'Table Layout', value: 'table'},
+				{text: 'Flow Layout', value: 'flow'},
+				{text: 'Masonry Layout', value: 'masonry'},
+				{text: 'Stack Layout', value: 'stack'},
+				{text: 'Tile Layout', value: 'tile'},
+				{text: 'Cell Configuration', value: 'cell'},
+				{text: 'Selection', value: 'selection'},
+				{text: 'Styles', value: 'styles'},
+				{text: 'Scrollbar', value: 'scrollbar'},
+				{text: 'Menu', value: 'menu'},
+				{text: 'Data Manipulation', value: 'manipulation'},
+				{text: 'Performance', value: 'performance'}
+			],
+			_BMCategories: ['all']
+		},
+		
+		
+		
+		// ******************************************** DATA SET PROPERTIES ********************************************
+		Data: {
+			baseType: 'INFOTABLE',
+			isBindingTarget: YES,
+			isBindingSource: YES,
+			description: 'Represents the data source of this collection view. Whenever the data is updated, either through drag & drop, deleting, inserting or modifying mashup parameters, this property will contain the updated data.',
+			_BMSection: 'Data',
+			_BMCategories: ['all', 'data']
+		},
+		AdditionalData: {
+			baseType: 'INFOTABLE',
+			isBindingTarget: YES,
+			description: 'When updated, the data bound to this property will be added at the end of collection view\'s data.',
+			_BMSection: 'Data',
+			_BMCategories: ['all', 'data']
+		},
+		DataCurrentSize: {
+			baseType: 'NUMBER',
+			isBindingSource: YES,
+			isEditable: NO,
+			defaultValue: 0,
+			description: 'Represents the number of items currently in the data set.',
+			_BMSection: 'Data',
+			_BMCategories: ['all', 'data'],
+		},
+		DataTotalSize: {
+			baseType: 'NUMBER',
+			isBindingTarget: YES,
+			defaultValue: 0,
+			description: 'If set to a value greater than 0, this represents the total number of items in the complete data set. When the number of items displayed by collection view is equal to or greater than this value, the events for approaching the end of the current data set no longer fire.',
+			_BMSection: 'Data',
+			_BMCategories: ['all', 'data'],
+		},
+		HasCompleteDataSet: {
+			baseType: 'BOOLEAN',
+			defaultValue: NO,
+			isBindingSource: YES,
+			isBindingTarget: YES,
+			description: 'When set to true, collection view will no longer trigger the events for approaching the end of the current data set.',
+			_BMSection: 'Data',
+			_BMCategories: ['all', 'data']
+		},
+		DataSetEndThreshold: {
+			baseType: 'STRING',
+			defaultValue: '50%',
+			description: 'Controls when the DataSetEndThreshold event is triggered. This must be a size expressed in px units, or a percent relative to collection view\'s frame size.',
+			_BMSection: 'Data',
+			_BMCategories: ['all', 'data']
+		},
+		PreventsRepeatedDataEndEvents: {
+			baseType: 'BOOLEAN',
+			defaultValue: YES,
+			description: 'If enabled, the events for approaching the end of the current data set will only fire once, until the AdditionalData property is updated.',
+			_BMSection: 'Data',
+			_BMCategories: ['all', 'data']
+		},
+		UIDField: {
+			baseType: 'FIELDNAME',
+			sourcePropertyName: 'Data',
+			description: 'Represents the unique identifier of a collection view item. This can be any type of field that uniquely identifies an item.',
+			_BMSection: 'Data',
+			_BMFriendlyName: 'UID Field',
+			_BMCategories: ['all', 'data']
+		},
+		SortField: {
+			baseType: 'FIELDNAME',
+			sourcePropertyName: 'Data',
+			description: 'Optional. When set or bound, this is the infotable field by which section contents are sorted. The sorting is performed client-side and does not affect the source infotable or other widgets bound to the data set.',
+			isBindingTarget: YES,
+			_BMSection: 'Data',
+			_BMFriendlyName: 'Sort Field',
+			_BMCategories: ['all', 'data']
+		},
+		SortAscending: {
+			baseType: 'BOOLEAN',
+			defaultValue: NO,
+			isBindingTarget: YES,
+			description: 'Used with SortField. When enabled, the sort will be performed ascending, otherwise it will be descending.',
+			_BMCategories: ['all', 'data']
+		},
+		SectionField: {
+			baseType: 'FIELDNAME',
+			sourcePropertyName: 'Data',
+			description: 'Optional. Represents the section identifier by which to group the items. If set, the items will be grouped in sections.'	,
+			_BMSection: 'Layout Type',
+			_BMFriendlyName: 'Section Field',
+			_BMCategories: ['all', 'data']
+		},
+		// NOTE: Filters are currently unsupported
+		/*Filter: {
+			baseType: 'QUERY',
+			description: 'Optional. When set or bound, this will filter the data set client-side. The filter will only affect this collection view, and not other widgets bound to the same data set.',
+			isBindingTarget: YES
+		},
+		FilteredData: {
+			baseType: 'INFOTABLE',
+			isBindingSource: YES,
+			description: 'When using a filter, this is the filtered infotable.'	
+		},*/
+		
+		
+		// ******************************************** LAYOUT TYPE PROPERTIES ********************************************
+		/*SectionInsets: {
+			baseType: 'STRING',
+			defaultValue: '0, 0, 0, 0',
+			description: 'If using sections, this represents the left, top, right and bottom paddings that each section will have from eachother and the edge.',
+			_BMSection: 'Layout Type',
+			_BMFriendlyName: 'Section Insets'
+		},*/
+		Layout: {
+			baseType: 'STRING',
+			defaultValue: 'flow',
+			description: 'The type of layout to use.',
+			selectOptions: [
+				//{text: 'Table', value: 'table'},
+				{text: 'Flow', value: 'flow'},
+				{text: 'Masonry', value: 'masonry'},
+				{text: 'Stack', value: 'stack'},
+				{text: 'Tile', value: 'tile'}
+			],
+			isBindingTarget: true,
+			_BMSection: 'Layout Type',
+			_BMFriendlyName: 'Layout',
+			_BMCategories: ['all', 'layout']
+		},
+		SectionInsetLeft: {
+			baseType: 'NUMBER',
+			defaultValue: 0,
+			description: 'If using sections, this represents the left section inset',
+			_BMCategories: ['all', 'table', 'flow']
+		},
+		SectionInsetTop: {
+			baseType: 'NUMBER',
+			defaultValue: 0,
+			description: 'If using sections, this represents the left section inset',
+			_BMCategories: ['all', 'table', 'flow']
+		},
+		SectionInsetRight: {
+			baseType: 'NUMBER',
+			defaultValue: 0,
+			description: 'If using sections, this represents the left section inset',
+			_BMCategories: ['all', 'table', 'flow']
+		},
+		SectionInsetBottom: {
+			baseType: 'NUMBER',
+			defaultValue: 0,
+			description: 'If using sections, this represents the left section inset',
+			_BMCategories: ['all', 'table', 'flow']
+		},
+		
+		
+		
+		// ******************************************** TABLE LAYOUT PROPERTIES ********************************************
+		TableLayoutPinsHeadersToContentEdge: {
+			baseType: 'BOOLEAN',
+			defaultValue: false,
+			description: 'Must be used with Table layout. If enabled, the currently visible section\'s header will be stuck to the top edge of the collection view.',
+			isVisible: NO,
+			_BMSection: 'Table Layout',
+			_BMFriendlyName: 'Pin Headers',
+			_BMCategories: ['all', 'table']
+		},
+		TableLayoutPinsFootersToContentEdge: {
+			baseType: 'BOOLEAN',
+			defaultValue: false,
+			description: 'Must be used with Table layout. If enabled, the currently visible section\'s footer will be stuck to the bottom edge of the collection view.',
+			isVisible: NO,
+			_BMSection: 'Table Layout',
+			_BMFriendlyName: 'Pin Footers',
+			_BMCategories: ['all', 'table']
+		},
+		
+		
+		
+		// ******************************************** FLOW LAYOUT PROPERTIES ********************************************
+		FlowLayoutMaximumCellsPerRow: {
+			baseType: 'INTEGER',
+			defaultValue: 0,
+			description: 'Must be used with Flow layout. Controls how many cells each row is allowed to have.',
+			_BMSection: 'Flow Layout',
+			_BMFriendlyName: 'Maximum cells per row',
+			_BMCategories: ['all', 'flow']
+		},
+		FlowLayoutOrientation: {
+			baseType: 'STRING',
+			defaultValue: 'Vertical',
+			description: 'Must be used with Flow layout. Controls the axis along which rows are created.',
+			selectOptions: [
+				{text: 'Vertical', value: 'Vertical'},
+				{text: 'Horizontal', value: 'Horizontal'}
+			],
+			_BMSection: 'Flow Layout',
+			_BMFriendlyName: 'Orientation',
+			_BMCategories: ['all', 'flow']
+		},
+		FlowLayoutLeftAlignFinalRow: {
+			baseType: 'BOOLEAN',
+			defaultValue: false,
+			description: 'Must be used with Flow layout. If enabled, the final row in each section will be aligned to the left rather than the center.',
+			_BMSection: 'Flow Layout',
+			_BMFriendlyName: 'Left align final row',
+			_BMCategories: ['all', 'flow']
+		},
+		FlowLayoutGravity: {
+			baseType: 'STRING',
+			defaultValue: 'Spaced',
+			description: 'Must be used with Flow layout. Controls how cells will flow in their row.',
+			selectOptions: [
+				{text: 'Edge', value: 'Edge'},
+				{text: 'Spaced', value: 'Spaced'},
+				{text: 'Center', value: 'Center'},
+				{text: 'Start', value: 'Start'},
+				{text: 'End', value: 'End'},
+				{text: 'Expand', value: 'Expand'}
+			],
+			_BMSection: 'Flow Layout',
+			_BMFriendlyName: 'Gravity',
+			_BMCategories: ['all', 'flow']
+		},
+		FlowLayoutAlignment: {
+			baseType: 'STRING',
+			defaultValue: 'Center',
+			description: 'Must be used with Flow layout. Controls how cells will be aligned vertically in their row.',
+			selectOptions: [
+				{text: 'Top', value: 'Top'},
+				{text: 'Center', value: 'Center'},
+				{text: 'Bottom', value: 'Bottom'},
+				{text: 'Expand', value: 'Expand'}
+			],
+			_BMSection: 'Flow Layout',
+			_BMFriendlyName: 'Gravity',
+			_BMCategories: ['all', 'flow']
+		},
+		FlowLayoutContentGravity: {
+			baseType: 'STRING',
+			defaultValue: 'Center',
+			description: 'Must be used with Flow layout. Controls how content is aligned vertically within the collection view when its size is smaller than the collection view.',
+			selectOptions: [
+				{text: 'Start', value: 'Top'},
+				{text: 'Center', value: 'Center'},
+				{text: 'End', value: 'Bottom'},
+				{text: 'Expand', value: 'Expand'}
+			],
+			_BMSection: 'Flow Layout',
+			_BMFriendlyName: 'Gravity',
+			_BMCategories: ['all', 'flow']
+		},
+		FlowLayoutRowSpacing: {
+			baseType: 'INTEGER',
+			defaultValue: 44,
+			description: 'Must be used with Flow layout. Controls the spacing between headers, rows and footers.',
+			_BMSection: 'Flow Layout',
+			_BMFriendlyName: 'Row spacing',
+			_BMCategories: ['all', 'flow']
+		},
+		FlowLayoutMinimumSpacing: {
+			baseType: 'INTEGER',
+			defaultValue: 0,
+			description: 'Must be used with Flow layout. Controls the minimum amount of horizontal spacing between the cells.',
+			_BMSection: 'Flow Layout',
+			_BMFriendlyName: 'Row spacing',
+			_BMCategories: ['all', 'flow']
+		},
+		FlowLayoutTopPadding: {
+			baseType: 'INTEGER',
+			defaultValue: 22,
+			description: 'Must be used with Flow layout. Controls the padding the collection view\'s top margin and the first item.',
+			_BMSection: 'Flow Layout',
+			_BMFriendlyName: 'Top padding',
+			_BMCategories: ['all', 'flow']
+		},
+		FlowLayoutBottomPadding: {
+			baseType: 'INTEGER',
+			defaultValue: 22,
+			description: 'Must be used with Flow layout. Controls the padding the collection view\'s bottom margin and the last item.',
+			_BMSection: 'Flow Layout',
+			_BMFriendlyName: 'Bottom padding',
+			_BMCategories: ['all', 'flow']
+		},
+		FlowLayoutPinsHeadersToContentEdge: {
+			baseType: 'BOOLEAN',
+			defaultValue: NO,
+			description: 'Must be used with Flow layout. If enabled, the currently visible section\'s header will be stuck to the top edge of the collection view.',
+			_BMSection: 'Table Layout',
+			_BMFriendlyName: 'Pin Headers',
+			_BMCategories: ['all', 'flow']
+		},
+		FlowLayoutPinsFootersToContentEdge: {
+			baseType: 'BOOLEAN',
+			defaultValue: NO,
+			description: 'Must be used with Flow layout. If enabled, the currently visible section\'s footer will be stuck to the bottom edge of the collection view.',
+			_BMSection: 'Table Layout',
+			_BMFriendlyName: 'Pin Footers',
+			_BMCategories: ['all', 'flow']
+		},
+		
+		
+		
+		// ******************************************** MASONRY LAYOUT PROPERTIES ********************************************
+		MasonryLayoutNumberOfColumns: {
+			baseType: 'INTEGER',
+			defaultValue: 5,
+			description: 'Must be used with Masonry layout. If set to a number greater than 0, this is the number of columns the masonry layout will render.',
+			_BMSection: 'Masonry Layout',
+			_BMFriendlyName: 'Number of columns',
+			_BMCategories: ['all', 'masonry']
+		},
+		MasonryLayoutColumnWidth: {
+			baseType: 'INTEGER',
+			defaultValue: 0,
+			description: 'Must be used with Masonry layout. If the number of columns isn\'t specified, this is the minimum width to use for each column.',
+			_BMSection: 'Masonry Layout',
+			_BMFriendlyName: 'Column width',
+			_BMCategories: ['all', 'masonry']
+		},
+		MasonryLayoutColumnSpeeds: {
+			baseType: 'STRING',
+			defaultValue: '1, 2, 0.5, 1, 2, 0.5',
+			description: 'Must be used with Masonry layout. This is the scrolling speed modifier for each column.',
+			_BMSection: 'Masonry Layout',
+			_BMFriendlyName: 'Column speeds',
+			_BMCategories: ['all', 'masonry']
+		},
+		MasonryLayoutColumnSpacing: {
+			baseType: 'INTEGER',
+			defaultValue: 22,
+			description: 'Must be used with Masonry layout. Controls the horizontal spacing between columns.',
+			_BMSection: 'Masonry Layout',
+			_BMFriendlyName: 'Column spacing',
+			_BMCategories: ['all', 'masonry']
+		},
+		MasonryLayoutCellSpacing: {
+			baseType: 'INTEGER',
+			defaultValue: 22,
+			description: 'Must be used with Masonry layout. Controls the vertical spacing between cells.',
+			_BMSection: 'Masonry Layout',
+			_BMFriendlyName: 'Cell spacing',
+			_BMCategories: ['all', 'masonry']
+		},
+		MasonryLayoutTopPadding: {
+			baseType: 'INTEGER',
+			defaultValue: 22,
+			description: 'Must be used with Masonry layout. Controls the padding the collection view\'s top margin and the first item.',
+			_BMSection: 'Masonry Layout',
+			_BMFriendlyName: 'Top padding',
+			_BMCategories: ['all', 'masonry']
+		},
+		MasonryLayoutBottomPadding: {
+			baseType: 'INTEGER',
+			defaultValue: 22,
+			description: 'Must be used with Masonry layout. Controls the padding the collection view\'s bottom margin and the last item.',
+			_BMSection: 'Masonry Layout',
+			_BMFriendlyName: 'Bottom padding',
+			_BMCategories: ['all', 'masonry']
+		},
+		
+		
+		
+		// ******************************************** TILE LAYOUT PROPERTIES ********************************************
+		TileLayoutGridSize: {
+			baseType: 'NUMBER',
+			defaultValue: 256,
+			description: 'Must be used with Tile layout. If set to a positive number, cell sizes will be constrained to the closest multiple of this number.',
+			_BMSection: 'Tile Layout',
+			_BMFriendlyName: 'Grid Size',
+			_BMCategories: ['all', 'tile']
+		},
+		TileLayoutSpacing: {
+			baseType: 'NUMBER',
+			defaultValue: 32,
+			description: 'Must be used with Tile layout. If set to a positive number, cells will have at least this amount spacing between them and all other cells.',
+			_BMSection: 'Tile Layout',
+			_BMFriendlyName: 'Spacing',
+			_BMCategories: ['all', 'tile']
+		},
+		TileLayoutTopPadding: {
+			baseType: 'INTEGER',
+			defaultValue: 22,
+			description: 'Must be used with Tile layout. Controls the padding the collection view\'s top margin and the first item.',
+			_BMSection: 'Flow Layout',
+			_BMFriendlyName: 'Top padding',
+			_BMCategories: ['all', 'tile']
+		},
+		TileLayoutBottomPadding: {
+			baseType: 'INTEGER',
+			defaultValue: 22,
+			description: 'Must be used with Tile layout. Controls the padding the collection view\'s bottom margin and the last item.',
+			_BMSection: 'Flow Layout',
+			_BMFriendlyName: 'Bottom padding',
+			_BMCategories: ['all', 'tile']
+		},
+		TileLayoutPinsHeadersToContentEdge: {
+			baseType: 'BOOLEAN',
+			defaultValue: false,
+			description: 'Must be used with Tile layout. If enabled, the currently visible section\'s header will be stuck to the top edge of the collection view.',
+			_BMSection: 'Table Layout',
+			_BMFriendlyName: 'Pin Headers',
+			_BMCategories: ['all', 'tile']
+		},
+		TileLayoutPinsFootersToContentEdge: {
+			baseType: 'BOOLEAN',
+			defaultValue: false,
+			description: 'Must be used with Tile layout. If enabled, the currently visible section\'s footer will be stuck to the bottom edge of the collection view.',
+			_BMSection: 'Table Layout',
+			_BMFriendlyName: 'Pin Footers',
+			_BMCategories: ['all', 'tile']
+		},
+		
+		
+		// ******************************************** STACK LAYOUT PROPERTIES ********************************************
+		StackLayoutShowsSingleCell: {
+			baseType: 'BOOLEAN',
+			defaultValue: NO,
+			description: 'If enabled, stack layout will only show the first cell.',
+			_BMCategories: ['all', 'stack']
+		},
+		StackLayoutInsetLeft: {
+			baseType: 'NUMBER',
+			defaultValue: 0,
+			description: 'The left inset used by stack layout.',
+			_BMCategories: ['all', 'stack']
+		},
+		StackLayoutInsetTop: {
+			baseType: 'NUMBER',
+			defaultValue: 0,
+			description: 'The top inset used by stack layout.',
+			_BMCategories: ['all', 'stack']
+		},
+		StackLayoutInsetRight: {
+			baseType: 'NUMBER',
+			defaultValue: 0,
+			description: 'The right inset used by stack layout.',
+			_BMCategories: ['all', 'stack']
+		},
+		StackLayoutInsetBottom: {
+			baseType: 'NUMBER',
+			defaultValue: 0,
+			description: 'The bottom inset used by stack layout.',
+			_BMCategories: ['all', 'stack']
+		},
+		StackLayoutSpread: {
+			baseType: 'NUMBER',
+			defaultValue: 22,
+			description: 'Controls the spacing between background cells.',
+			_BMCategories: ['all', 'stack']
+		},
+		StackLayoutNumberOfBackgroundCells: {
+			baseType: 'NUMBER',
+			defaultValue: 3,
+			description: 'Controls how many background cells will be shown.',
+			_BMCategories: ['all', 'stack']
+		},
+		StackLayoutMinimumScale: {
+			baseType: 'NUMBER',
+			defaultValue: .9,
+			description: 'Controls how much the background cells will scale down before disappearing.',
+			_BMCategories: ['all', 'stack']
+		},
+		StackLayoutBlursBackgroundCells: {
+			baseType: 'BOOLEAN',
+			defaultValue: YES,
+			description: 'Controls whether the background cells will become blurred as they disappear.',
+			_BMCategories: ['all', 'stack']
+		},
+		StackLayoutMaximumBlur: {
+			baseType: 'NUMBER',
+			defaultValue: 8,
+			description: 'Controls how much the background cells will blur before disappearing.',
+			_BMCategories: ['all', 'stack']
+		},
+		
+		// ******************************************** CELL PROPERTIES ********************************************
+		CellMashupName: {
+			baseType: 'MASHUPNAME',
+			description: 'The mashup to use for data items.',
+			_BMSection: 'Cells',
+			_BMFriendlyName: 'Mashup name',
+			_BMCategories: ['all', 'cell']
+		},
+		CellMashupNameField: {
+			baseType: 'FIELDNAME',
+			sourcePropertyName: 'Data',
+			description: 'The field containing the mashup to use for data items. When this property is set, CellMashupName, CellMashupNameSelected and CellMashupName editing cannot be used.',
+			_BMCategories: ['all', 'cell']
+		},
+		CellMashupPropertyBinding: {
+			baseType: 'STRING',
+			defaultValue: '{}',
+			description: 'A serialized JSON object that has infotable fields as its keys and mashup parameters as values.',
+			_BMSection: 'Cells',
+			_BMFriendlyName: 'Mashup property binding',
+			_BMCategories: ['all', 'cell']
+		},
+		CellMashupGlobalPropertyBinding: {
+			baseType: 'STRING',
+			defaultValue: '{}',
+			description: 'A serialized JSON object that has global parameter names as its keys and data types as values. These are properties that may be bound on the collection view and will be sent down to each cell mashup.',
+			_BMSection: 'Cells',
+			_BMFriendlyName: 'Mashup global property binding',
+			_BMCategories: ['all', 'cell']
+		},
+		CellWidth: {
+			baseType: 'INTEGER',
+			defaultValue: 44,
+			description: 'Must be used with Flow layout. The default width to use for the collection view cells.',
+			_BMSection: 'Cells',
+			_BMFriendlyName: 'Cell width',
+			_BMCategories: ['all', 'flow', 'cell', 'tile']
+		},
+		CellHeight: {
+			baseType: 'INTEGER',
+			defaultValue: 44,
+			description: 'Must be used with Flow or Table layout. The default height to use for the collection view cells.',
+			_BMSection: 'Cells',
+			_BMFriendlyName: 'Cell height',
+			_BMCategories: ['all', 'table', 'flow', 'cell', 'tile']
+		},
+		CellWidthField: {
+			baseType: 'FIELDNAME',
+			sourcePropertyName: 'Data',
+			description: 'When set, has priority over CellWidth. Must be used with Flow layout. The default width to use for the collection view cells.',
+			_BMSection: 'Cells',
+			_BMFriendlyName: 'Cell width',
+			_BMCategories: ['all', 'flow', 'cell', 'tile']
+		},
+		CellHeightField: {
+			baseType: 'FIELDNAME',
+			sourcePropertyName: 'Data',
+			description: 'When set, has priority over CellHeight. Must be used with Flow or Table layout. The default height to use for the collection view cells.',
+			_BMSection: 'Cells',
+			_BMFriendlyName: 'Cell height',
+			_BMCategories: ['all', 'table', 'flow', 'cell', 'tile']
+		},
+		CellMashupHasIntrinsicSize: {
+			baseType: 'BOOLEAN',
+			defaultValue: NO,
+			description: 'Must be used with CellMashupNameField and static cell mashups. When this property is enabled, the collection view will use each mashup type\'s size as the cell size.',
+			_BMCategories: ['all', 'table', 'flow', 'cell', 'tile']
+		},
+		AutomaticCellSize: {
+			baseType: 'BOOLEAN',
+			defaultValue: NO,
+			description: 'BETA. Must be used with flow layout and a cell mashup whose root widget is a BMView widget. If enabled, the size of the cells will be determined from the intrinsic size of the cell\'s contents.\
+			When this property is enabled, the CellWidth and CellHeight property should be set to the average expected cell size.',
+			_BMCategories: ['all', 'flow', 'cell']
+		},
+		
+		
+		
+		// ******************************************** SELECTION PROPERTIES ********************************************
+		CanSelectCells: {
+			baseType: 'BOOLEAN',
+			defaultValue: true,
+			description: 'If enabled, cells can be selected, otherwise cells will be unselectable by this collection view.',
+			_BMSection: 'Selection',
+			_BMFriendlyName: 'Cell selection',
+			_BMCategories: ['all', 'selection']
+		},
+		/*CanSelectMultipleCells: {
+			baseType: 'BOOLEAN',
+			defaultValue: true,
+			description: 'If enabled, more than one cell can be selected at a time.',
+			_BMSection: 'Selection',
+			_BMFriendlyName: 'Multi-selection'
+		},*/
+		CellMultipleSelectionType: {
+			baseType: 'STRING',
+			defaultValue: 'Disabled',
+			description: 'Controls the multiple selection behaviour.',
+			selectOptions: [
+				{text: 'Disabled', value: 'Disabled'},
+				{text: 'Click/Tap', value: 'ClickTap'},
+				{text: 'Selection Mode', value: 'SelectionMode'},
+				{text: 'Ctrl+Click', value: 'CtrlClick'}
+			],
+			_BMCategories: ['all', 'selection']
+		},
+		CellMultipleSelectionModeEnabled: {
+			baseType: 'BOOLEAN',
+			defaultValue: NO,
+			isBindingSource: YES,
+			isEditable: NO,
+			description: 'Will be set to true whenever the multiple selection mode is active.',
+			_BMCategories: ['all', 'selection']
+		},
+		HasSelectedCells: {
+			baseType: 'BOOLEAN',
+			isEditable: NO,
+			description: 'Will be set to true whenever there is at least one selected cell in this collection view.',
+			isBindingSource: YES,
+			defaultValue: NO	,
+			_BMCategories: ['all', 'selection']
+		},
+		SelectedCellsCount: {
+			baseType: 'INTEGER',
+			isEditable: NO,
+			description: 'Contains the number of selected cells in the collection view.',
+			isBindingSource: YES,
+			defaultValue: 0,
+			_BMCategories: ['all', 'selection']
+		},
+		ScrollsToSelectedCell: {
+			baseType: 'BOOLEAN',
+			description: 'When enabled, whenever any other widget changes the selection, the collection view will automatically scroll to the first selected cell.',
+			defaultValue: NO,
+			_BMCategories: ['all', 'selection']
+		},
+		AutoSelectsFirstCell: {
+			baseType: 'BOOLEAN',
+			description: 'When enabled, when data is updated and no cell is selected, the collection view will automatically select the first available cell.',
+			defaultValue: NO,
+			_BMCategories: ['all', 'selection']
+		},
+		CellMashupSelectedField: {
+			baseType: 'STRING',
+			defaultValue: '',
+			description: 'Optional. If specified, this represents the mashup parameter that will receive the selected state of the object it is bound to.',
+			_BMSection: 'Cells',
+			_BMFriendlyName: 'Mashup selected parameter',
+			_BMCategories: ['all', 'cell', 'selection']
+		},
+
+		
+		// ******************************************** HIGHLIGHT PROPERTIES ********************************************
+		KeyboardHighlightingEnabled: {
+			baseType: 'BOOLEAN',
+			description: 'When enabled, keyboard navigation can be used to highlight cells.',
+			defaultValue: NO,
+			_BMCategories: ['all', 'highlighting']
+		},
+		KeyboardAutoHighlightsFirstCell: {
+			baseType: 'BOOLEAN',
+			description: 'When enabled, when data is updated and no cell is highlighted, the collection view will automatically highlight the first available cell.',
+			defaultValue: NO,
+			_BMCategories: ['all', 'selection']
+		},
+		KeyboardHighlightingBehaviour: {
+			baseType: 'STRING',
+			defaultValue: 'Highlight',
+			description: 'Controls what happens when a cell is highlighted.',
+			selectOptions: [
+				{text: 'Highlight', value: 'Highlight'},
+				{text: 'Select', value: 'Select'}
+			],
+			_BMCategories: ['all', 'selection']
+		},
+		KeyboardHighlightingSpacebarBehaviour: {
+			baseType: 'STRING',
+			defaultValue: 'Event',
+			description: 'Controls what happens the spacebar key is pressed while a cell is highlighted.',
+			selectOptions: [
+				{text: 'Event', value: 'Event'},
+				{text: 'Click', value: 'Click'},
+				{text: 'Select', value: 'Select'}
+			],
+			_BMCategories: ['all', 'selection']
+		},
+		KeyboardHighlightingReturnBehaviour: {
+			baseType: 'STRING',
+			defaultValue: 'Event',
+			description: 'Controls what happens the return key is pressed while a cell is highlighted.',
+			selectOptions: [
+				{text: 'Event', value: 'Event'},
+				{text: 'Click', value: 'Click'},
+				{text: 'Select', value: 'Select'}
+			],
+			_BMCategories: ['all', 'selection']
+		},
+		KeyboardHighlightOmitsInputElements: {
+			baseType: 'STRING',
+			defaultValue: 'All',
+			description: 'Controls which parts of keyboard navigation are disabled when an input or button element has keyboard focus.',
+			selectOptions: [
+				{text: 'All', value: 'All'},
+				{text: 'Navigation', value: 'Navigation'},
+				{text: 'Actions', value: 'Actions'},
+				{text: 'None', value: 'None'}
+			],
+			_BMCategories: ['all', 'selection']
+		},
+		KeyboardBlockSelectionEnabled: {
+			baseType: 'BOOLEAN',
+			description: 'Must be used with KeyboardHighlightEnabled and CellMultipleSelectionType enabled. When enabled, using the shift key with keyboard navigation selects a block of cells.',
+			defaultValue: NO,
+			_BMCategories: ['all', 'highlighting']
+		},
+		KeyboardDelegateWidget: {
+			baseType: 'STRING',
+			description: 'The displayName of a widget that can process keyboard events for this collection view.',
+			defaultValue: '',
+			_BMCategories: ['all', 'highlighting']
+		},
+		KeyboardDelegateWidgetKeys: {
+			baseType: 'STRING',
+			description: 'An array containing the supported keys that can be processed by the keyboard delegate widget.',
+			defaultValue: '["ArrowDown", "ArrowUp", "Enter"]',
+			_BMCategories: ['all', 'highlighting']
+		},
+		KeyboardDelegateWidgetStealFocus: {
+			baseType: 'BOOLEAN',
+			defaultValue: NO,
+			description: 'Must be used with KeyboardDelegateWidget. When enabled, pressing any supported key will cause this collection view to acquire keyboard focus from the delegate widget.',
+			_BMCategories: ['all', 'highlighting']
+		},
+		TabIndex: {
+			baseType: 'NUMBER',
+			defaultValue: -1,
+			description: 'The tab index to assign to this collection view',
+			_BMFriendlyName: 'Mashup selected parameter',
+			_BMCategories: ['all', 'highlighting']
+		},
+		
+		
+		// ******************************************** STYLE PROPERTIES ********************************************
+		BackgroundStyle: {
+			baseType: 'STYLEDEFINITION',
+			description: 'Controls the background of collection view. Only the backround color property of the style is used.',
+			_BMSection: 'Styles',
+			_BMFriendlyName: 'Background style',
+			_BMCategories: ['all', 'styles']
+		},
+		CellStyle: {
+			baseType: 'STYLEDEFINITION',
+			description: 'Controls the background of cells. Only the backround color property of the style is used.',
+			_BMSection: 'Styles',
+			_BMFriendlyName: 'Background style',
+			_BMCategories: ['all', 'styles']
+		},
+		CellStyleSelected: {
+			baseType: 'STYLEDEFINITION',
+			description: 'Controls the background of the selected cells. Only the backround color property of the style is used.',
+			_BMSection: 'Styles',
+			_BMFriendlyName: 'Selected style',
+			_BMCategories: ['all', 'styles']
+		},
+		CellMashupNameSelected: {
+			baseType: 'MASHUPNAME',
+			description: 'If specified, has priority over CellStyleSelected. An alternative mashup to use for selected cells. This mashup should have the same properties as the cell mashup.',
+			_BMSection: 'Styles',
+			_BMFriendlyName: 'Selected Mashup name',
+			_BMCategories: ['all', 'styles']
+		},
+		CellStyleHover: {
+			baseType: 'STYLEDEFINITION',
+			description: 'Controls the background of the cells when hovering. Only the background color property of the style is used.',
+			_BMSection: 'Styles',
+			_BMFriendlyName: 'Hover style',
+			_BMCategories: ['all', 'styles']
+		},
+		CellStyleActive: {
+			baseType: 'STYLEDEFINITION',
+			description: 'Controls the background of the cells when pressed. Only the background color property of the style is used.',
+			_BMSection: 'Cells',
+			_BMFriendlyName: 'Active style',
+			_BMCategories: ['all', 'styles']
+		},
+		CellBorderRadius: {
+			baseType: 'STRING',
+			description: 'An optional border radius to apply to the cells. When this value is set to a non-empty string, the cells will have their overflow property set to hidden.',
+			defaultValue: 0,
+			_BMSection: 'Styles',
+			_BMFriendlyName: 'Border radius',
+			_BMCategories: ['all', 'styles']
+		},
+		CellBoxShadow: {
+			baseType: 'STRING',
+			description: 'When set to a non-empty string, this will be used as the box-shadow for the cells.',
+			defaultValue: '',
+			_BMSection: 'Styles',
+			_BMFriendlyName: 'Box shadow',
+			_BMCategories: ['all', 'styles']
+		},
+		CellPointer: {
+			baseType: 'STRING',
+			description: 'Controls how the mouse pointer appears when hovering over this collection view\'s cells.',
+			selectOptions: [
+				{text: 'Auto', value: 'auto'},
+				{text: 'Hand', value: 'pointer'},
+				{text: 'Arrow', value: 'default'}
+			],
+			defaultValue: 'Auto',
+			_BMCategories: ['all', 'styles']
+		},
+		UsesRipple: {
+			baseType: 'BOOLEAN',
+			defaultValue: false,
+			description: 'If enabled, a ripple effect is used when clicking on cells. Using this option will cause the cells to have their overflow property set to hidden.',
+			_BMSection: 'Styles',
+			_BMFriendlyName: 'Ripple',
+			_BMCategories: ['all', 'styles']
+		},
+		RippleStyle: {
+			baseType: 'STYLEDEFINITION',
+			description: 'Must be used with UsesRipple. Only the background color property of this style is used, which will be applied to the ripple effect.',
+			_BMSection: 'Styles',
+			_BMFriendlyName: 'Ripple style',
+			_BMCategories: ['all', 'styles']
+		},
+		
+		
+		
+		// ******************************************** SCROLLBAR PROPERTIES ********************************************
+		ScrollbarStyle: {
+			baseType: 'STYLEDEFINITION',
+			description: 'The style to use for the scrollbar.',
+			_BMSection: 'Scrollbar',
+			_BMFriendlyName: 'Scrollbar Style',
+			_BMCategories: ['all', 'styles', 'scrollbar']
+		},
+		ScrollbarTrackStyle: {
+			baseType: 'STYLEDEFINITION',
+			description: 'Only used if you have also set a scrollbar style. The style to use for the scrollbar track.',
+			_BMSection: 'Scrollbar',
+			_BMFriendlyName: 'Scrollbar Style',
+			_BMCategories: ['all', 'styles', 'scrollbar']
+		},
+		ScrollbarBorderRadius: {
+			baseType: 'NUMBER',
+			description: 'Only used if you have also set a scrollbar style. The border radius to apply to the scrollbar, in pixels.',
+			defaultValue: 6,
+			_BMSection: 'Scrollbar',
+			_BMFriendlyName: 'Scrollbar Width',
+			_BMCategories: ['all', 'styles', 'scrollbar']
+		},
+		ScrollbarWidth: {
+			baseType: 'NUMBER',
+			description: 'Only used if you have also set a scrollbar style. The width of the scrollbar, in pixels.',
+			defaultValue: 12,
+			_BMSection: 'Scrollbar',
+			_BMFriendlyName: 'Scrollbar Width',
+			_BMCategories: ['all', 'styles', 'scrollbar']
+		},
+		LinkedCollectionView: {
+			baseType: 'STRING',
+			description: 'When set to the DisplayName of a Collection View, this Collection View\'s scroll position will be linked to the target\'s scroll position.',
+			defaultValue: '',
+			_BMSection: 'Scrollbar',
+			_BMFriendlyName: 'Linked Collection View',
+			_BMCategories: ['all', 'scrollbar']
+		},
+		
+		
+		
+		// ******************************************** MENU PROPERTIES ********************************************
+		CellSlideMenu: {
+			baseType: 'STATEDEFINITION',
+			description: 'If set to a string-based state definition, this will be the cell menu that appears when sliding over the cells. On devices without a touch interface, this menu can be displayed by right-clicking on the cells.',
+			_BMSection: 'Menu',
+			_BMFriendlyName: 'Slide menu definition',
+			_BMCategories: ['all', 'menu']
+		},
+		CellSlideMenuUseBuiltin: {
+			baseType: 'BOOLEAN',
+			defaultValue: YES,
+			description: 'If disabled, the default menu invoking behaviours will be disabled.',
+			_BMCategories: ['all', 'menu']
+		},
+		CellSlideMenuIconSize: {
+			baseType: 'INTEGER',
+			description: 'Must be used with CellSlideMenu. The menu icons will be set to this size.',
+			defaultValue: 16,
+			_BMSection: 'Menu',
+			_BMFriendlyName: 'Icon size',
+			_BMCategories: ['all', 'menu']
+		},
+		CellSlideMenuIconGravity: {
+			baseType: 'STRING',
+			description: 'Must be used with CellSlideMenu. Controls how the icon is anchored to the text in the menu entry.',
+			selectOptions: [
+				{text: 'Left', value: 'Left'},
+				{text: 'Above', value: 'Above'},
+				{text: 'Right', value: 'Right'},
+				{text: 'Below', value: 'Below'}
+			],
+			defaultValue: 'Left',
+			_BMSection: 'Menu',
+			_BMFriendlyName: 'Icon gravity',
+			_BMCategories: ['all', 'menu']
+		},
+		CellSlideMenuOrientation: {
+			baseType: 'STRING',
+			description: 'Must be used with CellSlideMenu. Controls how the menu entries are laid out.',
+			selectOptions: [
+				{text: 'Horizontal', value: 'Horizontal'},
+				{text: 'Vertical', value: 'Vertical'}
+			],
+			defaultValue: 'Horizontal',
+			_BMSection: 'Menu',
+			_BMFriendlyName: 'Orientation',
+			_BMCategories: ['all', 'menu']
+		},
+		CellSlideMenuType: {
+			baseType: 'STRING',
+			description: 'Must be used with CellSlideMenu. Controls how the slide menu appears.',
+			selectOptions: [
+				{text: 'Auto', value: 'Auto'},
+				{text: 'Slide', value: 'Slide'},
+				{text: 'Popup', value: 'Popup'}
+			],
+			defaultValue: 'Auto',
+			_BMCategories: ['all', 'menu']
+		},
+		CellSlideMenuLongClick: {
+			baseType: 'BOOLEAN',
+			description: 'If enabled, long clicking a cell will bring up the menu.',
+			defaultValue: NO,
+			_BMCategories: ['all', 'menu']
+		},
+		
+		
+		
+		// ******************************************** HEADER PROPERTIES ********************************************
+		ShowsHeaders: {
+			baseType: 'BOOLEAN',
+			defaultValue: false,
+			description: 'If enabled and using sections, each section will have a header.',
+			_BMSection: 'Header',
+			_BMFriendlyName: 'Headers',
+			_BMCategories: ['all', 'table', 'flow', 'tile']
+		},
+		HeaderMashupName: {
+			baseType: 'MASHUPNAME',
+			description: 'Must be used with SectionField and ShowsHeaders. The mashup to use for headers.',
+			_BMSection: 'Header',
+			_BMFriendlyName: 'Header Mashup name',
+			_BMCategories: ['all', 'table', 'flow', 'tile']
+		},
+		HeaderMashupSectionProperty: {
+			baseType: 'STRING',
+			defaultValue: '',
+			description: 'The mashup parameter that will receive the section identifier.',
+			_BMSection: 'Header',
+			_BMFriendlyName: 'Section parameter',
+			_BMCategories: ['all', 'table', 'flow', 'tile']
+		},
+		HeaderHeight: {
+			baseType: 'INTEGER',
+			defaultValue: 44,
+			description: 'Must be used with SectionField and ShowsHeaders. The height of the header mashups.',
+			_BMSection: 'Header',
+			_BMFriendlyName: 'Height',
+			_BMCategories: ['all', 'table', 'flow', 'tile']
+		},
+		
+		
+		
+		// ******************************************** FOOTER PROPERTIES ********************************************
+		ShowsFooters: {
+			baseType: 'BOOLEAN',
+			defaultValue: false,
+			description: 'If enabled and using sections, each section will have a footer.',
+			_BMSection: 'Footer',
+			_BMFriendlyName: 'Footers',
+			_BMCategories: ['all', 'table', 'flow', 'tile']
+		},
+		FooterMashupName: {
+			baseType: 'MASHUPNAME',
+			description: 'Must be used with SectionField and ShowsFooters. The mashup to use for footers.',
+			_BMSection: 'Footer',
+			_BMFriendlyName: 'Footer mashup name',
+			_BMCategories: ['all', 'table', 'flow', 'tile']
+		},
+		FooterMashupSectionProperty: {
+			baseType: 'STRING',
+			defaultValue: '',
+			description: 'The mashup parameter that will receive the section identifier.',
+			_BMSection: 'Footer',
+			_BMFriendlyName: 'Section parameter',
+			_BMCategories: ['all', 'table', 'flow', 'tile']
+		},
+		FooterHeight: {
+			baseType: 'INTEGER',
+			defaultValue: 44,
+			description: 'Must be used with SectionField and ShowsFooters. The height of the footer mashups.',
+			_BMSection: 'Footer',
+			_BMFriendlyName: 'Height',
+			_BMCategories: ['all', 'table', 'flow', 'tile']
+		},
+		
+		
+		
+		// ******************************************** EMPTY VIEW PROPERTIES ********************************************
+		EmptyMashupName: {
+			baseType: 'MASHUPNAME',
+			description: 'Optional. If specified, this mashup will be displayed when the data set is empty',
+			_BMSection: 'Empty View',
+			_BMFriendlyName: 'Empty Mashup name',
+			_BMCategories: ['all', 'table', 'flow', 'tile']
+		},
+		EmptyMashupParameters: {
+			baseType: 'STRING',
+			description: 'A JSON object that specifies static string values that will be assiged as parameters for the empty mashup.',
+			defaultValue: '{}',
+			isBindingTarget: YES,
+			_BMSection: 'Empty View',
+			_BMFriendlyName: 'Empty Mashup parameters',
+			_BMCategories: ['all', 'table', 'flow', 'tile']
+		},
+		
+		
+		
+		// ******************************************** ANIMATION PROPERTIES ********************************************
+		PlaysIntroAnimation: {
+			baseType: 		'BOOLEAN',
+			description: 	'If enabled, an animation will be played to show the cells when the data first arrives to this collection view. ' +
+							'Otherwise the cells will appear instantly the first time.',
+			defaultValue:	YES,
+			_BMSection: 	'Styles',
+			_BMFriendlyName: 'Intro animation',
+			_BMCategories: ['all', 'styles']
+		},
+		AnimatesAdditionalDataUpdates: {
+			baseType: 		'BOOLEAN',
+			description: 	'If enabled, an animation will be played when new data is added via the AdditionalData property.',
+			defaultValue:	NO,
+			_BMSection: 	'Styles',
+			_BMFriendlyName: 'Additional Data Animation',
+			_BMCategories: ['all', 'styles']
+		},
+		
+		
+		
+		// ******************************************** DATA MANIPULATION ********************************************
+		
+		CanDragCells: {
+			baseType: 'BOOLEAN',
+			description: 'Can be enabled to allow collection view to manipulate items via drag & drop.',
+			defaultValue: NO,
+			isBindingTarget: YES,
+			_BMCategories: ['all', 'manipulation']
+		},
+		CanMoveCells: {
+			baseType: 'BOOLEAN',
+			description: 'Can be enabled to allow collection view to move items via drag & drop.',
+			defaultValue: NO,
+			_BMCategories: ['all', 'manipulation']
+		},
+		CanMoveCellsAcrossSections: {
+			baseType: 'BOOLEAN',
+			description: 'Must be used with CanMoveCells. If enabled, collection view will allow dragged items to move to other sections.',
+			defaultValue: NO,
+			_BMCategories: ['all', 'manipulation']
+		},
+		CanRemoveCells: {
+			baseType: 'BOOLEAN',
+			description: 'Can be enabled to allow collection view to remove items by dragging them out of its frame.',
+			defaultValue: NO,
+			_BMCategories: ['all', 'manipulation']
+		},
+		CanTransferCells: {
+			baseType: 'BOOLEAN',
+			description: 'Can be enabled to allow collection view to transfer items to other collection views.',
+			defaultValue: NO,
+			_BMCategories: ['all', 'manipulation']
+		},
+		CellTransferPolicy: {
+			baseType: 'STRING',
+			description: 'Controls what happens to items when they are dragged into another collection view.',
+			selectOptions: [
+				{text: 'Move', value: 'Move'},
+				{text: 'Copy', value: 'Copy'}
+			],
+			defaultValue: 'Move',
+			_BMCategories: ['all', 'manipulation']
+		},
+		CanAcceptCells: {
+			baseType: 'BOOLEAN',
+			description: 'Can be enabled to allow collection view to accept items from other collection views.',
+			defaultValue: NO,
+			_BMCategories: ['all', 'manipulation']
+		},
+		CellAcceptPolicy: {
+			baseType: 'STRING',
+			description: 'Controls what happens to items when they are dragged into this collection view from another collection view.',
+			selectOptions: [
+				{text: 'Move', value: 'Move'},
+				{text: 'Copy', value: 'Copy'},
+				{text: 'Replace', value: 'Replace'}
+			],
+			defaultValue: 'Move',
+			_BMCategories: ['all', 'manipulation']
+		},
+		DataShape: {
+			baseType: 'DATASHAPENAME',
+			description: 'Optional. If specified and Data is not bound, this allows the CreateItem... services to be invoked.',
+			_BMCategories: ['all', 'manipulation']
+		},
+		CreationIndex: {
+			baseType: 'INTEGER',
+			description: 'Defaults to 0. If specified or bound, this index is used when invoking the CreateItemAtIndex service.',
+			isBindingTarget: YES,
+			_BMCategories: ['all', 'manipulation']
+		},
+		DeletionUID: {
+			baseType: 'ANYSCALAR',
+			isBindingTarget: YES,
+			description: 'Optional. If bound, this item UID is used when invoking the DeleteItem service.',
+			_BMCategories: ['all', 'manipulation']
+		},
+		CellMashupNameEditing: {
+			baseType: 'MASHUPNAME',
+			description: 'Optional. If specified, this mashup is used for cells that are being edited.'	,
+			_BMCategories: ['all', 'cell', 'manipulation']
+		},
+		CellMashupEditingParameter: {
+			baseType: 'STRING',
+			description: 'Optional. If specified, this is the mashup parameter that will receive the editing state of the mashup.',
+			_BMCategories: ['all', 'cell', 'manipulation']
+		},
+		EmptyDataSetOnStartup: {
+			baseType: 'BOOLEAN',
+			description: 'Requires setting a data shape. Can be enabled to cause collection view to start with an empty data set.',
+			defaultValue: NO,
+			_BMCategories: ['all', 'manipulation']
+		},
+		
+		
+		// ******************************************** PERFORMANCE PROPERTIES ********************************************
+		UseCustomScrollerOnWindowsDesktops: {
+			baseType: 'BOOLEAN',
+			description: 'If enabled, the collection view will use iOS/macOS style scrollbars when running on desktop Windows browsers.',
+			defaultValue: NO,
+			_BMSection: 'Avanced',
+			_BMFriendlyName: 'Enable iScroll on Windows Desktops',
+			_BMCategories: ['all', 'performance']
+		},
+		AlwaysUseCustomScrollerOniOS: {
+			baseType: 'BOOLEAN',
+			description: 'If enabled, the collection will use the custom scroller on iOS even when not running in web-app mode',
+			defaultValue: NO,
+			_BMSection: 'Avanced',
+			_BMFriendlyName: 'Enable iScroll on iOS Safari',
+			_BMCategories: ['all', 'performance']
+		},
+		OffScreenBufferFactor: {
+			baseType: 'NUMBER',
+			defaultValue: 0.5,
+			description: 'The percentage of frame size to use when computing a new off-screen buffer size. Higher values will cause more off-screen elements to be rendered which decreases the flicker at high scrolling speeds. Lower values decrease the number of off-screen elements and should be used to reduce the jitter on iOS when complex layouts that reflow often are used as cell contents (such as cells with many gauges).',
+			_BMSection: 'Avanced',
+			_BMFriendlyName: 'Off-screen buffer factor',
+			_BMCategories: ['all', 'performance']
+		},
+		'[Experimental] Fast widget append': {
+			baseType: 'BOOLEAN',
+			defaultValue: NO,
+			description: 'If enabled, the collection view will use an experimental faster widget creation method.',
+			_BMSection: 'Avanced',
+			_BMFriendlyName: 'Experimental fast widget append',
+			_BMCategories: ['all', 'performance']
+		},
+		HandlesResponsiveWidgets: {
+			baseType: 'BOOLEAN',
+			defaultValue: NO,
+			description: 'If enabled, the collection view will invoke resize on responsive widgets.',
+			_BMCategories: ['all', 'performance']
+		},
+		HandlesResponsiveWidgetsImmediately: {
+			baseType: 'BOOLEAN',
+			defaultValue: NO,
+			description: 'If enabled, the collection view will invoke resize on responsive widgets during animations.',
+			_BMCategories: ['all', 'performance']
+		},
+		DirectLink: {
+			baseType: 'BOOLEAN',
+			defaultValue: NO,
+			description: 'Requires the Debugger entities and extensions. If enabled, changes to this Collection View layout will automatically update the mashup.',
+			_BMCategories: ['all', 'performance']
+		},
+		
+		
+		
+		// ******************************************** INTERNAL PROPERTIES ********************************************
+		_Left: {
+			baseType: 'NUMBER',
+			isVisible: NO,
+			_BMCategories: []
+		},
+		_Top: {
+			baseType: 'NUMBER',
+			isVisible: NO,
+			_BMCategories: []
+		},
+		_Width: {
+			baseType: 'NUMBER',
+			isVisible: NO,
+			_BMCategories: []
+		},
+		_Height: {
+			baseType: 'NUMBER',
+			isVisible: NO,
+			_BMCategories: []
+		},
+		_EventDataShape: {
+			baseType: 'STRING',
+			isVisible: false,
+			defaultValue: '{}',
+			_BMCategories: []
+		},
+		_CanDoubleClick: {
+			baseType: 'BOOLEAN',
+			isVisible: false,
+			defaultValue: false,
+			_BMCategories: []
+		},
+		_MenuDefinition: {
+			baseType: 'STRING',
+			isVisible: false,
+			defaultValue: '[]',
+			_BMCategories: []
+		},
+		_GlobalDataShape: {
+			baseType: 'STRING',
+			isVisible: false,
+			defaultValue: '{}',
+			_BMCategories: []
+		},
+		DirectLinkUUID: {
+			baseType: 'STRING',
+			defaultValue: '',
+			isVisible: NO,
+			_BMCategories: []
+		},
+		__BaseTypes: {
+			baseType: 'INFOTABLE',
+			isVisible: NO,
+			_BMCategories: []
+		}
+	};
+}
 
 @TWNamedComposerWidget("BMCollectionView")
 export class BMCollectionViewWidget extends TWComposerWidget 
@@ -1511,1268 +2818,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			supportsAutoResize: YES,
 			needsDataLoadingAndError: NO,
 			isVisible: !EXTENSION_MODE,
-			properties: {
-				// ******************************************** STANDARD PROPERTIES ********************************************
-				Width: {
-                    defaultValue: 480,
-					baseType: 'NUMBER',
-					_BMCategories: ['all']
-				},
-				Height: {
-                    defaultValue: 640,
-					baseType: 'NUMBER',
-					_BMCategories: ['all']
-                },
-                CustomClass: {
-                    description: TW.IDE.I18NController.translate('tw.button-ide.properties.custom-class.description'),
-                    baseType: 'STRING',
-                    isLocalizable: NO,
-                    isBindingSource: YES,
-                    isBindingTarget: YES,
-					isVisible: NO,
-					_BMCategories: ['all'],
-					_BMSection: 'Styles'
-                },
-				Show: {
-					baseType: 'STRING',
-					defaultValue: 'all',
-					description: 'Controls which property category to show.',
-					selectOptions: [
-						{text: 'All', value: 'all'},
-						{text: 'Data Configuration', value: 'data'},
-						{text: 'Layout', value: 'layout'},
-						//{text: 'Table Layout', value: 'table'},
-						{text: 'Flow Layout', value: 'flow'},
-						{text: 'Masonry Layout', value: 'masonry'},
-						{text: 'Stack Layout', value: 'stack'},
-						{text: 'Tile Layout', value: 'tile'},
-						{text: 'Cell Configuration', value: 'cell'},
-						{text: 'Selection', value: 'selection'},
-						{text: 'Styles', value: 'styles'},
-						{text: 'Scrollbar', value: 'scrollbar'},
-						{text: 'Menu', value: 'menu'},
-						{text: 'Data Manipulation', value: 'manipulation'},
-						{text: 'Performance', value: 'performance'}
-					],
-					_BMCategories: ['all']
-				},
-				
-				
-				
-				// ******************************************** DATA SET PROPERTIES ********************************************
-				Data: {
-					baseType: 'INFOTABLE',
-					isBindingTarget: YES,
-					isBindingSource: YES,
-					description: 'Represents the data source of this collection view. Whenever the data is updated, either through drag & drop, deleting, inserting or modifying mashup parameters, this property will contain the updated data.',
-					_BMSection: 'Data',
-					_BMCategories: ['all', 'data']
-				},
-				AdditionalData: {
-					baseType: 'INFOTABLE',
-					isBindingTarget: YES,
-					description: 'When updated, the data bound to this property will be added at the end of collection view\'s data.',
-					_BMSection: 'Data',
-					_BMCategories: ['all', 'data']
-				},
-				DataCurrentSize: {
-					baseType: 'NUMBER',
-					isBindingSource: YES,
-					isEditable: NO,
-					defaultValue: 0,
-					description: 'Represents the number of items currently in the data set.',
-					_BMSection: 'Data',
-					_BMCategories: ['all', 'data'],
-				},
-				DataTotalSize: {
-					baseType: 'NUMBER',
-					isBindingTarget: YES,
-					defaultValue: 0,
-					description: 'If set to a value greater than 0, this represents the total number of items in the complete data set. When the number of items displayed by collection view is equal to or greater than this value, the events for approaching the end of the current data set no longer fire.',
-					_BMSection: 'Data',
-					_BMCategories: ['all', 'data'],
-				},
-				HasCompleteDataSet: {
-					baseType: 'BOOLEAN',
-					defaultValue: NO,
-					isBindingSource: YES,
-					isBindingTarget: YES,
-					description: 'When set to true, collection view will no longer trigger the events for approaching the end of the current data set.',
-					_BMSection: 'Data',
-					_BMCategories: ['all', 'data']
-				},
-				DataSetEndThreshold: {
-					baseType: 'STRING',
-					defaultValue: '50%',
-					description: 'Controls when the DataSetEndThreshold event is triggered. This must be a size expressed in px units, or a percent relative to collection view\'s frame size.',
-					_BMSection: 'Data',
-					_BMCategories: ['all', 'data']
-				},
-				PreventsRepeatedDataEndEvents: {
-					baseType: 'BOOLEAN',
-					defaultValue: YES,
-					description: 'If enabled, the events for approaching the end of the current data set will only fire once, until the AdditionalData property is updated.',
-					_BMSection: 'Data',
-					_BMCategories: ['all', 'data']
-				},
-				UIDField: {
-					baseType: 'FIELDNAME',
-					sourcePropertyName: 'Data',
-					description: 'Represents the unique identifier of a collection view item. This can be any type of field that uniquely identifies an item.',
-					_BMSection: 'Data',
-					_BMFriendlyName: 'UID Field',
-					_BMCategories: ['all', 'data']
-				},
-				SortField: {
-					baseType: 'FIELDNAME',
-					sourcePropertyName: 'Data',
-					description: 'Optional. When set or bound, this is the infotable field by which section contents are sorted. The sorting is performed client-side and does not affect the source infotable or other widgets bound to the data set.',
-					isBindingTarget: YES,
-					_BMSection: 'Data',
-					_BMFriendlyName: 'Sort Field',
-					_BMCategories: ['all', 'data']
-				},
-				SortAscending: {
-					baseType: 'BOOLEAN',
-					defaultValue: NO,
-					isBindingTarget: YES,
-					description: 'Used with SortField. When enabled, the sort will be performed ascending, otherwise it will be descending.',
-					_BMCategories: ['all', 'data']
-				},
-				SectionField: {
-					baseType: 'FIELDNAME',
-					sourcePropertyName: 'Data',
-					description: 'Optional. Represents the section identifier by which to group the items. If set, the items will be grouped in sections.'	,
-					_BMSection: 'Layout Type',
-					_BMFriendlyName: 'Section Field',
-					_BMCategories: ['all', 'data']
-				},
-				// NOTE: Filters are currently unsupported
-				/*Filter: {
-					baseType: 'QUERY',
-					description: 'Optional. When set or bound, this will filter the data set client-side. The filter will only affect this collection view, and not other widgets bound to the same data set.',
-					isBindingTarget: YES
-				},
-				FilteredData: {
-					baseType: 'INFOTABLE',
-					isBindingSource: YES,
-					description: 'When using a filter, this is the filtered infotable.'	
-				},*/
-				
-				
-				// ******************************************** LAYOUT TYPE PROPERTIES ********************************************
-				/*SectionInsets: {
-					baseType: 'STRING',
-					defaultValue: '0, 0, 0, 0',
-					description: 'If using sections, this represents the left, top, right and bottom paddings that each section will have from eachother and the edge.',
-					_BMSection: 'Layout Type',
-					_BMFriendlyName: 'Section Insets'
-				},*/
-				Layout: {
-					baseType: 'STRING',
-					defaultValue: 'flow',
-					description: 'The type of layout to use.',
-					selectOptions: [
-						//{text: 'Table', value: 'table'},
-						{text: 'Flow', value: 'flow'},
-						{text: 'Masonry', value: 'masonry'},
-						{text: 'Stack', value: 'stack'},
-						{text: 'Tile', value: 'tile'}
-					],
-					isBindingTarget: true,
-					_BMSection: 'Layout Type',
-					_BMFriendlyName: 'Layout',
-					_BMCategories: ['all', 'layout']
-				},
-				SectionInsetLeft: {
-					baseType: 'NUMBER',
-					defaultValue: 0,
-					description: 'If using sections, this represents the left section inset',
-					_BMCategories: ['all', 'table', 'flow']
-				},
-				SectionInsetTop: {
-					baseType: 'NUMBER',
-					defaultValue: 0,
-					description: 'If using sections, this represents the left section inset',
-					_BMCategories: ['all', 'table', 'flow']
-				},
-				SectionInsetRight: {
-					baseType: 'NUMBER',
-					defaultValue: 0,
-					description: 'If using sections, this represents the left section inset',
-					_BMCategories: ['all', 'table', 'flow']
-				},
-				SectionInsetBottom: {
-					baseType: 'NUMBER',
-					defaultValue: 0,
-					description: 'If using sections, this represents the left section inset',
-					_BMCategories: ['all', 'table', 'flow']
-				},
-				
-				
-				
-				// ******************************************** TABLE LAYOUT PROPERTIES ********************************************
-				TableLayoutPinsHeadersToContentEdge: {
-					baseType: 'BOOLEAN',
-					defaultValue: false,
-					description: 'Must be used with Table layout. If enabled, the currently visible section\'s header will be stuck to the top edge of the collection view.',
-					isVisible: NO,
-					_BMSection: 'Table Layout',
-					_BMFriendlyName: 'Pin Headers',
-					_BMCategories: ['all', 'table']
-				},
-				TableLayoutPinsFootersToContentEdge: {
-					baseType: 'BOOLEAN',
-					defaultValue: false,
-					description: 'Must be used with Table layout. If enabled, the currently visible section\'s footer will be stuck to the bottom edge of the collection view.',
-					isVisible: NO,
-					_BMSection: 'Table Layout',
-					_BMFriendlyName: 'Pin Footers',
-					_BMCategories: ['all', 'table']
-				},
-				
-				
-				
-				// ******************************************** FLOW LAYOUT PROPERTIES ********************************************
-				FlowLayoutMaximumCellsPerRow: {
-					baseType: 'INTEGER',
-					defaultValue: 0,
-					description: 'Must be used with Flow layout. Controls how many cells each row is allowed to have.',
-					_BMSection: 'Flow Layout',
-					_BMFriendlyName: 'Maximum cells per row',
-					_BMCategories: ['all', 'flow']
-				},
-				FlowLayoutOrientation: {
-					baseType: 'STRING',
-					defaultValue: 'Vertical',
-					description: 'Must be used with Flow layout. Controls the axis along which rows are created.',
-					selectOptions: [
-						{text: 'Vertical', value: 'Vertical'},
-						{text: 'Horizontal', value: 'Horizontal'}
-					],
-					_BMSection: 'Flow Layout',
-					_BMFriendlyName: 'Orientation',
-					_BMCategories: ['all', 'flow']
-				},
-				FlowLayoutLeftAlignFinalRow: {
-					baseType: 'BOOLEAN',
-					defaultValue: false,
-					description: 'Must be used with Flow layout. If enabled, the final row in each section will be aligned to the left rather than the center.',
-					_BMSection: 'Flow Layout',
-					_BMFriendlyName: 'Left align final row',
-					_BMCategories: ['all', 'flow']
-				},
-				FlowLayoutGravity: {
-					baseType: 'STRING',
-					defaultValue: 'Spaced',
-					description: 'Must be used with Flow layout. Controls how cells will flow in their row.',
-					selectOptions: [
-						{text: 'Edge', value: 'Edge'},
-						{text: 'Spaced', value: 'Spaced'},
-						{text: 'Center', value: 'Center'},
-						{text: 'Start', value: 'Start'},
-						{text: 'End', value: 'End'},
-						{text: 'Expand', value: 'Expand'}
-					],
-					_BMSection: 'Flow Layout',
-					_BMFriendlyName: 'Gravity',
-					_BMCategories: ['all', 'flow']
-				},
-				FlowLayoutAlignment: {
-					baseType: 'STRING',
-					defaultValue: 'Center',
-					description: 'Must be used with Flow layout. Controls how cells will be aligned vertically in their row.',
-					selectOptions: [
-						{text: 'Top', value: 'Top'},
-						{text: 'Center', value: 'Center'},
-						{text: 'Bottom', value: 'Bottom'},
-						{text: 'Expand', value: 'Expand'}
-					],
-					_BMSection: 'Flow Layout',
-					_BMFriendlyName: 'Gravity',
-					_BMCategories: ['all', 'flow']
-				},
-				FlowLayoutContentGravity: {
-					baseType: 'STRING',
-					defaultValue: 'Center',
-					description: 'Must be used with Flow layout. Controls how content is aligned vertically within the collection view when its size is smaller than the collection view.',
-					selectOptions: [
-						{text: 'Start', value: 'Top'},
-						{text: 'Center', value: 'Center'},
-						{text: 'End', value: 'Bottom'},
-						{text: 'Expand', value: 'Expand'}
-					],
-					_BMSection: 'Flow Layout',
-					_BMFriendlyName: 'Gravity',
-					_BMCategories: ['all', 'flow']
-				},
-				FlowLayoutRowSpacing: {
-					baseType: 'INTEGER',
-					defaultValue: 44,
-					description: 'Must be used with Flow layout. Controls the spacing between headers, rows and footers.',
-					_BMSection: 'Flow Layout',
-					_BMFriendlyName: 'Row spacing',
-					_BMCategories: ['all', 'flow']
-				},
-				FlowLayoutMinimumSpacing: {
-					baseType: 'INTEGER',
-					defaultValue: 0,
-					description: 'Must be used with Flow layout. Controls the minimum amount of horizontal spacing between the cells.',
-					_BMSection: 'Flow Layout',
-					_BMFriendlyName: 'Row spacing',
-					_BMCategories: ['all', 'flow']
-				},
-				FlowLayoutTopPadding: {
-					baseType: 'INTEGER',
-					defaultValue: 22,
-					description: 'Must be used with Flow layout. Controls the padding the collection view\'s top margin and the first item.',
-					_BMSection: 'Flow Layout',
-					_BMFriendlyName: 'Top padding',
-					_BMCategories: ['all', 'flow']
-				},
-				FlowLayoutBottomPadding: {
-					baseType: 'INTEGER',
-					defaultValue: 22,
-					description: 'Must be used with Flow layout. Controls the padding the collection view\'s bottom margin and the last item.',
-					_BMSection: 'Flow Layout',
-					_BMFriendlyName: 'Bottom padding',
-					_BMCategories: ['all', 'flow']
-				},
-				FlowLayoutPinsHeadersToContentEdge: {
-					baseType: 'BOOLEAN',
-					defaultValue: NO,
-					description: 'Must be used with Flow layout. If enabled, the currently visible section\'s header will be stuck to the top edge of the collection view.',
-					_BMSection: 'Table Layout',
-					_BMFriendlyName: 'Pin Headers',
-					_BMCategories: ['all', 'flow']
-				},
-				FlowLayoutPinsFootersToContentEdge: {
-					baseType: 'BOOLEAN',
-					defaultValue: NO,
-					description: 'Must be used with Flow layout. If enabled, the currently visible section\'s footer will be stuck to the bottom edge of the collection view.',
-					_BMSection: 'Table Layout',
-					_BMFriendlyName: 'Pin Footers',
-					_BMCategories: ['all', 'flow']
-				},
-				
-				
-				
-				// ******************************************** MASONRY LAYOUT PROPERTIES ********************************************
-				MasonryLayoutNumberOfColumns: {
-					baseType: 'INTEGER',
-					defaultValue: 5,
-					description: 'Must be used with Masonry layout. If set to a number greater than 0, this is the number of columns the masonry layout will render.',
-					_BMSection: 'Masonry Layout',
-					_BMFriendlyName: 'Number of columns',
-					_BMCategories: ['all', 'masonry']
-				},
-				MasonryLayoutColumnWidth: {
-					baseType: 'INTEGER',
-					defaultValue: 0,
-					description: 'Must be used with Masonry layout. If the number of columns isn\'t specified, this is the minimum width to use for each column.',
-					_BMSection: 'Masonry Layout',
-					_BMFriendlyName: 'Column width',
-					_BMCategories: ['all', 'masonry']
-				},
-				MasonryLayoutColumnSpeeds: {
-					baseType: 'STRING',
-					defaultValue: '1, 2, 0.5, 1, 2, 0.5',
-					description: 'Must be used with Masonry layout. This is the scrolling speed modifier for each column.',
-					_BMSection: 'Masonry Layout',
-					_BMFriendlyName: 'Column speeds',
-					_BMCategories: ['all', 'masonry']
-				},
-				MasonryLayoutColumnSpacing: {
-					baseType: 'INTEGER',
-					defaultValue: 22,
-					description: 'Must be used with Masonry layout. Controls the horizontal spacing between columns.',
-					_BMSection: 'Masonry Layout',
-					_BMFriendlyName: 'Column spacing',
-					_BMCategories: ['all', 'masonry']
-				},
-				MasonryLayoutCellSpacing: {
-					baseType: 'INTEGER',
-					defaultValue: 22,
-					description: 'Must be used with Masonry layout. Controls the vertical spacing between cells.',
-					_BMSection: 'Masonry Layout',
-					_BMFriendlyName: 'Cell spacing',
-					_BMCategories: ['all', 'masonry']
-				},
-				MasonryLayoutTopPadding: {
-					baseType: 'INTEGER',
-					defaultValue: 22,
-					description: 'Must be used with Masonry layout. Controls the padding the collection view\'s top margin and the first item.',
-					_BMSection: 'Masonry Layout',
-					_BMFriendlyName: 'Top padding',
-					_BMCategories: ['all', 'masonry']
-				},
-				MasonryLayoutBottomPadding: {
-					baseType: 'INTEGER',
-					defaultValue: 22,
-					description: 'Must be used with Masonry layout. Controls the padding the collection view\'s bottom margin and the last item.',
-					_BMSection: 'Masonry Layout',
-					_BMFriendlyName: 'Bottom padding',
-					_BMCategories: ['all', 'masonry']
-				},
-				
-				
-				
-				// ******************************************** TILE LAYOUT PROPERTIES ********************************************
-				TileLayoutGridSize: {
-					baseType: 'NUMBER',
-					defaultValue: 256,
-					description: 'Must be used with Tile layout. If set to a positive number, cell sizes will be constrained to the closest multiple of this number.',
-					_BMSection: 'Tile Layout',
-					_BMFriendlyName: 'Grid Size',
-					_BMCategories: ['all', 'tile']
-				},
-				TileLayoutSpacing: {
-					baseType: 'NUMBER',
-					defaultValue: 32,
-					description: 'Must be used with Tile layout. If set to a positive number, cells will have at least this amount spacing between them and all other cells.',
-					_BMSection: 'Tile Layout',
-					_BMFriendlyName: 'Spacing',
-					_BMCategories: ['all', 'tile']
-				},
-				TileLayoutTopPadding: {
-					baseType: 'INTEGER',
-					defaultValue: 22,
-					description: 'Must be used with Tile layout. Controls the padding the collection view\'s top margin and the first item.',
-					_BMSection: 'Flow Layout',
-					_BMFriendlyName: 'Top padding',
-					_BMCategories: ['all', 'tile']
-				},
-				TileLayoutBottomPadding: {
-					baseType: 'INTEGER',
-					defaultValue: 22,
-					description: 'Must be used with Tile layout. Controls the padding the collection view\'s bottom margin and the last item.',
-					_BMSection: 'Flow Layout',
-					_BMFriendlyName: 'Bottom padding',
-					_BMCategories: ['all', 'tile']
-				},
-				TileLayoutPinsHeadersToContentEdge: {
-					baseType: 'BOOLEAN',
-					defaultValue: false,
-					description: 'Must be used with Tile layout. If enabled, the currently visible section\'s header will be stuck to the top edge of the collection view.',
-					_BMSection: 'Table Layout',
-					_BMFriendlyName: 'Pin Headers',
-					_BMCategories: ['all', 'tile']
-				},
-				TileLayoutPinsFootersToContentEdge: {
-					baseType: 'BOOLEAN',
-					defaultValue: false,
-					description: 'Must be used with Tile layout. If enabled, the currently visible section\'s footer will be stuck to the bottom edge of the collection view.',
-					_BMSection: 'Table Layout',
-					_BMFriendlyName: 'Pin Footers',
-					_BMCategories: ['all', 'tile']
-				},
-				
-				
-				// ******************************************** STACK LAYOUT PROPERTIES ********************************************
-				StackLayoutShowsSingleCell: {
-					baseType: 'BOOLEAN',
-					defaultValue: NO,
-					description: 'If enabled, stack layout will only show the first cell.',
-					_BMCategories: ['all', 'stack']
-				},
-				StackLayoutInsetLeft: {
-					baseType: 'NUMBER',
-					defaultValue: 0,
-					description: 'The left inset used by stack layout.',
-					_BMCategories: ['all', 'stack']
-				},
-				StackLayoutInsetTop: {
-					baseType: 'NUMBER',
-					defaultValue: 0,
-					description: 'The top inset used by stack layout.',
-					_BMCategories: ['all', 'stack']
-				},
-				StackLayoutInsetRight: {
-					baseType: 'NUMBER',
-					defaultValue: 0,
-					description: 'The right inset used by stack layout.',
-					_BMCategories: ['all', 'stack']
-				},
-				StackLayoutInsetBottom: {
-					baseType: 'NUMBER',
-					defaultValue: 0,
-					description: 'The bottom inset used by stack layout.',
-					_BMCategories: ['all', 'stack']
-				},
-				StackLayoutSpread: {
-					baseType: 'NUMBER',
-					defaultValue: 22,
-					description: 'Controls the spacing between background cells.',
-					_BMCategories: ['all', 'stack']
-				},
-				StackLayoutNumberOfBackgroundCells: {
-					baseType: 'NUMBER',
-					defaultValue: 3,
-					description: 'Controls how many background cells will be shown.',
-					_BMCategories: ['all', 'stack']
-				},
-				StackLayoutMinimumScale: {
-					baseType: 'NUMBER',
-					defaultValue: .9,
-					description: 'Controls how much the background cells will scale down before disappearing.',
-					_BMCategories: ['all', 'stack']
-				},
-				StackLayoutBlursBackgroundCells: {
-					baseType: 'BOOLEAN',
-					defaultValue: YES,
-					description: 'Controls whether the background cells will become blurred as they disappear.',
-					_BMCategories: ['all', 'stack']
-				},
-				StackLayoutMaximumBlur: {
-					baseType: 'NUMBER',
-					defaultValue: 8,
-					description: 'Controls how much the background cells will blur before disappearing.',
-					_BMCategories: ['all', 'stack']
-				},
-				
-				// ******************************************** CELL PROPERTIES ********************************************
-				CellMashupName: {
-					baseType: 'MASHUPNAME',
-					description: 'The mashup to use for data items.',
-					_BMSection: 'Cells',
-					_BMFriendlyName: 'Mashup name',
-					_BMCategories: ['all', 'cell']
-				},
-				CellMashupNameField: {
-					baseType: 'FIELDNAME',
-					sourcePropertyName: 'Data',
-					description: 'The field containing the mashup to use for data items. When this property is set, CellMashupName, CellMashupNameSelected and CellMashupName editing cannot be used.',
-					_BMCategories: ['all', 'cell']
-				},
-				CellMashupPropertyBinding: {
-					baseType: 'STRING',
-					defaultValue: '{}',
-					description: 'A serialized JSON object that has infotable fields as its keys and mashup parameters as values.',
-					_BMSection: 'Cells',
-					_BMFriendlyName: 'Mashup property binding',
-					_BMCategories: ['all', 'cell']
-				},
-				CellMashupGlobalPropertyBinding: {
-					baseType: 'STRING',
-					defaultValue: '{}',
-					description: 'A serialized JSON object that has global parameter names as its keys and data types as values. These are properties that may be bound on the collection view and will be sent down to each cell mashup.',
-					_BMSection: 'Cells',
-					_BMFriendlyName: 'Mashup global property binding',
-					_BMCategories: ['all', 'cell']
-				},
-				CellWidth: {
-					baseType: 'INTEGER',
-					defaultValue: 44,
-					description: 'Must be used with Flow layout. The default width to use for the collection view cells.',
-					_BMSection: 'Cells',
-					_BMFriendlyName: 'Cell width',
-					_BMCategories: ['all', 'flow', 'cell', 'tile']
-				},
-				CellHeight: {
-					baseType: 'INTEGER',
-					defaultValue: 44,
-					description: 'Must be used with Flow or Table layout. The default height to use for the collection view cells.',
-					_BMSection: 'Cells',
-					_BMFriendlyName: 'Cell height',
-					_BMCategories: ['all', 'table', 'flow', 'cell', 'tile']
-				},
-				CellWidthField: {
-					baseType: 'FIELDNAME',
-					sourcePropertyName: 'Data',
-					description: 'When set, has priority over CellWidth. Must be used with Flow layout. The default width to use for the collection view cells.',
-					_BMSection: 'Cells',
-					_BMFriendlyName: 'Cell width',
-					_BMCategories: ['all', 'flow', 'cell', 'tile']
-				},
-				CellHeightField: {
-					baseType: 'FIELDNAME',
-					sourcePropertyName: 'Data',
-					description: 'When set, has priority over CellHeight. Must be used with Flow or Table layout. The default height to use for the collection view cells.',
-					_BMSection: 'Cells',
-					_BMFriendlyName: 'Cell height',
-					_BMCategories: ['all', 'table', 'flow', 'cell', 'tile']
-				},
-				CellMashupHasIntrinsicSize: {
-					baseType: 'BOOLEAN',
-					defaultValue: NO,
-					description: 'Must be used with CellMashupNameField and static cell mashups. When this property is enabled, the collection view will use each mashup type\'s size as the cell size.',
-					_BMCategories: ['all', 'table', 'flow', 'cell', 'tile']
-				},
-				AutomaticCellSize: {
-					baseType: 'BOOLEAN',
-					defaultValue: NO,
-					description: 'BETA. Must be used with flow layout and a cell mashup whose root widget is a BMView widget. If enabled, the size of the cells will be determined from the intrinsic size of the cell\'s contents.\
-					When this property is enabled, the CellWidth and CellHeight property should be set to the average expected cell size.',
-					_BMCategories: ['all', 'flow', 'cell']
-				},
-				
-				
-				
-				// ******************************************** SELECTION PROPERTIES ********************************************
-				CanSelectCells: {
-					baseType: 'BOOLEAN',
-					defaultValue: true,
-					description: 'If enabled, cells can be selected, otherwise cells will be unselectable by this collection view.',
-					_BMSection: 'Selection',
-					_BMFriendlyName: 'Cell selection',
-					_BMCategories: ['all', 'selection']
-				},
-				/*CanSelectMultipleCells: {
-					baseType: 'BOOLEAN',
-					defaultValue: true,
-					description: 'If enabled, more than one cell can be selected at a time.',
-					_BMSection: 'Selection',
-					_BMFriendlyName: 'Multi-selection'
-				},*/
-				CellMultipleSelectionType: {
-					baseType: 'STRING',
-					defaultValue: 'Disabled',
-					description: 'Controls the multiple selection behaviour.',
-					selectOptions: [
-						{text: 'Disabled', value: 'Disabled'},
-						{text: 'Click/Tap', value: 'ClickTap'},
-						{text: 'Selection Mode', value: 'SelectionMode'},
-						{text: 'Ctrl+Click', value: 'CtrlClick'}
-					],
-					_BMCategories: ['all', 'selection']
-				},
-				CellMultipleSelectionModeEnabled: {
-					baseType: 'BOOLEAN',
-					defaultValue: NO,
-					isBindingSource: YES,
-					isEditable: NO,
-					description: 'Will be set to true whenever the multiple selection mode is active.',
-					_BMCategories: ['all', 'selection']
-				},
-				HasSelectedCells: {
-					baseType: 'BOOLEAN',
-					isEditable: NO,
-					description: 'Will be set to true whenever there is at least one selected cell in this collection view.',
-					isBindingSource: YES,
-					defaultValue: NO	,
-					_BMCategories: ['all', 'selection']
-				},
-				SelectedCellsCount: {
-					baseType: 'INTEGER',
-					isEditable: NO,
-					description: 'Contains the number of selected cells in the collection view.',
-					isBindingSource: YES,
-					defaultValue: 0,
-					_BMCategories: ['all', 'selection']
-				},
-				ScrollsToSelectedCell: {
-					baseType: 'BOOLEAN',
-					description: 'When enabled, whenever any other widget changes the selection, the collection view will automatically scroll to the first selected cell.',
-					defaultValue: NO,
-					_BMCategories: ['all', 'selection']
-				},
-				AutoSelectsFirstCell: {
-					baseType: 'BOOLEAN',
-					description: 'When enabled, when data is updated and no cell is selected, the collection view will automatically select the first available cell.',
-					defaultValue: NO,
-					_BMCategories: ['all', 'selection']
-				},
-				CellMashupSelectedField: {
-					baseType: 'STRING',
-					defaultValue: '',
-					description: 'Optional. If specified, this represents the mashup parameter that will receive the selected state of the object it is bound to.',
-					_BMSection: 'Cells',
-					_BMFriendlyName: 'Mashup selected parameter',
-					_BMCategories: ['all', 'cell', 'selection']
-				},
-
-				
-				// ******************************************** HIGHLIGHT PROPERTIES ********************************************
-				KeyboardHighlightingEnabled: {
-					baseType: 'BOOLEAN',
-					description: 'When enabled, keyboard navigation can be used to highlight cells.',
-					defaultValue: NO,
-					_BMCategories: ['all', 'highlighting']
-				},
-				KeyboardAutoHighlightsFirstCell: {
-					baseType: 'BOOLEAN',
-					description: 'When enabled, when data is updated and no cell is highlighted, the collection view will automatically highlight the first available cell.',
-					defaultValue: NO,
-					_BMCategories: ['all', 'selection']
-				},
-				KeyboardHighlightingBehaviour: {
-					baseType: 'STRING',
-					defaultValue: 'Highlight',
-					description: 'Controls what happens when a cell is highlighted.',
-					selectOptions: [
-						{text: 'Highlight', value: 'Highlight'},
-						{text: 'Select', value: 'Select'}
-					],
-					_BMCategories: ['all', 'selection']
-				},
-				KeyboardHighlightingSpacebarBehaviour: {
-					baseType: 'STRING',
-					defaultValue: 'Event',
-					description: 'Controls what happens the spacebar key is pressed while a cell is highlighted.',
-					selectOptions: [
-						{text: 'Event', value: 'Event'},
-						{text: 'Click', value: 'Click'},
-						{text: 'Select', value: 'Select'}
-					],
-					_BMCategories: ['all', 'selection']
-				},
-				KeyboardHighlightingReturnBehaviour: {
-					baseType: 'STRING',
-					defaultValue: 'Event',
-					description: 'Controls what happens the return key is pressed while a cell is highlighted.',
-					selectOptions: [
-						{text: 'Event', value: 'Event'},
-						{text: 'Click', value: 'Click'},
-						{text: 'Select', value: 'Select'}
-					],
-					_BMCategories: ['all', 'selection']
-				},
-				KeyboardHighlightOmitsInputElements: {
-					baseType: 'STRING',
-					defaultValue: 'All',
-					description: 'Controls which parts of keyboard navigation are disabled when an input or button element has keyboard focus.',
-					selectOptions: [
-						{text: 'All', value: 'All'},
-						{text: 'Navigation', value: 'Navigation'},
-						{text: 'Actions', value: 'Actions'},
-						{text: 'None', value: 'None'}
-					],
-					_BMCategories: ['all', 'selection']
-				},
-				KeyboardBlockSelectionEnabled: {
-					baseType: 'BOOLEAN',
-					description: 'Must be used with KeyboardHighlightEnabled and CellMultipleSelectionType enabled. When enabled, using the shift key with keyboard navigation selects a block of cells.',
-					defaultValue: NO,
-					_BMCategories: ['all', 'highlighting']
-				},
-				KeyboardDelegateWidget: {
-					baseType: 'STRING',
-					description: 'The displayName of a widget that can process keyboard events for this collection view.',
-					defaultValue: '',
-					_BMCategories: ['all', 'highlighting']
-				},
-				KeyboardDelegateWidgetKeys: {
-					baseType: 'STRING',
-					description: 'An array containing the supported keys that can be processed by the keyboard delegate widget.',
-					defaultValue: '["ArrowDown", "ArrowUp", "Enter"]',
-					_BMCategories: ['all', 'highlighting']
-				},
-				KeyboardDelegateWidgetStealFocus: {
-					baseType: 'BOOLEAN',
-					defaultValue: NO,
-					description: 'Must be used with KeyboardDelegateWidget. When enabled, pressing any supported key will cause this collection view to acquire keyboard focus from the delegate widget.',
-					_BMCategories: ['all', 'highlighting']
-				},
-				TabIndex: {
-					baseType: 'NUMBER',
-					defaultValue: -1,
-					description: 'The tab index to assign to this collection view',
-					_BMFriendlyName: 'Mashup selected parameter',
-					_BMCategories: ['all', 'highlighting']
-				},
-				
-				
-				// ******************************************** STYLE PROPERTIES ********************************************
-				BackgroundStyle: {
-					baseType: 'STYLEDEFINITION',
-					description: 'Controls the background of collection view. Only the backround color property of the style is used.',
-					_BMSection: 'Styles',
-					_BMFriendlyName: 'Background style',
-					_BMCategories: ['all', 'styles']
-				},
-				CellStyle: {
-					baseType: 'STYLEDEFINITION',
-					description: 'Controls the background of cells. Only the backround color property of the style is used.',
-					_BMSection: 'Styles',
-					_BMFriendlyName: 'Background style',
-					_BMCategories: ['all', 'styles']
-				},
-				CellStyleSelected: {
-					baseType: 'STYLEDEFINITION',
-					description: 'Controls the background of the selected cells. Only the backround color property of the style is used.',
-					_BMSection: 'Styles',
-					_BMFriendlyName: 'Selected style',
-					_BMCategories: ['all', 'styles']
-				},
-				CellMashupNameSelected: {
-					baseType: 'MASHUPNAME',
-					description: 'If specified, has priority over CellStyleSelected. An alternative mashup to use for selected cells. This mashup should have the same properties as the cell mashup.',
-					_BMSection: 'Styles',
-					_BMFriendlyName: 'Selected Mashup name',
-					_BMCategories: ['all', 'styles']
-				},
-				CellStyleHover: {
-					baseType: 'STYLEDEFINITION',
-					description: 'Controls the background of the cells when hovering. Only the background color property of the style is used.',
-					_BMSection: 'Styles',
-					_BMFriendlyName: 'Hover style',
-					_BMCategories: ['all', 'styles']
-				},
-				CellStyleActive: {
-					baseType: 'STYLEDEFINITION',
-					description: 'Controls the background of the cells when pressed. Only the background color property of the style is used.',
-					_BMSection: 'Cells',
-					_BMFriendlyName: 'Active style',
-					_BMCategories: ['all', 'styles']
-				},
-				CellBorderRadius: {
-					baseType: 'STRING',
-					description: 'An optional border radius to apply to the cells. When this value is set to a non-empty string, the cells will have their overflow property set to hidden.',
-					defaultValue: 0,
-					_BMSection: 'Styles',
-					_BMFriendlyName: 'Border radius',
-					_BMCategories: ['all', 'styles']
-				},
-				CellBoxShadow: {
-					baseType: 'STRING',
-					description: 'When set to a non-empty string, this will be used as the box-shadow for the cells.',
-					defaultValue: '',
-					_BMSection: 'Styles',
-					_BMFriendlyName: 'Box shadow',
-					_BMCategories: ['all', 'styles']
-				},
-				CellPointer: {
-					baseType: 'STRING',
-					description: 'Controls how the mouse pointer appears when hovering over this collection view\'s cells.',
-					selectOptions: [
-						{text: 'Auto', value: 'auto'},
-						{text: 'Hand', value: 'pointer'},
-						{text: 'Arrow', value: 'default'}
-					],
-					defaultValue: 'Auto',
-					_BMCategories: ['all', 'styles']
-				},
-				UsesRipple: {
-					baseType: 'BOOLEAN',
-					defaultValue: false,
-					description: 'If enabled, a ripple effect is used when clicking on cells. Using this option will cause the cells to have their overflow property set to hidden.',
-					_BMSection: 'Styles',
-					_BMFriendlyName: 'Ripple',
-					_BMCategories: ['all', 'styles']
-				},
-				RippleStyle: {
-					baseType: 'STYLEDEFINITION',
-					description: 'Must be used with UsesRipple. Only the background color property of this style is used, which will be applied to the ripple effect.',
-					_BMSection: 'Styles',
-					_BMFriendlyName: 'Ripple style',
-					_BMCategories: ['all', 'styles']
-				},
-				
-				
-				
-				// ******************************************** SCROLLBAR PROPERTIES ********************************************
-				ScrollbarStyle: {
-					baseType: 'STYLEDEFINITION',
-					description: 'The style to use for the scrollbar.',
-					_BMSection: 'Scrollbar',
-					_BMFriendlyName: 'Scrollbar Style',
-					_BMCategories: ['all', 'styles', 'scrollbar']
-				},
-				ScrollbarTrackStyle: {
-					baseType: 'STYLEDEFINITION',
-					description: 'Only used if you have also set a scrollbar style. The style to use for the scrollbar track.',
-					_BMSection: 'Scrollbar',
-					_BMFriendlyName: 'Scrollbar Style',
-					_BMCategories: ['all', 'styles', 'scrollbar']
-				},
-				ScrollbarBorderRadius: {
-					baseType: 'NUMBER',
-					description: 'Only used if you have also set a scrollbar style. The border radius to apply to the scrollbar, in pixels.',
-					defaultValue: 6,
-					_BMSection: 'Scrollbar',
-					_BMFriendlyName: 'Scrollbar Width',
-					_BMCategories: ['all', 'styles', 'scrollbar']
-				},
-				ScrollbarWidth: {
-					baseType: 'NUMBER',
-					description: 'Only used if you have also set a scrollbar style. The width of the scrollbar, in pixels.',
-					defaultValue: 12,
-					_BMSection: 'Scrollbar',
-					_BMFriendlyName: 'Scrollbar Width',
-					_BMCategories: ['all', 'styles', 'scrollbar']
-				},
-				LinkedCollectionView: {
-					baseType: 'STRING',
-					description: 'When set to the DisplayName of a Collection View, this Collection View\'s scroll position will be linked to the target\'s scroll position.',
-					defaultValue: '',
-					_BMSection: 'Scrollbar',
-					_BMFriendlyName: 'Linked Collection View',
-					_BMCategories: ['all', 'scrollbar']
-				},
-				
-				
-				
-				// ******************************************** MENU PROPERTIES ********************************************
-				CellSlideMenu: {
-					baseType: 'STATEDEFINITION',
-					description: 'If set to a string-based state definition, this will be the cell menu that appears when sliding over the cells. On devices without a touch interface, this menu can be displayed by right-clicking on the cells.',
-					_BMSection: 'Menu',
-					_BMFriendlyName: 'Slide menu definition',
-					_BMCategories: ['all', 'menu']
-				},
-				CellSlideMenuUseBuiltin: {
-					baseType: 'BOOLEAN',
-					defaultValue: YES,
-					description: 'If disabled, the default menu invoking behaviours will be disabled.',
-					_BMCategories: ['all', 'menu']
-				},
-				CellSlideMenuIconSize: {
-					baseType: 'INTEGER',
-					description: 'Must be used with CellSlideMenu. The menu icons will be set to this size.',
-					defaultValue: 16,
-					_BMSection: 'Menu',
-					_BMFriendlyName: 'Icon size',
-					_BMCategories: ['all', 'menu']
-				},
-				CellSlideMenuIconGravity: {
-					baseType: 'STRING',
-					description: 'Must be used with CellSlideMenu. Controls how the icon is anchored to the text in the menu entry.',
-					selectOptions: [
-						{text: 'Left', value: 'Left'},
-						{text: 'Above', value: 'Above'},
-						{text: 'Right', value: 'Right'},
-						{text: 'Below', value: 'Below'}
-					],
-					defaultValue: 'Left',
-					_BMSection: 'Menu',
-					_BMFriendlyName: 'Icon gravity',
-					_BMCategories: ['all', 'menu']
-				},
-				CellSlideMenuOrientation: {
-					baseType: 'STRING',
-					description: 'Must be used with CellSlideMenu. Controls how the menu entries are laid out.',
-					selectOptions: [
-						{text: 'Horizontal', value: 'Horizontal'},
-						{text: 'Vertical', value: 'Vertical'}
-					],
-					defaultValue: 'Horizontal',
-					_BMSection: 'Menu',
-					_BMFriendlyName: 'Orientation',
-					_BMCategories: ['all', 'menu']
-				},
-				CellSlideMenuType: {
-					baseType: 'STRING',
-					description: 'Must be used with CellSlideMenu. Controls how the slide menu appears.',
-					selectOptions: [
-						{text: 'Auto', value: 'Auto'},
-						{text: 'Slide', value: 'Slide'},
-						{text: 'Popup', value: 'Popup'}
-					],
-					defaultValue: 'Auto',
-					_BMCategories: ['all', 'menu']
-				},
-				
-				
-				
-				// ******************************************** HEADER PROPERTIES ********************************************
-				ShowsHeaders: {
-					baseType: 'BOOLEAN',
-					defaultValue: false,
-					description: 'If enabled and using sections, each section will have a header.',
-					_BMSection: 'Header',
-					_BMFriendlyName: 'Headers',
-					_BMCategories: ['all', 'table', 'flow', 'tile']
-				},
-				HeaderMashupName: {
-					baseType: 'MASHUPNAME',
-					description: 'Must be used with SectionField and ShowsHeaders. The mashup to use for headers.',
-					_BMSection: 'Header',
-					_BMFriendlyName: 'Header Mashup name',
-					_BMCategories: ['all', 'table', 'flow', 'tile']
-				},
-				HeaderMashupSectionProperty: {
-					baseType: 'STRING',
-					defaultValue: '',
-					description: 'The mashup parameter that will receive the section identifier.',
-					_BMSection: 'Header',
-					_BMFriendlyName: 'Section parameter',
-					_BMCategories: ['all', 'table', 'flow', 'tile']
-				},
-				HeaderHeight: {
-					baseType: 'INTEGER',
-					defaultValue: 44,
-					description: 'Must be used with SectionField and ShowsHeaders. The height of the header mashups.',
-					_BMSection: 'Header',
-					_BMFriendlyName: 'Height',
-					_BMCategories: ['all', 'table', 'flow', 'tile']
-				},
-				
-				
-				
-				// ******************************************** FOOTER PROPERTIES ********************************************
-				ShowsFooters: {
-					baseType: 'BOOLEAN',
-					defaultValue: false,
-					description: 'If enabled and using sections, each section will have a footer.',
-					_BMSection: 'Footer',
-					_BMFriendlyName: 'Footers',
-					_BMCategories: ['all', 'table', 'flow', 'tile']
-				},
-				FooterMashupName: {
-					baseType: 'MASHUPNAME',
-					description: 'Must be used with SectionField and ShowsFooters. The mashup to use for footers.',
-					_BMSection: 'Footer',
-					_BMFriendlyName: 'Footer mashup name',
-					_BMCategories: ['all', 'table', 'flow', 'tile']
-				},
-				FooterMashupSectionProperty: {
-					baseType: 'STRING',
-					defaultValue: '',
-					description: 'The mashup parameter that will receive the section identifier.',
-					_BMSection: 'Footer',
-					_BMFriendlyName: 'Section parameter',
-					_BMCategories: ['all', 'table', 'flow', 'tile']
-				},
-				FooterHeight: {
-					baseType: 'INTEGER',
-					defaultValue: 44,
-					description: 'Must be used with SectionField and ShowsFooters. The height of the footer mashups.',
-					_BMSection: 'Footer',
-					_BMFriendlyName: 'Height',
-					_BMCategories: ['all', 'table', 'flow', 'tile']
-				},
-				
-				
-				
-				// ******************************************** EMPTY VIEW PROPERTIES ********************************************
-				EmptyMashupName: {
-					baseType: 'MASHUPNAME',
-					description: 'Optional. If specified, this mashup will be displayed when the data set is empty',
-					_BMSection: 'Empty View',
-					_BMFriendlyName: 'Empty Mashup name',
-					_BMCategories: ['all', 'table', 'flow', 'tile']
-				},
-				EmptyMashupParameters: {
-					baseType: 'STRING',
-					description: 'A JSON object that specifies static string values that will be assiged as parameters for the empty mashup.',
-					defaultValue: '{}',
-					isBindingTarget: YES,
-					_BMSection: 'Empty View',
-					_BMFriendlyName: 'Empty Mashup parameters',
-					_BMCategories: ['all', 'table', 'flow', 'tile']
-				},
-				
-				
-				
-				// ******************************************** ANIMATION PROPERTIES ********************************************
-				PlaysIntroAnimation: {
-					baseType: 		'BOOLEAN',
-					description: 	'If enabled, an animation will be played to show the cells when the data first arrives to this collection view. ' +
-									'Otherwise the cells will appear instantly the first time.',
-					defaultValue:	true,
-					_BMSection: 	'Styles',
-					_BMFriendlyName: 'Intro animation',
-					_BMCategories: ['all', 'styles']
-				},
-				
-				
-				
-				// ******************************************** DATA MANIPULATION ********************************************
-				
-				CanDragCells: {
-					baseType: 'BOOLEAN',
-					description: 'Can be enabled to allow collection view to manipulate items via drag & drop.',
-					defaultValue: NO,
-					isBindingTarget: YES,
-					_BMCategories: ['all', 'manipulation']
-				},
-				CanMoveCells: {
-					baseType: 'BOOLEAN',
-					description: 'Can be enabled to allow collection view to move items via drag & drop.',
-					defaultValue: NO,
-					_BMCategories: ['all', 'manipulation']
-				},
-				CanMoveCellsAcrossSections: {
-					baseType: 'BOOLEAN',
-					description: 'Must be used with CanMoveCells. If enabled, collection view will allow dragged items to move to other sections.',
-					defaultValue: NO,
-					_BMCategories: ['all', 'manipulation']
-				},
-				CanRemoveCells: {
-					baseType: 'BOOLEAN',
-					description: 'Can be enabled to allow collection view to remove items by dragging them out of its frame.',
-					defaultValue: NO,
-					_BMCategories: ['all', 'manipulation']
-				},
-				CanTransferCells: {
-					baseType: 'BOOLEAN',
-					description: 'Can be enabled to allow collection view to transfer items to other collection views.',
-					defaultValue: NO,
-					_BMCategories: ['all', 'manipulation']
-				},
-				CellTransferPolicy: {
-					baseType: 'STRING',
-					description: 'Controls what happens to items when they are dragged into another collection view.',
-					selectOptions: [
-						{text: 'Move', value: 'Move'},
-						{text: 'Copy', value: 'Copy'}
-					],
-					defaultValue: 'Move',
-					_BMCategories: ['all', 'manipulation']
-				},
-				CanAcceptCells: {
-					baseType: 'BOOLEAN',
-					description: 'Can be enabled to allow collection view to accept items from other collection views.',
-					defaultValue: NO,
-					_BMCategories: ['all', 'manipulation']
-				},
-				CellAcceptPolicy: {
-					baseType: 'STRING',
-					description: 'Controls what happens to items when they are dragged into this collection view from another collection view.',
-					selectOptions: [
-						{text: 'Move', value: 'Move'},
-						{text: 'Copy', value: 'Copy'},
-						{text: 'Replace', value: 'Replace'}
-					],
-					defaultValue: 'Move',
-					_BMCategories: ['all', 'manipulation']
-				},
-				DataShape: {
-					baseType: 'DATASHAPENAME',
-					description: 'Optional. If specified and Data is not bound, this allows the CreateItem... services to be invoked.',
-					_BMCategories: ['all', 'manipulation']
-				},
-				CreationIndex: {
-					baseType: 'INTEGER',
-					description: 'Defaults to 0. If specified or bound, this index is used when invoking the CreateItemAtIndex service.',
-					isBindingTarget: YES,
-					_BMCategories: ['all', 'manipulation']
-				},
-				DeletionUID: {
-					baseType: 'ANYSCALAR',
-					isBindingTarget: YES,
-					description: 'Optional. If bound, this item UID is used when invoking the DeleteItem service.',
-					_BMCategories: ['all', 'manipulation']
-				},
-				CellMashupNameEditing: {
-					baseType: 'MASHUPNAME',
-					description: 'Optional. If specified, this mashup is used for cells that are being edited.'	,
-					_BMCategories: ['all', 'cell', 'manipulation']
-				},
-				CellMashupEditingParameter: {
-					baseType: 'STRING',
-					description: 'Optional. If specified, this is the mashup parameter that will receive the editing state of the mashup.',
-					_BMCategories: ['all', 'cell', 'manipulation']
-				},
-				EmptyDataSetOnStartup: {
-					baseType: 'BOOLEAN',
-					description: 'Requires setting a data shape. Can be enabled to cause collection view to start with an empty data set.',
-					defaultValue: NO,
-					_BMCategories: ['all', 'manipulation']
-				},
-				
-				
-				// ******************************************** PERFORMANCE PROPERTIES ********************************************
-				UseCustomScrollerOnWindowsDesktops: {
-					baseType: 'BOOLEAN',
-					description: 'If enabled, the collection view will use iOS/macOS style scrollbars when running on desktop Windows browsers.',
-					defaultValue: NO,
-					_BMSection: 'Avanced',
-					_BMFriendlyName: 'Enable iScroll on Windows Desktops',
-					_BMCategories: ['all', 'performance']
-				},
-				AlwaysUseCustomScrollerOniOS: {
-					baseType: 'BOOLEAN',
-					description: 'If enabled, the collection will use the custom scroller on iOS even when not running in web-app mode',
-					defaultValue: NO,
-					_BMSection: 'Avanced',
-					_BMFriendlyName: 'Enable iScroll on iOS Safari',
-					_BMCategories: ['all', 'performance']
-				},
-				OffScreenBufferFactor: {
-					baseType: 'NUMBER',
-					defaultValue: 0.5,
-					description: 'The percentage of frame size to use when computing a new off-screen buffer size. Higher values will cause more off-screen elements to be rendered which decreases the flicker at high scrolling speeds. Lower values decrease the number of off-screen elements and should be used to reduce the jitter on iOS when complex layouts that reflow often are used as cell contents (such as cells with many gauges).',
-					_BMSection: 'Avanced',
-					_BMFriendlyName: 'Off-screen buffer factor',
-					_BMCategories: ['all', 'performance']
-				},
-				'[Experimental] Fast widget append': {
-					baseType: 'BOOLEAN',
-					defaultValue: NO,
-					description: 'If enabled, the collection view will use an experimental faster widget creation method.',
-					_BMSection: 'Avanced',
-					_BMFriendlyName: 'Experimental fast widget append',
-					_BMCategories: ['all', 'performance']
-				},
-				HandlesResponsiveWidgets: {
-					baseType: 'BOOLEAN',
-					defaultValue: NO,
-					description: 'If enabled, the collection view will invoke resize on responsive widgets.',
-					_BMCategories: ['all', 'performance']
-				},
-				HandlesResponsiveWidgetsImmediately: {
-					baseType: 'BOOLEAN',
-					defaultValue: NO,
-					description: 'If enabled, the collection view will invoke resize on responsive widgets during animations.',
-					_BMCategories: ['all', 'performance']
-				},
-				DirectLink: {
-					baseType: 'BOOLEAN',
-					defaultValue: NO,
-					description: 'Requires the Debugger entities and extensions. If enabled, changes to this Collection View layout will automatically update the mashup.',
-					_BMCategories: ['all', 'performance']
-				},
-				
-				
-				
-				// ******************************************** INTERNAL PROPERTIES ********************************************
-				_Left: {
-					baseType: 'NUMBER',
-					isVisible: NO,
-					_BMCategories: []
-				},
-				_Top: {
-					baseType: 'NUMBER',
-					isVisible: NO,
-					_BMCategories: []
-				},
-				_Width: {
-					baseType: 'NUMBER',
-					isVisible: NO,
-					_BMCategories: []
-				},
-				_Height: {
-					baseType: 'NUMBER',
-					isVisible: NO,
-					_BMCategories: []
-				},
-				_EventDataShape: {
-					baseType: 'STRING',
-					isVisible: false,
-					defaultValue: '{}',
-					_BMCategories: []
-				},
-				_CanDoubleClick: {
-					baseType: 'BOOLEAN',
-					isVisible: false,
-					defaultValue: false,
-					_BMCategories: []
-				},
-				_MenuDefinition: {
-					baseType: 'STRING',
-					isVisible: false,
-					defaultValue: '[]',
-					_BMCategories: []
-				},
-				_GlobalDataShape: {
-					baseType: 'STRING',
-					isVisible: false,
-					defaultValue: '{}',
-					_BMCategories: []
-				},
-				DirectLinkUUID: {
-					baseType: 'STRING',
-					defaultValue: '',
-					isVisible: NO,
-					_BMCategories: []
-				},
-				__BaseTypes: {
-					baseType: 'INFOTABLE',
-					isVisible: NO,
-					_BMCategories: []
-				}
-			}
+			properties: BMCollectionViewGetProperties()
 		};
 
 		if (!('BMCoreComposer' in window)) {
@@ -3240,7 +3286,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			event.preventDefault();
 
 			const confirmationPopup = BMConfirmationPopup.confirmationPopupWithTitle('Downgrade to Collection', {
-				text: 'This action will downgrade this Collection View to a standard collection.\nSome settings may be lost during the conversion',
+				text: 'This action will downgrade this Collection View to a built-in collection.\nSome settings may be lost during the conversion.',
 				positiveActionText: 'Downgrade',
 				negativeActionText: 'Don\'t Downgrade'
 			});
@@ -3692,3 +3738,126 @@ export class BMCollectionViewEditingController extends TWComposerWidget {
 
 // #endregion
 
+// #region Collection upgrade
+
+const _collection = TW.IDE.Widgets.collection as unknown as () => void;
+
+TW.IDE.Widgets.collection = function (this: TWComposerWidget & Dictionary<any>) {
+	_collection.apply(this, arguments as any);
+
+	// Override after render to add the upgrade button
+	this._afterRender = this.afterRender;
+	this.afterRender = function () {
+		this._afterRender.apply(this, arguments);
+
+		const upgradeButton = document.createElement('button');
+		upgradeButton.className = 'BMCollectionViewWidgetUpgradeButton';
+		upgradeButton.innerText = '⥣';
+
+		this.jqElement[0].appendChild(upgradeButton);
+
+		upgradeButton.addEventListener('click', async (event) => {
+			
+			event.stopImmediatePropagation();
+			event.stopPropagation();
+			event.preventDefault();
+
+			const confirmationPopup = BMConfirmationPopup.confirmationPopupWithTitle('Upgrade to Collection View', {
+				text: 'This action will upgrade this built-in collection to a Collection View.\nSome settings may be lost during the conversion.',
+				positiveActionText: 'Upgrade',
+				negativeActionText: 'Don\'t Upgrade'
+			});
+			
+			if (await confirmationPopup.confirm() == BMConfirmationPopupResult.Confirmed) {
+				upgradeButton.classList.add('BMCollectionViewWidgetInactiveButton');
+
+				this.jqElement.parent()[0].style.pointerEvents = 'none';
+
+				// It appears that clicking the downgrade button will also cause the widget to be selected (after a delay),
+				// which overrides the parent selection so a timeout is used to avoid this
+				setTimeout(() => {
+					this.parentWidget!.selectWidget();
+
+					// A second timeout is used to ensure that the property panel has finished changing
+					// This is required because otherwise the new properties object may become corrupted
+					setTimeout(() => {
+						const message = this.upgradeToCollectionView();
+		
+						const alertPopup = BMAlertPopup.alertPopupWithTitle('Upgrade Complete', {text: '', actionText: 'Done'});
+						alertPopup.HTML = message;
+						alertPopup.confirm();
+					}, 100);
+				}, 100);
+				
+			}
+		});
+	}
+
+	
+	
+	/**
+	 * Upgrades this widget to a Collection View, providing a report of what could not be migrated.
+	 * @return		A message to display to the user indicating the upgrade result.
+	 */
+	this.upgradeToCollectionView = function(): string {
+		let report = '';
+
+		const props: any = (this as any).properties;
+
+		if (this.getProperty('ItemLoadBehavior') != 'loadUnload') {
+			report += '<li style="line-height: 1.5">The <code>' + this.getProperty('ItemLoadBehavior') + '<code> value for the <code>ItemLoadBehavior</code> property is unsupported and will be set to <code>loadUnload</code>.</li>';
+		}
+
+		if (this.getProperty('DisableWrapping')) {
+			report += '<li style="line-height: 1.5">The <code>DisableWrapping</code> property is not supported and will be disabled. This behaviour can be approximated by using a horizontal layout for.</li>';
+		}
+
+		// Prepare the new collection properties
+		const newProperties = {
+			FlowLayoutPinsFootersToContentEdge: this.getProperty('PinsFootersToBottom'),
+			FlowLayoutPinsHeadersToContentEdge: this.getProperty('PinsHeadersToTop'),
+			TableLayoutPinsFootersToContentEdge: this.getProperty('PinsFootersToBottom'),
+			TableLayoutPinsHeadersToContentEdge: this.getProperty('PinsHeadersToTop'),
+			TileLayoutPinsFootersToContentEdge: this.getProperty('PinsFootersToBottom'),
+			TileLayoutPinsHeadersToContentEdge: this.getProperty('PinsHeadersToTop')
+		};
+
+		// Copy over the properties with static values
+		for (const key in BMCollectionViewUpgradeStaticFields) {
+			newProperties[key] = BMCollectionViewUpgradeStaticFields[key];
+		}
+
+		// Migrate the existing properties using the new names
+		for (const key in BMCollectionViewUpgradePropertyMap) {
+			const collectionFieldName = BMCollectionViewUpgradePropertyMap[key];
+
+			newProperties[collectionFieldName] = props[key];
+		}
+
+		// Set up the default values for any property that doesn't support migration
+		const defaultProperties = BMCollectionViewGetProperties();
+		for (const key in defaultProperties) {
+			if (!(key in newProperties)) {
+				newProperties[key] = defaultProperties[key].defaultValue;
+			}
+		}
+
+		// Delete all existing properties
+		for (const key in props) {
+			delete props[key];
+		}
+
+		// Use the new properties as the properties object
+		BMCopyProperties(props, newProperties);
+
+		if (!report) {
+			return 'Your collection has been upgraded.<br><br>To commit your changes, save your mashup, then close and reopen it.';
+		}
+
+		return `Your collection has been upgraded, but certain properties will no longer be supported.<br><br>Please review the upgrade report below:<br><br><ul style="list-style: disc inside; margin-left: 0; padding-left: 32px;">${report}</ul><br><br>To commit your changes, save your mashup, then close and reopen it.`;
+
+	}
+
+} as unknown as { new (...args: any[]): TWComposerWidget };
+
+// #endregion
