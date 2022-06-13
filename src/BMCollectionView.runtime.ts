@@ -10,6 +10,27 @@ enum BMCollectionViewWidgetSlideMenuType {
 	Popup = 'Popup'
 }
 
+/**
+ * An enum that contains that describe how a menu should display.
+ */
+ enum BMCollectionViewMenuDisplayMode {
+    /**
+     * Indicates that the kind of menu is determined by the
+     * kind of event that triggers it.
+     */
+    Auto = 'auto',
+
+    /**
+     * Indicates that the menu will always appear as a desktop menu.
+     */
+    Mouse = 'mouse',
+
+    /**
+     * Indicates that the menu will always appear as a touch menu.
+     */
+    Touch = 'touch'
+}
+
 declare var self: never;
 
 declare class DataManager extends TWDataManager {};
@@ -2638,7 +2659,8 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			};
 
 			// Update to the newly constructed data
-			return this.updateProperty({TargetProperty: 'Data', ActualDataRows: newData.rows, SinglePropertyValue: newData, Animated: NO}, args);
+			const Animated = this.getProperty('AnimatesAdditionalDataUpdates', NO);
+			return this.updateProperty({TargetProperty: 'Data', ActualDataRows: newData.rows, SinglePropertyValue: newData, Animated}, args);
 		}
 		else if (property == 'Data') {
 
@@ -4314,10 +4336,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		}
 		
 		// Long click events originate from mousedown or touchstart events so this event type can be used to differentiate between taps and clicks
-		if (event.type == 'touchstart') {
+		if (event.type == 'touchstart' || this.getProperty('CellSlideMenuLongClick', NO)) {
 			// On mobiles, the default action for long tapping is to bring up the menu
 			if (this.menuStateDefinition?.length && this.menuUseBuiltin && this.menuKind != BMCollectionViewWidgetSlideMenuType.Slide) {
-				this.showPopupMenuForCell(cell, {forEvent: event});
+				this.showPopupMenuForCell(cell, {forEvent: event, kind: BMCollectionViewMenuDisplayMode.Touch});
 				return YES;
 			}
 		}
@@ -4865,7 +4887,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 *	@param forEvent <$event, nullable>			If this is requested in response to an event, this represents the event that triggered this action.
 	 * }
 	 */
-	showPopupMenuForCell(cell: BMCollectionViewMashupCell, {forEvent: event}: {forEvent?: $event | Event} = {}) {
+	showPopupMenuForCell(cell: BMCollectionViewMashupCell, {forEvent: event, kind = BMCollectionViewMenuDisplayMode.Auto}: {forEvent?: $event | Event, kind?: BMCollectionViewMenuDisplayMode} = {}) {
 		const items: BMMenuItem[] = [];
 
 		const action = (item: BMMenuItem) => {
@@ -4898,8 +4920,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		}
 
 		if (sourceEvent) {
-			if (sourceEvent.type == 'touchstart') {
-				(menu as any).openFromNode(cell.node);
+			if (
+				(sourceEvent.type == 'touchstart' && kind == BMCollectionViewMenuDisplayMode.Auto) ||
+				kind == BMCollectionViewMenuDisplayMode.Touch
+			) {
+				menu.openFromNode(cell.node);
 			}
 			else {
 				menu.openAtPoint(BMPointMake(sourceEvent.pageX, sourceEvent.pageY));
