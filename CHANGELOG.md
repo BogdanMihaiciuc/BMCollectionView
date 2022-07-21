@@ -15,9 +15,13 @@ The following new events can be used to request additional data:
 
 Fixes an issue with downgrading to collection where the `FlowLayoutRowSpacing` property was not properly migrated, making it impossible for the downgraded collection to generate a layout.
 
+Resolves an issue where enabling the `KeyboardHighlightingEnabled` property had no effect.
+
 Adds a new **Upgrade to Collection View** button on all collection widgets to make it easier to migrate from the built-in collection to collection view.
 
 Adds a new `CellSlideMenuLongClick` property that can be enabled to cause long click to bring up the menu.
+
+Resolves an issue when using Thingworx 9.2.8, 9.3.3 or later that prevented the `Loaded` event from firing on cell mashups.
 
 # 2.8.2
 

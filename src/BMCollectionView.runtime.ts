@@ -1056,7 +1056,22 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 		}
 
 		// Create the data manager
-		mashup.dataMgr.loadFromMashup(mashup);
+        // As of Thingworx 9.2.8 and 9.3.3, the manager waits for a group of promises that
+        // appears to always be blank; in these cases make the promise synchronous
+        const _all = Promise.all;
+        Promise.all = function (promises) {
+            // When the promises is an empty array, fire then immediately
+            if (!promises?.length) {
+                return {
+                    then(callback) {
+                        callback([]);
+                    }
+                }
+            }
+            return _all.apply(Promise, arguments as any);
+        } as any;
+		const dataMgrLoadResult = mashup.dataMgr.loadFromMashup(mashup);
+        Promise.all = _all;
 
 		// Set to YES if this mashup update is part of an animated transition
 		let performsMashupTransition = NO;
@@ -1160,15 +1175,32 @@ export class BMCollectionViewMashupCell extends BMCollectionViewCell {
 			self.controller.setProperty('Data', self.controller.getProperty('Data'));
 			
 		};
-		
-		// Set up the parameter values
-		if (self._parameters) self._setParametersInternal();
-		if (self._globalParameters) self._setGlobalParametersInternal();
-		self._setEditingParameterInternal();
-		self._setSelectedParameterInternal();
-		
-		// Fire the MashupLoaded event to signal that loading is complete
-        mashup.fireMashupLoadedEvent();
+
+
+        // As of Thingworx 9.2.8 and 9.3.3, data manager loading is async and it is required to wait for it
+        // before firing the loaded event or setting parameters
+        if (dataMgrLoadResult instanceof Promise) {
+			dataMgrLoadResult.then(() => {
+				// Set up the parameter values
+				if (self._parameters) self._setParametersInternal();
+				if (self._globalParameters) self._setGlobalParametersInternal();
+				self._setEditingParameterInternal();
+				self._setSelectedParameterInternal();
+				
+				// Fire the MashupLoaded event to signal that loading is complete
+				mashup.fireMashupLoadedEvent();
+			});
+        }
+        else {
+			// Set up the parameter values
+			if (self._parameters) self._setParametersInternal();
+			if (self._globalParameters) self._setGlobalParametersInternal();
+			self._setEditingParameterInternal();
+			self._setSelectedParameterInternal();
+			
+			// Fire the MashupLoaded event to signal that loading is complete
+			mashup.fireMashupLoadedEvent();
+        }
 
 		if (performsMashupTransition && mashupRootView) {
 			// Layout the mashup contents prior to rendering
