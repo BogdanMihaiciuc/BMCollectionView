@@ -23,6 +23,10 @@ Adds a new `CellSlideMenuLongClick` property that can be enabled to cause long c
 
 Resolves an issue when using Thingworx 9.2.8, 9.3.3 or later that prevented the `Loaded` event from firing on cell mashups.
 
+# 2.8.4
+
+Resolves an issue when using Thingworx 9.2.8, 9.3.3 or later that prevented the `Loaded` event from firing on cell mashups.
+
 # 2.8.2
 
 Resolves an issue that caused mashups displayed by collection views to have incorrect styling when they had spaces in their name.
