@@ -38,6 +38,7 @@ declare class DataManager extends TWDataManager {};
 declare var Encoder: any;
 
 // This flag controls whether the new features that require BMCollectionViewCell to subclass BMView should be enabled
+// Setting this flag to `NO` is no longer supported
 const USE_BMVIEW_SUBCLASS: boolean = YES;
 
 // A flag used to control whether debug messages are logged to the browser console
@@ -131,7 +132,22 @@ declare function BMDirectLinkConnectWithDelegate(delegate: any);
 declare function BMDirectLinkDisconnectWithDelegate(delegate: any);
 
 export declare interface BMCollectionViewUpdatePropertyInfo extends TWUpdatePropertyInfo {
+
+	/**
+	 * A flag that controls whether the layout should be invalidated regardless of how the data updates.
+	 */
     ForceUpdateLayout?: boolean;
+
+	/**
+	 * A flag that controls whether data updates should be animated or not.
+	 */
+	Animated?: boolean;
+
+	/**
+	 * The name of the property that was initially updated, if `updateProperty` was invoked because a different
+	 * property was updated.
+	 */
+	InitialProperty?: string;
 }
 
 /**
@@ -2622,7 +2638,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 * that update info is temporarily saved to this variable until the collection view has finished processing its current update request.
 	 * When that update request is finished, this update is then applied and the pendingDataUpdate variable is reset to undefined.
 	 */
-	pendingDataUpdate?: TWUpdatePropertyInfo;
+	pendingDataUpdate?: BMCollectionViewUpdatePropertyInfo;
 
 	/**
 	 * A promise that resolves when the current data update finishes processing.
@@ -2632,10 +2648,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 	/**
 	 * Invoked by the Thingworx runtime whenever any of this widget's bound properties was updated as a result of a binding.
-	 * @param updatePropertyInfo <TWUpdatePropertyInfo>		            An object describing this property update.
+	 * @param updatePropertyInfo <BMCollectionViewUpdatePropertyInfo>	An object describing this property update.
      * @param updatePropertyInfo.ForceUpdateLayout <Boolean, nullable>  Defaults to NO. If set to YES, the layout will be updated regardless of whether the internal rules
      *                                                                  would normally prevent this.
      * @param updatePropertyInfo.Animated <Boolean, nullable>  			Defaults to YES. If set to NO, the data update will be instant.
+	 * @param updatePropertyInfo.InitialProperty <String, nullable>		The name of the property that was initially updated, if this call to `updateProperty`
+	 * 																	was triggered by an update to a different property.
 	 * {
      *	@param completionHandler <void ^(), nullable>		            If this is a data update and this parameter is specified, this is a handler that will be invoked 
      *                                                                  when the data update completes.
@@ -2693,7 +2711,14 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 			// Update to the newly constructed data
 			const Animated = this.getProperty('AnimatesAdditionalDataUpdates', NO);
-			return this.updateProperty({TargetProperty: 'Data', ActualDataRows: newData.rows, SinglePropertyValue: newData, Animated}, args);
+			return this.updateProperty({
+				TargetProperty: 'Data',
+				ActualDataRows: newData.rows,
+				SinglePropertyValue: newData,
+				RawSinglePropertyValue: newData,
+				Animated,
+				InitialProperty: 'AdditionalData'
+			}, args);
 		}
 		else if (property == 'Data') {
 
@@ -2870,6 +2895,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				else {
 					this.setProperty('HasCompleteDataSet', NO);
 				}
+			}
+			else if (!updatePropertyInfo.InitialProperty) {
+				// If a total size isn't specified, reset the complete data set flag, allowing
+				// additional data to be requested for this new data set
+				this.setProperty('HasCompleteDataSet', NO);
 			}
 			
 			if (!this.collectionView.dataSet) {

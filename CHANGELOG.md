@@ -4,7 +4,7 @@ Adds support for progressively loading the contents of a collection view that ca
  - `AdditionalData` is an infotable that, when updated, is added to the rows of the `Data` property.
  - `DataCurrentSize` is a binding source that can be used to determine how many items are currently loaded.
  - `DataTotalSize` is a binding target that can be used to specify how many total items there will be when everything is loaded.
- - `HasCompleteDataSet` is both a binding target and source that can be used to specify when collection view should stop requesting additional data and is automatically set to `true` when `DataCurrentSize` becomes equal to `DataTotalSize`.
+ - `HasCompleteDataSet` is both a binding target and source that can be used to specify when collection view should stop requesting additional data and is automatically set to `true` when `DataCurrentSize` becomes equal to `DataTotalSize` or when an empty infotable is bound to `AdditionalData`. It is automatically reset to `false` when a new value is provided for `Data`.
  - `DataSetEndThreshold` controls how early the `CollectionViewWillApproachDataSetEnd` event will be triggered by specifying the distance to the data set end at which it should trigger.
  - `PreventsRepeatedDataEndEvents` is a property that is enabled by default. When enabled, the two data set end events will only fire once, until the `AdditionalData` property is updated.
  - `AnimatesAdditionalDataUpdates` is a property that is disabled by default. When enabled, adding data via the `AdditionalData` property will cause the new items to appear with an animation.
