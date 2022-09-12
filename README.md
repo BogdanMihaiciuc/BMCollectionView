@@ -51,13 +51,12 @@ To bind data, simply bind the **Data** infotable property. In addition to the ac
 ### Configuring the mashup
 
 Once data is bound, the next step is selecting the layout and configuring the mashup. The layout may use selected by setting the Layout property. By default there are five layout options, but custom layouts may also be created:
- * `Table`: draws mashups in a list-like layout, with each mashup taking up the entire available width.
  * `Flow`: draws mashups in a grid-like layout
  * `Masonry`: draws mashups in a grid-like layout where each column may have a different scrolling speed.
  * `Tile`: draws mashup in a dashboard-like layout
  * `Stack`: draws mashups on top of each other
 
-Each layout has its own different configuration options. In this post, I’ll only detail the Table and Flow layouts.
+Each layout has its own different configuration options.
 
 Then, once the layout has been chosen, the mashup may be selected by setting the **CellMashupName** property. Its size may be configured statically by setting the **CellHeight** and **CellWidth** properties. It may also be specified in the data set on a per-cell basis by setting the **CellHeightField** and **CellWidthField** properties.
 
