@@ -1072,7 +1072,7 @@ export interface BMCollectionViewWidgetProperty extends TWWidgetProperty {
     _BMSection?: string,
 
     /**
-     * Reserved for future use.
+     * The name with which this property will appear in the composer.
      */
     _BMFriendlyName?: string,
 
@@ -1260,11 +1260,13 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 		Width: {
 			defaultValue: 480,
 			baseType: 'NUMBER',
+			_BMFriendlyName: 'Width',
 			_BMCategories: ['all']
 		},
 		Height: {
 			defaultValue: 640,
 			baseType: 'NUMBER',
+			_BMFriendlyName: 'Height',
 			_BMCategories: ['all']
 		},
 		CustomClass: {
@@ -1274,6 +1276,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			isBindingSource: YES,
 			isBindingTarget: YES,
 			isVisible: NO,
+			_BMFriendlyName: 'CSS Class',
 			_BMCategories: ['all'],
 			_BMSection: 'Styles'
 		},
@@ -1298,6 +1301,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 				{text: 'Data Manipulation', value: 'manipulation'},
 				{text: 'Performance', value: 'performance'}
 			],
+			_BMFriendlyName: 'Show',
 			_BMCategories: ['all']
 		},
 		
@@ -1310,6 +1314,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			isBindingSource: YES,
 			description: 'Represents the data source of this collection view. Whenever the data is updated, either through drag & drop, deleting, inserting or modifying mashup parameters, this property will contain the updated data.',
 			_BMSection: 'Data',
+			_BMFriendlyName: 'Data',
 			_BMCategories: ['all', 'data']
 		},
 		AdditionalData: {
@@ -1317,6 +1322,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			isBindingTarget: YES,
 			description: 'When updated, the data bound to this property will be added at the end of collection view\'s data.',
 			_BMSection: 'Data',
+			_BMFriendlyName: 'Additional Data',
 			_BMCategories: ['all', 'data']
 		},
 		DataCurrentSize: {
@@ -1326,6 +1332,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 0,
 			description: 'Represents the number of items currently in the data set.',
 			_BMSection: 'Data',
+			_BMFriendlyName: 'Current Data Size',
 			_BMCategories: ['all', 'data'],
 		},
 		DataTotalSize: {
@@ -1334,6 +1341,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 0,
 			description: 'If set to a value greater than 0, this represents the total number of items in the complete data set. When the number of items displayed by collection view is equal to or greater than this value, the events for approaching the end of the current data set no longer fire.',
 			_BMSection: 'Data',
+			_BMFriendlyName: 'Total Data Size',
 			_BMCategories: ['all', 'data'],
 		},
 		HasCompleteDataSet: {
@@ -1343,6 +1351,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			isBindingTarget: YES,
 			description: 'When set to true, collection view will no longer trigger the events for approaching the end of the current data set.',
 			_BMSection: 'Data',
+			_BMFriendlyName: 'Complete Data Set',
 			_BMCategories: ['all', 'data']
 		},
 		DataSetEndThreshold: {
@@ -1350,6 +1359,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: '50%',
 			description: 'Controls when the DataSetEndThreshold event is triggered. This must be a size expressed in px units, or a percent relative to collection view\'s frame size.',
 			_BMSection: 'Data',
+			_BMFriendlyName: 'End Threshold',
 			_BMCategories: ['all', 'data']
 		},
 		PreventsRepeatedDataEndEvents: {
@@ -1357,6 +1367,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: YES,
 			description: 'If enabled, the events for approaching the end of the current data set will only fire once, until the AdditionalData property is updated.',
 			_BMSection: 'Data',
+			_BMFriendlyName: 'Prevent Repeated Data End Events',
 			_BMCategories: ['all', 'data']
 		},
 		UIDField: {
@@ -1381,6 +1392,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: NO,
 			isBindingTarget: YES,
 			description: 'Used with SortField. When enabled, the sort will be performed ascending, otherwise it will be descending.',
+			_BMFriendlyName: 'Sort Ascending',
 			_BMCategories: ['all', 'data']
 		},
 		SectionField: {
@@ -1432,24 +1444,28 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			baseType: 'NUMBER',
 			defaultValue: 0,
 			description: 'If using sections, this represents the left section inset',
+			_BMFriendlyName: 'Section Inset Left',
 			_BMCategories: ['all', 'table', 'flow']
 		},
 		SectionInsetTop: {
 			baseType: 'NUMBER',
 			defaultValue: 0,
 			description: 'If using sections, this represents the left section inset',
+			_BMFriendlyName: 'Section Inset Top',
 			_BMCategories: ['all', 'table', 'flow']
 		},
 		SectionInsetRight: {
 			baseType: 'NUMBER',
 			defaultValue: 0,
 			description: 'If using sections, this represents the left section inset',
+			_BMFriendlyName: 'Section Inset Right',
 			_BMCategories: ['all', 'table', 'flow']
 		},
 		SectionInsetBottom: {
 			baseType: 'NUMBER',
 			defaultValue: 0,
 			description: 'If using sections, this represents the left section inset',
+			_BMFriendlyName: 'Section Inset Bottom',
 			_BMCategories: ['all', 'table', 'flow']
 		},
 		
@@ -1483,7 +1499,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 0,
 			description: 'Must be used with Flow layout. Controls how many cells each row is allowed to have.',
 			_BMSection: 'Flow Layout',
-			_BMFriendlyName: 'Maximum cells per row',
+			_BMFriendlyName: 'Maximum Cells Per Row',
 			_BMCategories: ['all', 'flow']
 		},
 		FlowLayoutOrientation: {
@@ -1503,7 +1519,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: false,
 			description: 'Must be used with Flow layout. If enabled, the final row in each section will be aligned to the left rather than the center.',
 			_BMSection: 'Flow Layout',
-			_BMFriendlyName: 'Left align final row',
+			_BMFriendlyName: 'Left Align Final Row',
 			_BMCategories: ['all', 'flow']
 		},
 		FlowLayoutGravity: {
@@ -1533,7 +1549,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 				{text: 'Expand', value: 'Expand'}
 			],
 			_BMSection: 'Flow Layout',
-			_BMFriendlyName: 'Gravity',
+			_BMFriendlyName: 'Alignment',
 			_BMCategories: ['all', 'flow']
 		},
 		FlowLayoutContentGravity: {
@@ -1547,7 +1563,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 				{text: 'Expand', value: 'Expand'}
 			],
 			_BMSection: 'Flow Layout',
-			_BMFriendlyName: 'Gravity',
+			_BMFriendlyName: 'Content Gravity',
 			_BMCategories: ['all', 'flow']
 		},
 		FlowLayoutRowSpacing: {
@@ -1555,7 +1571,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 44,
 			description: 'Must be used with Flow layout. Controls the spacing between headers, rows and footers.',
 			_BMSection: 'Flow Layout',
-			_BMFriendlyName: 'Row spacing',
+			_BMFriendlyName: 'Row Spacing',
 			_BMCategories: ['all', 'flow']
 		},
 		FlowLayoutMinimumSpacing: {
@@ -1563,7 +1579,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 0,
 			description: 'Must be used with Flow layout. Controls the minimum amount of horizontal spacing between the cells.',
 			_BMSection: 'Flow Layout',
-			_BMFriendlyName: 'Row spacing',
+			_BMFriendlyName: 'Minimum Spacing',
 			_BMCategories: ['all', 'flow']
 		},
 		FlowLayoutTopPadding: {
@@ -1571,7 +1587,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 22,
 			description: 'Must be used with Flow layout. Controls the padding the collection view\'s top margin and the first item.',
 			_BMSection: 'Flow Layout',
-			_BMFriendlyName: 'Top padding',
+			_BMFriendlyName: 'Top Padding',
 			_BMCategories: ['all', 'flow']
 		},
 		FlowLayoutBottomPadding: {
@@ -1579,7 +1595,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 22,
 			description: 'Must be used with Flow layout. Controls the padding the collection view\'s bottom margin and the last item.',
 			_BMSection: 'Flow Layout',
-			_BMFriendlyName: 'Bottom padding',
+			_BMFriendlyName: 'Bottom Padding',
 			_BMCategories: ['all', 'flow']
 		},
 		FlowLayoutPinsHeadersToContentEdge: {
@@ -1607,7 +1623,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 5,
 			description: 'Must be used with Masonry layout. If set to a number greater than 0, this is the number of columns the masonry layout will render.',
 			_BMSection: 'Masonry Layout',
-			_BMFriendlyName: 'Number of columns',
+			_BMFriendlyName: 'Number of Columns',
 			_BMCategories: ['all', 'masonry']
 		},
 		MasonryLayoutColumnWidth: {
@@ -1615,7 +1631,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 0,
 			description: 'Must be used with Masonry layout. If the number of columns isn\'t specified, this is the minimum width to use for each column.',
 			_BMSection: 'Masonry Layout',
-			_BMFriendlyName: 'Column width',
+			_BMFriendlyName: 'Column Width',
 			_BMCategories: ['all', 'masonry']
 		},
 		MasonryLayoutColumnSpeeds: {
@@ -1623,7 +1639,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: '1, 2, 0.5, 1, 2, 0.5',
 			description: 'Must be used with Masonry layout. This is the scrolling speed modifier for each column.',
 			_BMSection: 'Masonry Layout',
-			_BMFriendlyName: 'Column speeds',
+			_BMFriendlyName: 'Column Speeds',
 			_BMCategories: ['all', 'masonry']
 		},
 		MasonryLayoutColumnSpacing: {
@@ -1631,7 +1647,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 22,
 			description: 'Must be used with Masonry layout. Controls the horizontal spacing between columns.',
 			_BMSection: 'Masonry Layout',
-			_BMFriendlyName: 'Column spacing',
+			_BMFriendlyName: 'Column Spacing',
 			_BMCategories: ['all', 'masonry']
 		},
 		MasonryLayoutCellSpacing: {
@@ -1639,7 +1655,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 22,
 			description: 'Must be used with Masonry layout. Controls the vertical spacing between cells.',
 			_BMSection: 'Masonry Layout',
-			_BMFriendlyName: 'Cell spacing',
+			_BMFriendlyName: 'Cell Spacing',
 			_BMCategories: ['all', 'masonry']
 		},
 		MasonryLayoutTopPadding: {
@@ -1647,7 +1663,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 22,
 			description: 'Must be used with Masonry layout. Controls the padding the collection view\'s top margin and the first item.',
 			_BMSection: 'Masonry Layout',
-			_BMFriendlyName: 'Top padding',
+			_BMFriendlyName: 'Top Padding',
 			_BMCategories: ['all', 'masonry']
 		},
 		MasonryLayoutBottomPadding: {
@@ -1655,7 +1671,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 22,
 			description: 'Must be used with Masonry layout. Controls the padding the collection view\'s bottom margin and the last item.',
 			_BMSection: 'Masonry Layout',
-			_BMFriendlyName: 'Bottom padding',
+			_BMFriendlyName: 'Bottom Padding',
 			_BMCategories: ['all', 'masonry']
 		},
 		
@@ -1683,7 +1699,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 22,
 			description: 'Must be used with Tile layout. Controls the padding the collection view\'s top margin and the first item.',
 			_BMSection: 'Flow Layout',
-			_BMFriendlyName: 'Top padding',
+			_BMFriendlyName: 'Top Padding',
 			_BMCategories: ['all', 'tile']
 		},
 		TileLayoutBottomPadding: {
@@ -1691,7 +1707,7 @@ function BMCollectionViewGetProperties(): Dictionary<BMCollectionViewWidgetPrope
 			defaultValue: 22,
 			description: 'Must be used with Tile layout. Controls the padding the collection view\'s bottom margin and the last item.',
 			_BMSection: 'Flow Layout',
-			_BMFriendlyName: 'Bottom padding',
+			_BMFriendlyName: 'Bottom Padding',
 			_BMCategories: ['all', 'tile']
 		},
 		TileLayoutPinsHeadersToContentEdge: {
