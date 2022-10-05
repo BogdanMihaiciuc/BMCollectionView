@@ -1,4 +1,4 @@
-# 2.8.5
+# 2.9
 
 Adds support for progressively loading the contents of a collection view that can display a very large number of items. The following new properties can be used to control this behaviour:
  - `AdditionalData` is an infotable that, when updated, is added to the rows of the `Data` property.
