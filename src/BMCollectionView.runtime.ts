@@ -10,6 +10,27 @@ enum BMCollectionViewWidgetSlideMenuType {
 	Popup = 'Popup'
 }
 
+/**
+ * An enum that contains that describe how a menu should display.
+ */
+ enum BMCollectionViewMenuDisplayMode {
+    /**
+     * Indicates that the kind of menu is determined by the
+     * kind of event that triggers it.
+     */
+    Auto = 'auto',
+
+    /**
+     * Indicates that the menu will always appear as a desktop menu.
+     */
+    Mouse = 'mouse',
+
+    /**
+     * Indicates that the menu will always appear as a touch menu.
+     */
+    Touch = 'touch'
+}
+
 declare var self: never;
 
 declare class DataManager extends TWDataManager {};
@@ -17,6 +38,7 @@ declare class DataManager extends TWDataManager {};
 declare var Encoder: any;
 
 // This flag controls whether the new features that require BMCollectionViewCell to subclass BMView should be enabled
+// Setting this flag to `NO` is no longer supported
 const USE_BMVIEW_SUBCLASS: boolean = YES;
 
 // A flag used to control whether debug messages are logged to the browser console
@@ -110,7 +132,22 @@ declare function BMDirectLinkConnectWithDelegate(delegate: any);
 declare function BMDirectLinkDisconnectWithDelegate(delegate: any);
 
 export declare interface BMCollectionViewUpdatePropertyInfo extends TWUpdatePropertyInfo {
+
+	/**
+	 * A flag that controls whether the layout should be invalidated regardless of how the data updates.
+	 */
     ForceUpdateLayout?: boolean;
+
+	/**
+	 * A flag that controls whether data updates should be animated or not.
+	 */
+	Animated?: boolean;
+
+	/**
+	 * The name of the property that was initially updated, if `updateProperty` was invoked because a different
+	 * property was updated.
+	 */
+	InitialProperty?: string;
 }
 
 /**
@@ -1869,6 +1906,16 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 * The collection view whose scroll position will be linked to this one's.
 	 */
 	linkedCollectionViews!: BMCollectionViewWidget[];
+
+	/**
+	 * The number of pixels to the data set's end after which the CollectionViewWillApproachDataSetEnd event will trigger.
+	 */
+	dataSetEndConstant = 0;
+
+	/**
+	 * The percent of pixels relative to collection view's frame after which the CollectionViewWillApproachDataSetEnd event will trigger.
+	 */
+	dataSetEndFactor = 0;
 	
 	
 	// ******************************************** DELEGATE PROPERTIES ********************************************
@@ -2113,6 +2160,23 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		}
 
 		var useCustomScrollbar: boolean | undefined;
+
+		// Parse the DataSetEndThreshold property
+		const dataSetEndThreshold = this.getProperty('DataSetEndThreshold', '') as string;
+		if (dataSetEndThreshold.endsWith('px')) {
+			const value = parseFloat(dataSetEndThreshold);
+			if (!Number.isNaN(value)) {
+				this.dataSetEndConstant = value;
+				this.dataSetEndFactor = 0;
+			}
+		}
+		else if (dataSetEndThreshold.endsWith('%')) {
+			const value = parseFloat(dataSetEndThreshold);
+			if (!Number.isNaN(value)) {
+				this.dataSetEndConstant = 0;
+				this.dataSetEndFactor = value / 100;
+			}
+		}
 		
 		// Load the menu properties
 		try {
@@ -2299,6 +2363,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 		const tabIndex = this.getProperty('TabIndex', -1);
 		if (this.getProperty('KeyboardHighlightingEnabled', NO)) {
+			this.collectionView.supportsKeyboardNavigation = YES;
 			this.collectionView.node.tabIndex = this.getProperty('TabIndex', tabIndex);
 		}
 		else {
@@ -2573,7 +2638,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 * that update info is temporarily saved to this variable until the collection view has finished processing its current update request.
 	 * When that update request is finished, this update is then applied and the pendingDataUpdate variable is reset to undefined.
 	 */
-	pendingDataUpdate?: TWUpdatePropertyInfo;
+	pendingDataUpdate?: BMCollectionViewUpdatePropertyInfo;
 
 	/**
 	 * A promise that resolves when the current data update finishes processing.
@@ -2583,9 +2648,12 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 	/**
 	 * Invoked by the Thingworx runtime whenever any of this widget's bound properties was updated as a result of a binding.
-	 * @param updatePropertyInfo <TWUpdatePropertyInfo>		            An object describing this property update.
+	 * @param updatePropertyInfo <BMCollectionViewUpdatePropertyInfo>	An object describing this property update.
      * @param updatePropertyInfo.ForceUpdateLayout <Boolean, nullable>  Defaults to NO. If set to YES, the layout will be updated regardless of whether the internal rules
      *                                                                  would normally prevent this.
+     * @param updatePropertyInfo.Animated <Boolean, nullable>  			Defaults to YES. If set to NO, the data update will be instant.
+	 * @param updatePropertyInfo.InitialProperty <String, nullable>		The name of the property that was initially updated, if this call to `updateProperty`
+	 * 																	was triggered by an update to a different property.
 	 * {
      *	@param completionHandler <void ^(), nullable>		            If this is a data update and this parameter is specified, this is a handler that will be invoked 
      *                                                                  when the data update completes.
@@ -2599,7 +2667,60 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			await this.afterRendered;
 		}
 
-		if (property == 'Data') {
+		if (property == 'AdditionalData') {
+			// If the property update is badly formatted, ignore (e.g. due to a failed service)
+			if (!updatePropertyInfo.SinglePropertyValue && !updatePropertyInfo.RawSinglePropertyValue) {
+				console.warn('[BMCollectionView] Ignoring badly formatted property update.');
+				return;
+			}
+
+			// If there is an in-progress data set update, wait for it to finish
+			while (this.currentDataUpdate) {
+				await this.currentDataUpdate;
+			}
+
+			// If there are no rows in this additional data, do nothing
+			const rows = updatePropertyInfo.ActualDataRows;
+			if (!rows.length) {
+				if (!this.getProperty('DataTotalSize')) {
+					// If a total count wasn't specified and there are no additional rows
+					// the complete data set was loaded
+					this.setProperty('HasCompleteDataSet', YES);
+				}
+				else {
+					// Otherwise re-enable the data set end events
+					this._canTriggerWillAppreachDataSetEnd = YES;
+					this._canTriggerDidReachDataSetEnd = YES;
+				}
+
+				return;
+			}
+
+			// If no data has been loaded yet, use this as the first data set
+			if (!this.getProperty('Data')) {
+				const newUpdatePropertyInfo = {...updatePropertyInfo, TargetProperty: 'Data'};
+				return this.updateProperty(newUpdatePropertyInfo, args);
+			}
+
+			// Otherwise add the new rows to the current data set
+			const currentData = this.getProperty('Data');
+			const newData = {
+				dataShape: currentData.dataShape,
+				rows: [...currentData.rows, ...rows]
+			};
+
+			// Update to the newly constructed data
+			const Animated = this.getProperty('AnimatesAdditionalDataUpdates', NO);
+			return this.updateProperty({
+				TargetProperty: 'Data',
+				ActualDataRows: newData.rows,
+				SinglePropertyValue: newData,
+				RawSinglePropertyValue: newData,
+				Animated,
+				InitialProperty: 'AdditionalData'
+			}, args);
+		}
+		else if (property == 'Data') {
 
 			// If the property update is badly formatted, ignore
 			if (!updatePropertyInfo.SinglePropertyValue && !updatePropertyInfo.RawSinglePropertyValue) {
@@ -2622,8 +2743,6 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			this.currentDataUpdate = new Promise(function (resolve, reject) {
 				currentDataUpdateResolve = resolve;
 			});
-
-			this.currentDataUpdate = this.currentDataUpdate;
 
             // When CellMashupNameField is used, request all new mashups before actually committing the data update
             if (this.cellMashupNameField) {
@@ -2765,6 +2884,23 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				rows: this.data
 			};
 			this.setProperty('Data', outgoingInfotable);
+
+			// Update the derived data properties
+			this.setProperty('DataCurrentSize', this.data.length);
+			const totalSize = this.getProperty('DataTotalSize');
+			if (totalSize) {
+				if (this.data.length >= totalSize) {
+					this.setProperty('HasCompleteDataSet', YES);
+				}
+				else {
+					this.setProperty('HasCompleteDataSet', NO);
+				}
+			}
+			else if (!updatePropertyInfo.InitialProperty) {
+				// If a total size isn't specified, reset the complete data set flag, allowing
+				// additional data to be requested for this new data set
+				this.setProperty('HasCompleteDataSet', NO);
+			}
 			
 			if (!this.collectionView.dataSet) {
 				this.collectionView.dataSet = this;
@@ -2785,10 +2921,41 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 				this.updateThingworxSelection();
 
 				// Resolve the promise allowing the collection view to process aditional data updates
+				this.currentDataUpdate = undefined;
 				currentDataUpdateResolve();
+
+				// Re-enable the data set end events
+				this._canTriggerWillAppreachDataSetEnd = YES;
+				this._canTriggerDidReachDataSetEnd = YES;
+
+				// If the data set is not complete, verify if the bounds ar at or near the end and trigger the relevant events
+				// This can happen e.g. if the initial page size is smaller than collection view's visible size
+				if (!this.getProperty('HasCompleteDataSet')) {
+					const visibleBounds = this.collectionView.visibleBounds;
+
+					if (this.isRectWithinDataSetEndThreshold(visibleBounds)) {
+						this.jqElement.triggerHandler('CollectionViewWillApproachDataSetEnd');
+
+						// If repeated events are prevented, disable this event until the additional data updates
+						if (this.getProperty('PreventsRepeatedDataEndEvents', YES)) {
+							this._canTriggerWillAppreachDataSetEnd = NO;
+						}
+					}
+
+					if (this.isRectAtDataSetEnd(visibleBounds)) {
+						this.jqElement.triggerHandler('CollectionViewDidReachDataSetEnd');
+
+						// If repeated events are prevented, disable this event until the additional data updates
+						if (this.getProperty('PreventsRepeatedDataEndEvents', YES)) {
+							this._canTriggerDidReachDataSetEnd = NO;
+						}
+					}
+				}
 			}
 			else {
-				this.collectionView.updateEntireDataAnimated(YES, {updateLayout: shouldUpdateLayout, completionHandler: () => {
+				const animated = updatePropertyInfo.Animated ?? YES;
+
+				this.collectionView.updateEntireDataAnimated(animated, {updateLayout: shouldUpdateLayout, completionHandler: () => {
 					this.oldData = undefined;
 					this.oldSections = undefined;
 					
@@ -2811,11 +2978,41 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 					}
 
 					// Resolve the promise allowing the collection view to process aditional data updates
+					this.currentDataUpdate = undefined;
 					currentDataUpdateResolve();
 
 					// Invalidate the dragging index paths, in case any sections were removed
 					if (updatePropertyInfo.ForceUpdateLayout) {
 						this.collectionView.invalidateDraggingIndexPaths();
+					}
+
+					// Re-enable the data set end events
+					this._canTriggerWillAppreachDataSetEnd = YES;
+					this._canTriggerDidReachDataSetEnd = YES;
+					
+
+					// If the data set is not complete, verify if the bounds ar at or near the end and trigger the relevant events
+					// This can happen e.g. if the new data has fewer items than the previous one and collection view scrolls up or left
+					if (!this.getProperty('HasCompleteDataSet')) {
+						const visibleBounds = this.collectionView.visibleBounds;
+
+						if (this.isRectWithinDataSetEndThreshold(visibleBounds)) {
+							this.jqElement.triggerHandler('CollectionViewWillApproachDataSetEnd');
+
+							// If repeated events are prevented, disable this event until the additional data updates
+							if (this.getProperty('PreventsRepeatedDataEndEvents', YES)) {
+								this._canTriggerWillAppreachDataSetEnd = NO;
+							}
+						}
+
+						if (this.isRectAtDataSetEnd(visibleBounds)) {
+							this.jqElement.triggerHandler('CollectionViewDidReachDataSetEnd');
+
+							// If repeated events are prevented, disable this event until the additional data updates
+							if (this.getProperty('PreventsRepeatedDataEndEvents', YES)) {
+								this._canTriggerDidReachDataSetEnd = NO;
+							}
+						}
 					}
 				
 					/*
@@ -2921,6 +3118,27 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 
 					return YES;
 				})
+			}
+		}
+		else if (property == 'DataTotalSize') {
+			const value = updatePropertyInfo.SinglePropertyValue;
+			const size = typeof value == 'number' ? value : parseFloat(value);
+
+			if (!Number.isNaN(size)) {
+				this.setProperty('DataTotalSize', size);
+			}
+			else {
+				this.setProperty('DataTotalSize', 0);
+			}
+
+			// After updating DataTotalSize, also update HasCompleteDataSet
+			if (size && this.getProperty('Data')) {
+				if (size > this.data.length) {
+					this.setProperty('HasCompleteDataSet', NO);
+				}
+				else {
+					this.setProperty('HasCompleteDataSet', YES);
+				}
 			}
 		}
 		else if (property in this.globalDataShape) {
@@ -4181,10 +4399,10 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		}
 		
 		// Long click events originate from mousedown or touchstart events so this event type can be used to differentiate between taps and clicks
-		if (event.type == 'touchstart') {
+		if (event.type == 'touchstart' || this.getProperty('CellSlideMenuLongClick', NO)) {
 			// On mobiles, the default action for long tapping is to bring up the menu
 			if (this.menuStateDefinition?.length && this.menuUseBuiltin && this.menuKind != BMCollectionViewWidgetSlideMenuType.Slide) {
-				this.showPopupMenuForCell(cell, {forEvent: event});
+				this.showPopupMenuForCell(cell, {forEvent: event, kind: BMCollectionViewMenuDisplayMode.Touch});
 				return YES;
 			}
 		}
@@ -4234,6 +4452,85 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 * Temporarily set to true while scroll positions are being synced.
 	 */
 	private _blocksScrollPositionUpdates = NO;
+
+	/**
+	 * Collection view's previous bounds.
+	 */
+	private _previousBounds?: BMRect;
+
+	/**
+	 * Checks if the given rect is within the data set end threshold.
+	 * @param rect 		The rect to verify.
+	 * @returns			`YES` if the rect is within the data set end threshold, `NO` otherwise.
+	 */
+	private isRectWithinDataSetEndThreshold(rect: BMRect): boolean {
+		const size = this.collectionView.size;
+		const frameSize = this.collectionView.frame.size;
+
+		// Because there may be a factor based on the frame size, the vertical and horizontal distances may be different
+		const verticalDistance = this.dataSetEndConstant + frameSize.height * this.dataSetEndFactor;
+		const horizontalDistance = this.dataSetEndConstant + frameSize.width * this.dataSetEndFactor;
+
+		// Check if the rect is within the horizontal end threshold, if collection view can scroll horizontally
+		if (frameSize.width < size.width) {
+			if (rect.right > size.width - horizontalDistance) return YES;
+		}
+		
+		// Similarly, check the vertical end threshold
+		if (frameSize.height < size.height) {
+			if (rect.bottom > size.height - verticalDistance) return YES;
+		}
+
+		// If collection view cannot scroll in any direction, return YES
+		if (frameSize.width >= size.width && frameSize.height >= size.height) {
+			return YES;
+		}
+
+		// If the rect is not in either the vertical or horizontal thresholds, return NO
+		return NO;
+	}
+
+	/**
+	 * Checks if the given rect is at the data set end.
+	 * @param rect 		The rect to verify.
+	 * @returns			`YES` if the rect is at the data set end, `NO` otherwise.
+	 */
+	private isRectAtDataSetEnd(rect: BMRect): boolean {
+		const size = this.collectionView.size;
+		const frameSize = this.collectionView.frame.size;
+
+		// Check if the rect is at the horizontal end, if collection view can scroll horizontally
+		if (frameSize.width < size.width) {
+			if (rect.right >= size.width) return YES;
+		}
+		
+		// Similarly, check the vertical end
+		if (frameSize.height < size.height) {
+			if (rect.bottom >= size.height) return YES;
+		}
+
+		// If collection view cannot scroll in any direction, return YES
+		if (frameSize.width >= size.width && frameSize.height >= size.height) {
+			return YES;
+		}
+
+		// If the rect is not at either the vertical or horizontal ends, return NO
+		return NO;
+	}
+
+	/**
+	 * A flag that controls whether the `CollectionViewWillApproachDataSetEnd` can be triggered.
+	 * If the `PreventsRepeatedDataEndEvents` property is set to `YES`, this flag is disabled whenever
+	 * the event fires and reenabled whenever the `AdditionalData` property is updated.
+	 */
+	private _canTriggerWillAppreachDataSetEnd = YES;
+
+	/**
+	 * A flag that controls whether the `CollectionViewWillApproachDataSetEnd` can be triggered.
+	 * If the `PreventsRepeatedDataEndEvents` property is set to `YES`, this flag is disabled whenever
+	 * the event fires and reenabled whenever the `AdditionalData` property is updated.
+	 */
+	private _canTriggerDidReachDataSetEnd = YES;
 	
 	// @override - BMCollectionViewDelegate
 	collectionViewBoundsDidChange(collectionView: BMCollectionView, bounds: BMRect): void {
@@ -4251,6 +4548,40 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			}
 			this._blocksScrollPositionUpdates = NO;
 		}
+
+		if (!this._previousBounds) {
+			this._previousBounds = collectionView.visibleBounds.copy();
+			return;
+		}
+
+		const visibleBounds = collectionView.visibleBounds.copy();
+
+		// If the data set is not complete, verify if the bounds are approaching the end of the data set
+		if (!this.getProperty('HasCompleteDataSet') && this.getProperty('Data')) {
+			// The bounds are approaching the end if the current bounds are within the threshold and the previous were not
+			if (this._canTriggerWillAppreachDataSetEnd && this.isRectWithinDataSetEndThreshold(visibleBounds) && !this.isRectWithinDataSetEndThreshold(this._previousBounds)) {
+				// Trigger the bounds approaching end event
+				this.jqElement.triggerHandler('CollectionViewWillApproachDataSetEnd');
+
+				// If repeated events are prevented, disable this event until the additional data updates
+				if (this.getProperty('PreventsRepeatedDataEndEvents', YES)) {
+					this._canTriggerWillAppreachDataSetEnd = NO;
+				}
+			}
+
+			// Using similar logic, check if the bounds have reached the end of the data set
+			if (this._canTriggerDidReachDataSetEnd && this.isRectAtDataSetEnd(visibleBounds) && !this.isRectAtDataSetEnd(this._previousBounds)) {
+				// Trigger the bounds approaching end event
+				this.jqElement.triggerHandler('CollectionViewDidReachDataSetEnd');
+
+				// If repeated events are prevented, disable this event until the additional data updates
+				if (this.getProperty('PreventsRepeatedDataEndEvents', YES)) {
+					this._canTriggerDidReachDataSetEnd = NO;
+				}
+			}
+		}
+
+		this._previousBounds = visibleBounds.copy();
 	}
 
 	/**
@@ -4619,7 +4950,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 *	@param forEvent <$event, nullable>			If this is requested in response to an event, this represents the event that triggered this action.
 	 * }
 	 */
-	showPopupMenuForCell(cell: BMCollectionViewMashupCell, {forEvent: event}: {forEvent?: $event | Event} = {}) {
+	showPopupMenuForCell(cell: BMCollectionViewMashupCell, {forEvent: event, kind = BMCollectionViewMenuDisplayMode.Auto}: {forEvent?: $event | Event, kind?: BMCollectionViewMenuDisplayMode} = {}) {
 		const items: BMMenuItem[] = [];
 
 		const action = (item: BMMenuItem) => {
@@ -4652,8 +4983,11 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		}
 
 		if (sourceEvent) {
-			if (sourceEvent.type == 'touchstart') {
-				(menu as any).openFromNode(cell.node);
+			if (
+				(sourceEvent.type == 'touchstart' && kind == BMCollectionViewMenuDisplayMode.Auto) ||
+				kind == BMCollectionViewMenuDisplayMode.Touch
+			) {
+				menu.openFromNode(cell.node);
 			}
 			else {
 				menu.openAtPoint(BMPointMake(sourceEvent.pageX, sourceEvent.pageY));

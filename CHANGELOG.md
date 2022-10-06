@@ -1,3 +1,26 @@
+# 2.9
+
+Adds support for progressively loading the contents of a collection view that can display a very large number of items. The following new properties can be used to control this behaviour:
+ - `AdditionalData` is an infotable that, when updated, is added to the rows of the `Data` property.
+ - `DataCurrentSize` is a binding source that can be used to determine how many items are currently loaded.
+ - `DataTotalSize` is a binding target that can be used to specify how many total items there will be when everything is loaded.
+ - `HasCompleteDataSet` is both a binding target and source that can be used to specify when collection view should stop requesting additional data and is automatically set to `true` when `DataCurrentSize` becomes equal to `DataTotalSize` or when an empty infotable is bound to `AdditionalData`. It is automatically reset to `false` when a new value is provided for `Data`.
+ - `DataSetEndThreshold` controls how early the `CollectionViewWillApproachDataSetEnd` event will be triggered by specifying the distance to the data set end at which it should trigger.
+ - `PreventsRepeatedDataEndEvents` is a property that is enabled by default. When enabled, the two data set end events will only fire once, until the `AdditionalData` property is updated.
+ - `AnimatesAdditionalDataUpdates` is a property that is disabled by default. When enabled, adding data via the `AdditionalData` property will cause the new items to appear with an animation.
+
+The following new events can be used to request additional data:
+ - `CollectionViewWillApproachDataSetEnd` is triggered when the scroll position approaches the final items in the current data set.
+ - `CollectionViewDidReachDataSetEnd` is triggered when the scroll position has reached the end of the current data set.
+
+Fixes an issue with downgrading to collection where the `FlowLayoutRowSpacing` property was not properly migrated, making it impossible for the downgraded collection to generate a layout.
+
+Resolves an issue where enabling the `KeyboardHighlightingEnabled` property had no effect.
+
+Adds a new **Upgrade to Collection View** button on all collection widgets to make it easier to migrate from the built-in collection to collection view.
+
+Adds a new `CellSlideMenuLongClick` property that can be enabled to cause long click to bring up the menu.
+
 # 2.8.4
 
 Resolves an issue when using Thingworx 9.2.8, 9.3.3 or later that prevented the `Loaded` event from firing on cell mashups.

@@ -2,7 +2,7 @@
     "name": "BMCollectionView",
     "packageName": "CollectionView",
     "moduleName": "CollectionView",
-    "version": "2.8.4",
+    "version": "2.9.0",
     "description": "Requires BMCoreUI. A widget that manages a list of view elements, efficiently adding and removing them from view based on the current scroll position.",
     "thingworxServer": "http://localhost:8915",
     "thingworxUser": "Administrator",

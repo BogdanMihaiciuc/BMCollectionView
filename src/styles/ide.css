@@ -92,7 +92,8 @@
 	background: rgb(0, 140, 235);
 }
 
-.BMCollectionViewWidgetDowngradeButton {
+.BMCollectionViewWidgetDowngradeButton,
+.BMCollectionViewWidgetUpgradeButton {
 	-webkit-appearance: none;
 	
 	border-radius: 4px;
@@ -130,6 +131,14 @@
 
 	opacity: .5;
 	pointer-events: none;
+}
+
+.BMCollectionViewWidgetUpgradeButton {
+	background: rgba(0, 160, 255, 1);
+}
+
+.BMCollectionViewWidgetUpgradeButton:active {
+	background: rgb(0, 140, 235);
 }
 
 /************************** CONFIGURATION WINDOW ************************/
