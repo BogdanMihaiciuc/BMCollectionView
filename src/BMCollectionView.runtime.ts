@@ -2289,7 +2289,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		let scrollbarCSS;
 		if (this.getProperty('ScrollbarStyle')) {
 			useCustomScrollbar = YES;
-			let scrollbarStyle = TW.getStyleFromStyleDefinition(this.getProperty('ScrollbarStyle'));
+			let scrollbarStyle = TW.getStyleFromStyleDefinition(this.getProperty('ScrollbarStyle'))!;
 			let scrollbarTrackStyle = TW.getStyleFromStyleDefinition(this.getProperty('ScrollbarTrackStyle'));
 
 			let indicatorCSSRule = {
@@ -2548,7 +2548,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		// Load the inline data manipulation data shape if it was specified
 		if (this.getProperty('DataShape')) {
             TW.Runtime.GetDataShapeInfo(this.getProperty('DataShape'), (info) => {
-                if (!this.dataShape) this.dataShape = info;
+                if (!this.dataShape) this.dataShape = info!;
 
 				// If this collection view is set to load an empty data set on startup, load it now
 				if (!this.getProperty('EmptyDataSetOnStartup', NO)) return;
@@ -4071,7 +4071,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 	 */
 	private triggerKeyAction(key: 'Return' | 'Spacebar', {forCell: cell, withEvent: event}: {forCell: BMCollectionViewMashupCell, withEvent: UIEvent}): void {
 		// Don't handle these events when they originate from input or button elements if this behaviour is enabled
-		switch (this.getProperty('KeyboardHighlightOmitsInputElements', 'All')) {
+		switch (this.getProperty<string>('KeyboardHighlightOmitsInputElements', 'All')) {
 			case 'All':
 			case 'Actions':
 				if (event.target instanceof HTMLElement) {
@@ -4099,7 +4099,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		// If the event should be handled, prevent the default behaviour
 		event.preventDefault();
 
-		switch (this.getProperty(`KeyboardHighlighting${key}Behaviour`, 'Event')) {
+		switch (this.getProperty<string>(`KeyboardHighlighting${key}Behaviour`, 'Event')) {
 			case BMCollectionViewKeyboardActionKeyBehaviour.Event:
 				this.triggerEvent(`${key}Pressed`, {withCell: cell});
 				break;
@@ -4121,7 +4121,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 			return this.getProperty('KeyboardHighlightingEnabled', NO);
 		}
 
-		switch (this.getProperty('KeyboardHighlightOmitsInputElements', 'All')) {
+		switch (this.getProperty<string>('KeyboardHighlightOmitsInputElements', 'All')) {
 			case 'All':
 			case 'Navigation':
 				if (event.target instanceof HTMLElement) {
@@ -4198,7 +4198,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		}
 
 		// When highlighting is set to also select, set the current selection to the highlighted index path
-		if (this.getProperty('KeyboardHighlightingBehaviour', 'Highlight') == 'Select') {
+		if (this.getProperty<string>('KeyboardHighlightingBehaviour', 'Highlight') == 'Select') {
 			if (event && !event.shiftKey) {
 				this.collectionView.selectedIndexPaths = [indexPath];
 			}

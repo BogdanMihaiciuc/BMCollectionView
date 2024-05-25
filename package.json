@@ -2,7 +2,7 @@
     "name": "BMCollectionView",
     "packageName": "CollectionView",
     "moduleName": "CollectionView",
-    "version": "2.9.0",
+    "version": "2.10.4",
     "description": "Requires BMCoreUI. A widget that manages a list of view elements, efficiently adding and removing them from view based on the current scroll position.",
     "thingworxServer": "http://localhost:8915",
     "thingworxUser": "Administrator",
@@ -56,6 +56,6 @@
         "zip-webpack-plugin": "^3.0.0"
     },
     "dependencies": {
-        "typescriptwebpacksupport": "^2.0.9"
+        "typescriptwebpacksupport": "^2.3.1"
     }
 }

@@ -2953,7 +2953,7 @@ implements BMCollectionViewDelegate, BMCollectionViewDataSet, BMCollectionViewDe
 		var properties = this.allWidgetProperties().properties as Dictionary<BMCollectionViewWidgetProperty>;
 		
 		// Retrieve the actual state definition from the platform
-		var menuStateDefinition = TW.getStateDefinition(this.getProperty('CellSlideMenu'));
+		var menuStateDefinition = TW.getStateDefinition(this.getProperty('CellSlideMenu')) as any;
 		
 		// Delete the previous properties from the previous binding
 		var oldDefinition = JSON.parse(this.getProperty('_MenuDefinition'));
@@ -3574,7 +3574,7 @@ export class BMCollectionViewMenuController extends TWComposerWidget {
 		var properties = (this.allWidgetProperties() as any).properties;
 		
 		// Retrieve the actual state definition from the platform
-		var menuStateDefinition = TW.getStateDefinition(this.getProperty('CellSlideMenu'));
+		var menuStateDefinition = TW.getStateDefinition(this.getProperty('CellSlideMenu')) as any;
 		
 		// Delete the previous properties from the previous binding
 		var oldDefinition = JSON.parse(this.getProperty('_MenuDefinition'));
